@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 /**
- * Autonomous Syndicate Agent Roles
+ * Autonomous Argus Agent Roles
  */
 export type AgentRole = 'orchestrator' | 'analyst' | 'risk_arbiter' | 'executor';
 
@@ -11,9 +11,10 @@ export type AgentRole = 'orchestrator' | 'analyst' | 'risk_arbiter' | 'executor'
 export type ExecutionMode = 'simulation' | 'live_mcp';
 
 /**
- * Syndicate Operation Mode: Copilot (human approves) vs Autonomous (pure M2M loop)
+ * Argus Operation Mode: Copilot (human approves) vs Autonomous (pure M2M loop)
  */
-export type SyndicateMode = 'copilot' | 'autonomous';
+export type GuardianMode = 'copilot' | 'autonomous';
+export type SyndicateMode = GuardianMode; // Backwards-compatible alias
 
 /**
  * Market Regime classification determined by Alpha Analyst

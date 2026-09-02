@@ -7,19 +7,19 @@
 
 export const APP_CONTENT = {
   header: {
-    title: 'SYNDICATE AI',
-    subtitle: 'Autonomous Multi-Agent Trading Syndicate',
+    title: 'ARGUS',
+    subtitle: 'Autonomous Multi-Agent Trading & Risk Guardian',
     badge: 'Binance Agent OS',
     hackathonTrack: 'Track A: Developer Mini Hackathon',
   },
   agents: {
     orchestrator: {
-      name: 'Syndicate Orchestrator',
+      name: 'Argus Orchestrator',
       role: 'Master Loop & Coordination',
       badge: 'COORDINATOR',
     },
     analyst: {
-      name: 'Alpha Analyst',
+      name: 'Alpha Scout',
       role: 'Dual-Vector Market Intelligence',
       badge: 'SCOUT',
     },
@@ -48,7 +48,7 @@ export const APP_CONTENT = {
       description: 'Human-in-the-loop review and approval required before order placement.',
     },
     autonomous: {
-      label: 'Autonomous Syndicate',
+      label: 'Autonomous Guardian Mode',
       description: 'Continuous agent-to-agent negotiation, x402 settlement, and execution.',
     },
   },

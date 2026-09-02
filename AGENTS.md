@@ -8,7 +8,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
-# Syndicate AI — Agent Guidelines & Engineering Standards
+# Argus — Agent Guidelines & Engineering Standards
 
 These rules are non-negotiable for all AI coding agents working in this repository.
 
