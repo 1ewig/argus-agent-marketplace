@@ -17,7 +17,11 @@ export const metadata: Metadata = {
   description: "Autonomous multi-agent trading intelligence and risk governance powered by Binance Agent OS",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
     <html
       lang="en"
