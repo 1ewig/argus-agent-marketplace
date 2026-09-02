@@ -70,7 +70,7 @@ export async function runAnalystAgent(options: AnalystAgentOptions): Promise<Ana
         model,
         system: ANALYST_AGENT_SYSTEM_PROMPT,
         messages: [
-          ...history.slice(-8).map((h) => ({
+          ...history.slice(-10).map((h) => ({
             role: h.role,
             content: h.content,
           })),

@@ -89,8 +89,8 @@ export function ChatWindow({ symbol = 'SOLUSDT', mode = 'simulation' }: ChatWind
     setIsLoading(true);
 
     try {
-      // Prepare multi-turn history to pass to Groq
-      const conversationHistory = messages.map((m) => ({
+      // Prepare multi-turn history: send sliding window of past 10 messages
+      const conversationHistory = messages.slice(-10).map((m) => ({
         role: m.role,
         content: m.content,
       }));
