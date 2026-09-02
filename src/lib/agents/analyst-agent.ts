@@ -55,7 +55,7 @@ export async function runAnalystAgent(options: AnalystAgentOptions): Promise<Ana
   const model = getGroqModel(modelName, apiKey);
 
   // 3. Construct user prompt ensuring context-awareness
-  const userPrompt = `Target Asset: ${symbol.toUpperCase()}\nUser Request: ${prompt}`;
+  const userPrompt = `[Active Pair Context: ${symbol.toUpperCase()}]\nUser: ${prompt}`;
 
   // 4. Run autonomous agent loop with multi-step tool-calling (up to 5 steps)
   const { text, steps } = await generateText({
