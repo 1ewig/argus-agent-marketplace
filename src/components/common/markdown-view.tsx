@@ -40,12 +40,12 @@ export function MarkdownView({ content }: MarkdownViewProps) {
             </strong>
           ),
           ul: ({ children }) => (
-            <ul className="list-disc pl-spacing-md mb-spacing-xs space-y-1 text-xs text-theme-text-secondary">
+            <ul className="list-disc list-inside pl-spacing-xs my-spacing-xs space-y-1 text-xs text-theme-text-secondary">
               {children}
             </ul>
           ),
           ol: ({ children }) => (
-            <ol className="list-decimal pl-spacing-md mb-spacing-xs space-y-1 text-xs text-theme-text-secondary">
+            <ol className="list-decimal list-inside pl-spacing-xs my-spacing-xs space-y-1 text-xs text-theme-text-secondary">
               {children}
             </ol>
           ),

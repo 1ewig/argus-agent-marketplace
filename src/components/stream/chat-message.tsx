@@ -26,7 +26,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
 
   return (
     <div
-      className={`flex flex-col gap-spacing-xs p-spacing-sm rounded border ${
+      className={`flex flex-col gap-spacing-xs p-spacing-md rounded-lg shadow-2xs border ${
         isUser
           ? 'bg-theme-bg-elevated border-theme-border-subtle'
           : 'bg-theme-bg-surface border-theme-border-strong'
