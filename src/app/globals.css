@@ -1,26 +1,113 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* ==========================================================================
+     1. THEME VARIABLES (15)
+     Tailored for Binance Agent OS institutional trading dark interface
+     ========================================================================== */
+  --theme-bg-base: #080b11;
+  --theme-bg-surface: #0f141f;
+  --theme-bg-elevated: #171f2f;
+  --theme-bg-overlay: rgba(8, 11, 17, 0.85);
+  --theme-border-subtle: #1f293d;
+  --theme-border-strong: #2e3d5b;
+  --theme-text-primary: #f8fafc;
+  --theme-text-secondary: #94a3b8;
+  --theme-text-muted: #64748b;
+  --theme-brand-binance: #f0b90b;
+  --theme-brand-accent: #fcd535;
+  --theme-status-success: #10b981;
+  --theme-status-danger: #ef4444;
+  --theme-status-warning: #f59e0b;
+  --theme-status-info: #06b6d4;
+
+  /* ==========================================================================
+     2. TEXT SIZE VARIABLES (8)
+     ========================================================================== */
+  --text-2xs: 0.6875rem; /* 11px - Micro badges & depth stamps */
+  --text-xs: 0.75rem;    /* 12px - Labels, table metadata */
+  --text-sm: 0.875rem;   /* 14px - Body text & agent dialogue */
+  --text-base: 1rem;     /* 16px - Base content & card titles */
+  --text-lg: 1.125rem;   /* 18px - Subheadings & metrics */
+  --text-xl: 1.25rem;    /* 20px - Section headers */
+  --text-2xl: 1.5rem;    /* 24px - Module titles & balances */
+  --text-3xl: 1.875rem;  /* 30px - Cockpit hero typography */
+
+  /* ==========================================================================
+     3. FONT WEIGHT VARIABLES (5)
+     ========================================================================== */
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --weight-extrabold: 800;
+
+  /* ==========================================================================
+     4. LINE HEIGHT VARIABLES (5)
+     ========================================================================== */
+  --leading-none: 1;
+  --leading-tight: 1.25;
+  --leading-snug: 1.375;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+
+  /* ==========================================================================
+     5. SPACING VARIABLES (5)
+     ========================================================================== */
+  --spacing-xs: 0.25rem; /* 4px */
+  --spacing-sm: 0.5rem;  /* 8px */
+  --spacing-md: 1rem;    /* 16px */
+  --spacing-lg: 1.5rem;  /* 24px */
+  --spacing-xl: 2rem;    /* 32px */
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-theme-bg-base: var(--theme-bg-base);
+  --color-theme-bg-surface: var(--theme-bg-surface);
+  --color-theme-bg-elevated: var(--theme-bg-elevated);
+  --color-theme-bg-overlay: var(--theme-bg-overlay);
+  --color-theme-border-subtle: var(--theme-border-subtle);
+  --color-theme-border-strong: var(--theme-border-strong);
+  --color-theme-text-primary: var(--theme-text-primary);
+  --color-theme-text-secondary: var(--theme-text-secondary);
+  --color-theme-text-muted: var(--theme-text-muted);
+  --color-theme-brand-binance: var(--theme-brand-binance);
+  --color-theme-brand-accent: var(--theme-brand-accent);
+  --color-theme-status-success: var(--theme-status-success);
+  --color-theme-status-danger: var(--theme-status-danger);
+  --color-theme-status-warning: var(--theme-status-warning);
+  --color-theme-status-info: var(--theme-status-info);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --text-2xs: var(--text-2xs);
+  --text-xs: var(--text-xs);
+  --text-sm: var(--text-sm);
+  --text-base: var(--text-base);
+  --text-lg: var(--text-lg);
+  --text-xl: var(--text-xl);
+  --text-2xl: var(--text-2xl);
+  --text-3xl: var(--text-3xl);
+
+  --font-weight-regular: var(--weight-regular);
+  --font-weight-medium: var(--weight-medium);
+  --font-weight-semibold: var(--weight-semibold);
+  --font-weight-bold: var(--weight-bold);
+  --font-weight-extrabold: var(--weight-extrabold);
+
+  --line-height-none: var(--leading-none);
+  --line-height-tight: var(--leading-tight);
+  --line-height-snug: var(--leading-snug);
+  --line-height-normal: var(--leading-normal);
+  --line-height-relaxed: var(--leading-relaxed);
+
+  --spacing-xs: var(--spacing-xs);
+  --spacing-sm: var(--spacing-sm);
+  --spacing-md: var(--spacing-md);
+  --spacing-lg: var(--spacing-lg);
+  --spacing-xl: var(--spacing-xl);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--theme-bg-base);
+  color: var(--theme-text-primary);
+  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
