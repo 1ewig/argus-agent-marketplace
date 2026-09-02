@@ -2,11 +2,17 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { runAnalystAgent } from '@/lib/agents/analyst-agent';
 
+const ChatMessageSchema = z.object({
+  role: z.enum(['user', 'assistant']),
+  content: z.string(),
+});
+
 const ChatRequestSchema = z.object({
   message: z.string().min(1, 'Message is required'),
   symbol: z.string().default('SOLUSDT'),
   mode: z.enum(['simulation', 'live_mcp']).default('simulation'),
   apiKey: z.string().optional(),
+  history: z.array(ChatMessageSchema).optional(),
 });
 
 export async function POST(req: Request) {
@@ -25,13 +31,14 @@ export async function POST(req: Request) {
       );
     }
 
-    const { message, symbol, mode, apiKey } = parseResult.data;
+    const { message, symbol, mode, apiKey, history } = parseResult.data;
 
     const result = await runAnalystAgent({
       prompt: message,
       symbol,
       mode,
       apiKey,
+      history,
     });
 
     return NextResponse.json({

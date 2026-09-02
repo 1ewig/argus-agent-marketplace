@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Send, Sparkles, RefreshCw } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
 import { generateMessageId, getNowTimestamp } from '@/lib/utils';
+import { getStoredMessages, saveStoredMessage, clearStoredMessages } from '@/lib/db';
 import { ChatMessage, type ChatMessageData } from './chat-message';
 import type { AnalystAgentResult } from '@/lib/agents/analyst-agent';
 import type { ExecutionMode } from '@/lib/types';
@@ -20,11 +21,50 @@ export function ChatWindow({ symbol = 'SOLUSDT', mode = 'simulation' }: ChatWind
   const [errorNotice, setErrorNotice] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to latest message
+  // 1. Load persistent chat history from Dexie IndexedDB
+  useEffect(() => {
+    let isMounted = true;
+
+    getStoredMessages(symbol)
+      .then((records) => {
+        if (isMounted) {
+          if (records.length > 0) {
+            setMessages(
+              records.map((r) => ({
+                id: r.id,
+                role: r.role,
+                content: r.content,
+                toolCalls: r.toolCalls,
+                stepCount: r.stepCount,
+                timestamp: r.timestamp,
+              }))
+            );
+          } else {
+            setMessages([]);
+          }
+        }
+      })
+      .catch(() => {
+        // Fallback gracefully if IndexedDB is unavailable
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [symbol]);
+
+  // 2. Auto-scroll to latest message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isLoading]);
 
+  // 3. Clear persistent history
+  const handleClear = async () => {
+    await clearStoredMessages(symbol);
+    setMessages([]);
+  };
+
+  // 4. Send message with multi-turn context and Dexie persistence
   const handleSend = async (textToSend?: string) => {
     const prompt = (textToSend ?? input).trim();
     if (!prompt || isLoading) return;
@@ -39,10 +79,22 @@ export function ChatWindow({ symbol = 'SOLUSDT', mode = 'simulation' }: ChatWind
       timestamp: getNowTimestamp(),
     };
 
+    // Optimistically update UI and persist to Dexie
     setMessages((prev) => [...prev, userMessage]);
+    void saveStoredMessage({
+      ...userMessage,
+      symbol,
+    });
+
     setIsLoading(true);
 
     try {
+      // Prepare multi-turn history to pass to Groq
+      const conversationHistory = messages.map((m) => ({
+        role: m.role,
+        content: m.content,
+      }));
+
       const response = await fetch('/api/agent/chat', {
         method: 'POST',
         headers: {
@@ -52,6 +104,7 @@ export function ChatWindow({ symbol = 'SOLUSDT', mode = 'simulation' }: ChatWind
           message: prompt,
           symbol,
           mode,
+          history: conversationHistory,
         }),
       });
 
@@ -72,7 +125,12 @@ export function ChatWindow({ symbol = 'SOLUSDT', mode = 'simulation' }: ChatWind
         timestamp: agentData.timestamp,
       };
 
+      // Update state and persist to Dexie
       setMessages((prev) => [...prev, agentMessage]);
+      void saveStoredMessage({
+        ...agentMessage,
+        symbol,
+      });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : APP_CONTENT.chat.errorNotice;
       setErrorNotice(msg);
@@ -110,7 +168,7 @@ export function ChatWindow({ symbol = 'SOLUSDT', mode = 'simulation' }: ChatWind
           </span>
           <button
             type="button"
-            onClick={() => setMessages([])}
+            onClick={() => void handleClear()}
             title={APP_CONTENT.chat.clearButton}
             className="text-theme-text-muted hover:text-theme-text-primary p-spacing-xs rounded hover:bg-theme-bg-surface cursor-pointer transition-colors"
           >
