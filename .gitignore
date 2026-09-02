@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# hackathon specification docs
+BINANCE_AGENT_OS_TRACK_A.md
+PROJECT_SPECIFICATION.md

@@ -3,62 +3,65 @@
 :root {
   /* ==========================================================================
      1. THEME VARIABLES (15)
-     Tailored for Binance Agent OS institutional trading dark interface
+     Calibrated to the Neo-Minimalist Architectural / Swiss FinTech aesthetic:
+     Crisp off-white canvas, pure white card surfaces, high-contrast jet-black
+     accent panels, subtle hairline borders, and signature Binance gold highlights.
      ========================================================================== */
-  --theme-bg-base: #080b11;
-  --theme-bg-surface: #0f141f;
-  --theme-bg-elevated: #171f2f;
-  --theme-bg-overlay: rgba(8, 11, 17, 0.85);
-  --theme-border-subtle: #1f293d;
-  --theme-border-strong: #2e3d5b;
-  --theme-text-primary: #f8fafc;
-  --theme-text-secondary: #94a3b8;
-  --theme-text-muted: #64748b;
-  --theme-brand-binance: #f0b90b;
-  --theme-brand-accent: #fcd535;
-  --theme-status-success: #10b981;
-  --theme-status-danger: #ef4444;
-  --theme-status-warning: #f59e0b;
-  --theme-status-info: #06b6d4;
+  --theme-bg-base: #f0f2f5;             /* Soft architectural studio backdrop */
+  --theme-bg-surface: #ffffff;          /* Pure white card containers & dashboard deck */
+  --theme-bg-elevated: #f8f9fa;         /* Subtle secondary card surfaces & search bars */
+  --theme-bg-overlay: #0a0a0a;          /* High-contrast jet-black focus cards & badges */
+  --theme-border-subtle: #e5e7eb;       /* Hairline micro-dividers & container borders */
+  --theme-border-strong: #111827;       /* Pitch black active borders & focused indicators */
+  --theme-text-primary: #0a0a0a;        /* Pitch black for display headings & key stats */
+  --theme-text-secondary: #475569;      /* Refined neutral slate for subtitles & labels */
+  --theme-text-muted: #94a3b8;          /* Light slate for timestamps & micro-details */
+  --theme-brand-binance: #f0b90b;       /* Primary Binance yellow accent (matches chart bars) */
+  --theme-brand-accent: #fde047;        /* Canary gold for active meters & hover highlights */
+  --theme-status-success: #10b981;      /* Emerald mint for positive PnL & confirmed fills */
+  --theme-status-danger: #ef4444;       /* Crimson for risk violations & emergency triggers */
+  --theme-status-warning: #f59e0b;      /* Warm amber for risk checks & caution alerts */
+  --theme-status-info: #0284c7;         /* Clean technical cyan for analyst intelligence stream */
 
   /* ==========================================================================
      2. TEXT SIZE VARIABLES (8)
+     Calibrated for high-contrast architectural typography (large display stats)
      ========================================================================== */
-  --text-2xs: 0.6875rem; /* 11px - Micro badges & depth stamps */
-  --text-xs: 0.75rem;    /* 12px - Labels, table metadata */
-  --text-sm: 0.875rem;   /* 14px - Body text & agent dialogue */
-  --text-base: 1rem;     /* 16px - Base content & card titles */
-  --text-lg: 1.125rem;   /* 18px - Subheadings & metrics */
-  --text-xl: 1.25rem;    /* 20px - Section headers */
-  --text-2xl: 1.5rem;    /* 24px - Module titles & balances */
-  --text-3xl: 1.875rem;  /* 30px - Cockpit hero typography */
+  --text-2xs: 0.6875rem; /* 11px - Micro-annotations & tag badges */
+  --text-xs: 0.75rem;    /* 12px - Section uppercase labels & sub-stats */
+  --text-sm: 0.875rem;   /* 14px - Body copy & stream dialogue */
+  --text-base: 1rem;     /* 16px - Form inputs & prominent card headers */
+  --text-lg: 1.25rem;    /* 20px - Sub-headings & medium metrics */
+  --text-xl: 1.75rem;    /* 28px - Moderate stats & lead values */
+  --text-2xl: 2.5rem;    /* 40px - Large statistics (e.g. 89%, 545) */
+  --text-3xl: 3.5rem;    /* 56px - Hero display titles & portfolio balances */
 
   /* ==========================================================================
      3. FONT WEIGHT VARIABLES (5)
      ========================================================================== */
-  --weight-regular: 400;
-  --weight-medium: 500;
-  --weight-semibold: 600;
-  --weight-bold: 700;
-  --weight-extrabold: 800;
+  --weight-regular: 400;   /* Clean light display typography & body */
+  --weight-medium: 500;    /* Card headers & active metrics */
+  --weight-semibold: 600;  /* Key highlights & action buttons */
+  --weight-bold: 700;      /* Section headlines & prominent figures */
+  --weight-extrabold: 800; /* Ultra-bold badges & status tags */
 
   /* ==========================================================================
      4. LINE HEIGHT VARIABLES (5)
      ========================================================================== */
-  --leading-none: 1;
-  --leading-tight: 1.25;
-  --leading-snug: 1.375;
-  --leading-normal: 1.5;
-  --leading-relaxed: 1.625;
+  --leading-none: 1;       /* Tight alignment on oversized stats & numbers */
+  --leading-tight: 1.15;   /* Display typography & multi-line headlines */
+  --leading-snug: 1.3;     /* Card titles & compact summaries */
+  --leading-normal: 1.5;   /* Standard readable body copy */
+  --leading-relaxed: 1.65; /* Multi-agent analysis dossiers */
 
   /* ==========================================================================
      5. SPACING VARIABLES (5)
      ========================================================================== */
-  --spacing-xs: 0.25rem; /* 4px */
-  --spacing-sm: 0.5rem;  /* 8px */
-  --spacing-md: 1rem;    /* 16px */
-  --spacing-lg: 1.5rem;  /* 24px */
-  --spacing-xl: 2rem;    /* 32px */
+  --spacing-xs: 0.25rem;  /* 4px - Micro gaps & indicator ticks */
+  --spacing-sm: 0.5rem;   /* 8px - Chip padding & icon margins */
+  --spacing-md: 1rem;     /* 16px - Standard internal card padding */
+  --spacing-lg: 1.5rem;   /* 24px - Grid gutters & module spacing */
+  --spacing-xl: 2.5rem;   /* 40px - Large dashboard deck framing */
 }
 
 @theme inline {
@@ -110,4 +113,5 @@ body {
   background: var(--theme-bg-base);
   color: var(--theme-text-primary);
   font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  letter-spacing: -0.015em;
 }
