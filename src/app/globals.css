@@ -11,12 +11,12 @@
   --theme-bg-surface: #ffffff;          /* Pure white card containers & dashboard deck */
   --theme-bg-elevated: #f8f9fa;         /* Subtle secondary card surfaces & search bars */
   --theme-bg-overlay: #0a0a0a;          /* High-contrast jet-black focus cards & badges */
-  --theme-border-subtle: #e5e7eb;       /* Hairline micro-dividers & container borders */
-  --theme-border-strong: #111827;       /* Pitch black active borders & focused indicators */
+  --theme-border-subtle: #e2e8f0;       /* Hairline micro-dividers & container borders */
+  --theme-border-strong: #0f172a;       /* Pitch black active borders & focused indicators */
   --theme-text-primary: #0a0a0a;        /* Pitch black for display headings & key stats */
   --theme-text-secondary: #475569;      /* Refined neutral slate for subtitles & labels */
   --theme-text-muted: #94a3b8;          /* Light slate for timestamps & micro-details */
-  --theme-brand-binance: #f0b90b;       /* Primary Binance yellow accent (matches chart bars) */
+  --theme-brand-binance: #f0b90b;       /* Primary Binance yellow accent */
   --theme-brand-accent: #fde047;        /* Canary gold for active meters & hover highlights */
   --theme-status-success: #10b981;      /* Emerald mint for positive PnL & confirmed fills */
   --theme-status-danger: #ef4444;       /* Crimson for risk violations & emergency triggers */
@@ -25,7 +25,6 @@
 
   /* ==========================================================================
      2. TEXT SIZE VARIABLES (8)
-     Calibrated for high-contrast architectural typography (large display stats)
      ========================================================================== */
   --text-2xs: 0.6875rem; /* 11px - Micro-annotations & tag badges */
   --text-xs: 0.75rem;    /* 12px - Section uppercase labels & sub-stats */
@@ -33,26 +32,26 @@
   --text-base: 1rem;     /* 16px - Form inputs & prominent card headers */
   --text-lg: 1.25rem;    /* 20px - Sub-headings & medium metrics */
   --text-xl: 1.75rem;    /* 28px - Moderate stats & lead values */
-  --text-2xl: 2.5rem;    /* 40px - Large statistics (e.g. 89%, 545) */
+  --text-2xl: 2.5rem;    /* 40px - Large statistics */
   --text-3xl: 3.5rem;    /* 56px - Hero display titles & portfolio balances */
 
   /* ==========================================================================
      3. FONT WEIGHT VARIABLES (5)
      ========================================================================== */
-  --weight-regular: 400;   /* Clean light display typography & body */
-  --weight-medium: 500;    /* Card headers & active metrics */
-  --weight-semibold: 600;  /* Key highlights & action buttons */
-  --weight-bold: 700;      /* Section headlines & prominent figures */
-  --weight-extrabold: 800; /* Ultra-bold badges & status tags */
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --weight-extrabold: 800;
 
   /* ==========================================================================
      4. LINE HEIGHT VARIABLES (5)
      ========================================================================== */
-  --leading-none: 1;       /* Tight alignment on oversized stats & numbers */
-  --leading-tight: 1.15;   /* Display typography & multi-line headlines */
-  --leading-snug: 1.3;     /* Card titles & compact summaries */
-  --leading-normal: 1.5;   /* Standard readable body copy */
-  --leading-relaxed: 1.65; /* Multi-agent analysis dossiers */
+  --leading-none: 1;
+  --leading-tight: 1.15;
+  --leading-snug: 1.3;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.65;
 
   /* ==========================================================================
      5. SPACING VARIABLES (5)
@@ -101,12 +100,65 @@
   --line-height-snug: var(--leading-snug);
   --line-height-normal: var(--leading-normal);
   --line-height-relaxed: var(--leading-relaxed);
+}
 
-  --spacing-xs: var(--spacing-xs);
-  --spacing-sm: var(--spacing-sm);
-  --spacing-md: var(--spacing-md);
-  --spacing-lg: var(--spacing-lg);
-  --spacing-xl: var(--spacing-xl);
+/* Explicit Spacing Utilities Guaranteed Across Build Targets */
+.p-spacing-xs { padding: var(--spacing-xs); }
+.p-spacing-sm { padding: var(--spacing-sm); }
+.p-spacing-md { padding: var(--spacing-md); }
+.p-spacing-lg { padding: var(--spacing-lg); }
+.p-spacing-xl { padding: var(--spacing-xl); }
+
+.px-spacing-xs { padding-left: var(--spacing-xs); padding-right: var(--spacing-xs); }
+.px-spacing-sm { padding-left: var(--spacing-sm); padding-right: var(--spacing-sm); }
+.px-spacing-md { padding-left: var(--spacing-md); padding-right: var(--spacing-md); }
+.px-spacing-lg { padding-left: var(--spacing-lg); padding-right: var(--spacing-lg); }
+.px-spacing-xl { padding-left: var(--spacing-xl); padding-right: var(--spacing-xl); }
+
+.py-spacing-xs { padding-top: var(--spacing-xs); padding-bottom: var(--spacing-xs); }
+.py-spacing-sm { padding-top: var(--spacing-sm); padding-bottom: var(--spacing-sm); }
+.py-spacing-md { padding-top: var(--spacing-md); padding-bottom: var(--spacing-md); }
+.py-spacing-lg { padding-top: var(--spacing-lg); padding-bottom: var(--spacing-lg); }
+.py-spacing-xl { padding-top: var(--spacing-xl); padding-bottom: var(--spacing-xl); }
+
+.gap-spacing-xs { gap: var(--spacing-xs); }
+.gap-spacing-sm { gap: var(--spacing-sm); }
+.gap-spacing-md { gap: var(--spacing-md); }
+.gap-spacing-lg { gap: var(--spacing-lg); }
+.gap-spacing-xl { gap: var(--spacing-xl); }
+
+.m-spacing-xs { margin: var(--spacing-xs); }
+.m-spacing-sm { margin: var(--spacing-sm); }
+.m-spacing-md { margin: var(--spacing-md); }
+.m-spacing-lg { margin: var(--spacing-lg); }
+.m-spacing-xl { margin: var(--spacing-xl); }
+
+.mt-spacing-xs { margin-top: var(--spacing-xs); }
+.mt-spacing-sm { margin-top: var(--spacing-sm); }
+.mt-spacing-md { margin-top: var(--spacing-md); }
+.mt-spacing-lg { margin-top: var(--spacing-lg); }
+.mt-spacing-xl { margin-top: var(--spacing-xl); }
+
+.mb-spacing-xs { margin-bottom: var(--spacing-xs); }
+.mb-spacing-sm { margin-bottom: var(--spacing-sm); }
+.mb-spacing-md { margin-bottom: var(--spacing-md); }
+.mb-spacing-lg { margin-bottom: var(--spacing-lg); }
+.mb-spacing-xl { margin-bottom: var(--spacing-xl); }
+
+/* Custom subtle scrollbars */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 body {
@@ -114,4 +166,5 @@ body {
   color: var(--theme-text-primary);
   font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   letter-spacing: -0.015em;
+  overflow: hidden;
 }
