@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Bot, User, ChevronDown, ChevronUp, Terminal } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
+import { MarkdownView } from '@/components/common/markdown-view';
 import type { ExecutedToolCall } from '@/lib/agents/analyst-agent';
 
 export interface ChatMessageData {
@@ -57,9 +58,9 @@ export function ChatMessage({ message }: ChatMessageProps) {
         </span>
       </div>
 
-      {/* Message Body Content */}
-      <div className="text-sm text-theme-text-primary whitespace-pre-wrap leading-relaxed">
-        {message.content}
+      {/* Message Body Content rendered with Markdown */}
+      <div className="py-spacing-xs">
+        <MarkdownView content={message.content} />
       </div>
 
       {/* Executed Binance MCP Tools Section */}
