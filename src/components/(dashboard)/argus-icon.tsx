@@ -8,8 +8,7 @@ export interface ArgusIconProps extends React.SVGProps<SVGSVGElement> {
 /**
  * Reusable Argus brand SVG icon.
  * 
- * Features a minimalist Binance-gold rounded block housing an architectural
- * diamond aperture and centered focal guardian pupil.
+ * Simple yellow block with rounded corners.
  */
 export function ArgusIcon({
   size,
@@ -28,8 +27,6 @@ export function ArgusIcon({
       {...props}
     >
       <rect x="2" y="2" width="20" height="20" rx="4.5" fill="currentColor" />
-      <path d="M12 7L16 12L12 17L8 12L12 7Z" fill="var(--theme-bg-overlay, #0a0a0a)" />
-      <circle cx="12" cy="12" r="1.75" fill="currentColor" />
     </svg>
   );
 }

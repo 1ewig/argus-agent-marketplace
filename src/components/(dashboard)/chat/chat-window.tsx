@@ -171,7 +171,7 @@ export function ChatWindow({ mode = 'simulation' }: ChatWindowProps) {
       <div className="flex-1 overflow-y-auto p-spacing-md flex flex-col gap-spacing-sm min-h-0">
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center flex-1 text-center py-spacing-lg">
-            <div className="size-11 rounded-lg flex items-center justify-center bg-theme-bg-overlay text-theme-brand-binance mb-spacing-sm shadow-sm border border-theme-border-strong">
+            <div className="size-11 rounded-lg flex items-center justify-center bg-theme-bg-overlay text-theme-brand-binance mb-spacing-sm shadow-sm">
               <ArgusIcon className="size-6 text-theme-brand-binance" />
             </div>
             <h3 className="text-sm font-bold text-theme-text-primary mb-spacing-xs">
