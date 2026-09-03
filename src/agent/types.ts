@@ -73,6 +73,7 @@ export interface AgentOptions {
   symbol?: string;
   mode?: AgentExecutionMode;
   modelName?: string;
+  backupModelName?: string;
   apiKey?: string;
   history?: HistoryMessage[];
   maxSteps?: number;

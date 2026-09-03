@@ -21,6 +21,7 @@ export async function executeAgentStream(
   const { maxSteps = 5, mode = 'simulation', symbol } = options;
   const {
     model,
+    backupModel,
     tools,
     effectiveSystemPrompt,
     currentUserPrompt,
@@ -52,8 +53,8 @@ export async function executeAgentStream(
     (delta) => onEvent({ type: 'text_delta', delta })
   );
 
-  const streamParams = {
-    model,
+  const buildStreamParams = (activeModel: typeof model) => ({
+    model: activeModel,
     system: effectiveSystemPrompt,
     ...(messages ? { messages } : { prompt: currentUserPrompt }),
     tools,
@@ -65,12 +66,16 @@ export async function executeAgentStream(
     providerOptions: {
       groq: { reasoningEffort },
     },
-  };
+  });
 
-  try {
-    const streamResult = streamText(streamParams);
+  const runStreamWithModel = async (activeModel: typeof model) => {
+    const streamResult = streamText(buildStreamParams(activeModel));
 
     for await (const part of streamResult.fullStream) {
+      if (part.type === 'error') {
+        throw part.error;
+      }
+
       if (part.type === 'reasoning-delta') {
         let activeThinking = activeThinkingStepId
           ? steps.find((s) => s.id === activeThinkingStepId && s.type === 'thinking')
@@ -177,6 +182,19 @@ export async function executeAgentStream(
         titleFilter.processChunk(part.text);
       }
     }
+  };
+
+  try {
+    try {
+      await runStreamWithModel(model);
+    } catch (primaryErr) {
+      if (accumulatedText.length === 0 && backupModel) {
+        console.warn('Primary model error, failing over to backup model (openai/gpt-oss-120b):', primaryErr);
+        await runStreamWithModel(backupModel);
+      } else {
+        throw primaryErr;
+      }
+    }
   } catch (err) {
     // Fail any unresolved active steps on stream error
     steps
@@ -227,6 +245,7 @@ export async function executeAgent(options: AgentOptions): Promise<AgentResult> 
   const { maxSteps = 5, mode = 'simulation', symbol } = options;
   const {
     model,
+    backupModel,
     tools,
     effectiveSystemPrompt,
     currentUserPrompt,
@@ -234,8 +253,8 @@ export async function executeAgent(options: AgentOptions): Promise<AgentResult> 
     reasoningEffort,
   } = prepareAgentInvocation(options);
 
-  const generateParams = {
-    model,
+  const buildGenerateParams = (activeModel: typeof model) => ({
+    model: activeModel,
     system: effectiveSystemPrompt,
     ...(messages ? { messages } : { prompt: currentUserPrompt }),
     tools,
@@ -243,9 +262,20 @@ export async function executeAgent(options: AgentOptions): Promise<AgentResult> 
     providerOptions: {
       groq: { reasoningEffort },
     },
-  };
+  });
 
-  const { text, steps } = await generateText(generateParams);
+  let generateResult;
+  try {
+    generateResult = await generateText(buildGenerateParams(model));
+  } catch (primaryErr) {
+    if (backupModel) {
+      console.warn('Primary model error, failing over to backup model (openai/gpt-oss-120b):', primaryErr);
+      generateResult = await generateText(buildGenerateParams(backupModel));
+    } else {
+      throw primaryErr;
+    }
+  }
+  const { text, steps } = generateResult;
 
   const stepTexts = steps
     .map((s) => s.text)

@@ -1,4 +1,4 @@
-import { getAgentModel } from './providers';
+import { getAgentModel, getBackupAgentModel } from './providers';
 import { buildAgentTools } from './tools';
 import { getBinanceAdapter } from '@/lib/binance-mcp';
 import { ARGUS_SYSTEM_PROMPT, FIRST_TURN_SESSION_TITLE_DIRECTIVE } from './prompts';
@@ -6,6 +6,7 @@ import type { AgentOptions } from './types';
 
 export interface PreparedAgentInvocation {
   model: ReturnType<typeof getAgentModel>;
+  backupModel: ReturnType<typeof getBackupAgentModel>;
   tools: ReturnType<typeof buildAgentTools>;
   effectiveSystemPrompt: string;
   currentUserPrompt: string;
@@ -23,6 +24,7 @@ export function prepareAgentInvocation(options: AgentOptions): PreparedAgentInvo
     symbol,
     mode = 'simulation',
     modelName,
+    backupModelName,
     apiKey,
     history = [],
     isFirstTurn,
@@ -32,6 +34,7 @@ export function prepareAgentInvocation(options: AgentOptions): PreparedAgentInvo
   const adapter = getBinanceAdapter(mode);
   const tools = buildAgentTools(adapter);
   const model = getAgentModel(modelName, apiKey);
+  const backupModel = getBackupAgentModel(backupModelName, apiKey);
 
   const currentUserPrompt = symbol
     ? `[Pair Context: ${symbol.toUpperCase()}]\nUser: ${prompt}`
@@ -68,6 +71,7 @@ export function prepareAgentInvocation(options: AgentOptions): PreparedAgentInvo
 
   return {
     model,
+    backupModel,
     tools,
     effectiveSystemPrompt,
     currentUserPrompt,
