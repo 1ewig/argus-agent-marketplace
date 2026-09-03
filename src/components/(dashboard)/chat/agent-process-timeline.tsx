@@ -85,7 +85,7 @@ export function AgentProcessTimeline({
 
       {/* Expanded Step Tree */}
       {isExpanded && (
-        <div className="ml-2 pl-spacing-sm border-l-2 border-theme-border-subtle flex flex-col gap-spacing-xs py-1 transition-all">
+        <div className="pl-spacing-xs flex flex-col gap-spacing-xs py-1 transition-all">
           {steps.map((step, idx) => {
             const isActive = step.status === 'active';
             const isCompleted = step.status === 'completed';
@@ -100,21 +100,34 @@ export function AgentProcessTimeline({
             return (
               <div key={step.id ?? `step_${idx}`} className="flex flex-col gap-0.5">
                 {isTool ? (
-                  /* Tool Pill with Status Badges */
-                  <div className="flex flex-col gap-1">
+                  /* Tool Call with Inline Status and Expandable Details */
+                  <div className="flex flex-col gap-1 py-0.5">
                     <div className="flex flex-wrap items-center gap-spacing-xs py-0.5">
                       <button
                         type="button"
                         onClick={() => canExpand && toggleDetails(step.id)}
-                        className={`inline-flex items-center gap-1.5 px-spacing-xs py-0.5 rounded bg-theme-bg-surface border border-theme-border-subtle font-mono text-theme-text-primary shadow-2xs ${canExpand
-                            ? 'hover:border-theme-border-strong cursor-pointer'
-                            : 'cursor-default'
+                        className={`flex items-center gap-1.5 text-left transition-colors select-none w-fit ${canExpand
+                            ? 'cursor-pointer group text-theme-text-secondary hover:text-theme-text-primary'
+                            : 'cursor-default text-theme-text-muted'
                           }`}
                       >
                         <Terminal className="size-3 text-theme-brand-binance shrink-0" />
-                        <span className="font-semibold">{step.toolName ?? step.label}</span>
+                        <span
+                          className={`font-mono ${isActive
+                              ? 'text-theme-text-primary font-semibold'
+                              : canExpand
+                                ? 'text-theme-text-secondary group-hover:text-theme-text-primary'
+                                : 'text-theme-text-muted'
+                            }`}
+                        >
+                          {step.toolName ?? step.label}
+                        </span>
                         {canExpand && (
-                          isDetailsOpen ? <ChevronUp className="size-2.5 ml-0.5" /> : <ChevronDown className="size-2.5 ml-0.5" />
+                          isDetailsOpen ? (
+                            <ChevronUp className="size-2.5 text-theme-text-muted group-hover:text-theme-text-primary transition-colors" />
+                          ) : (
+                            <ChevronDown className="size-2.5 text-theme-text-muted group-hover:text-theme-text-primary transition-colors" />
+                          )
                         )}
                       </button>
 
@@ -142,7 +155,7 @@ export function AgentProcessTimeline({
 
                     {/* Tool Arguments/Results Drawer */}
                     {canExpand && isDetailsOpen && (
-                      <div className="ml-2 p-spacing-sm rounded bg-theme-bg-surface border border-theme-border-subtle text-theme-text-secondary font-mono text-2xs leading-relaxed max-h-48 overflow-y-auto shadow-2xs whitespace-pre-wrap">
+                      <div className="ml-4 text-theme-text-secondary font-mono text-2xs leading-relaxed max-h-48 overflow-y-auto whitespace-pre-wrap">
                         {Boolean(step.toolArgs) && (
                           <div className="mb-1">
                             <span className="text-theme-text-muted uppercase text-2xs block">{APP_CONTENT.process.toolArgumentsLabel}</span>
@@ -174,7 +187,7 @@ export function AgentProcessTimeline({
                         className={`font-mono ${isActive
                             ? 'text-theme-text-primary font-semibold'
                             : canExpand
-                              ? 'text-theme-text-muted group-hover:underline'
+                              ? 'text-theme-text-muted group-hover:text-theme-text-primary'
                               : 'text-theme-text-muted'
                           }`}
                       >
@@ -186,24 +199,17 @@ export function AgentProcessTimeline({
                       )}
 
                       {canExpand && (
-                        <span className="inline-flex items-center gap-0.5 text-2xs text-theme-text-muted px-1.5 py-0.5 bg-theme-bg-surface border border-theme-border-subtle rounded group-hover:border-theme-border-strong font-mono transition-colors ml-1">
-                          <span>
-                            {isDetailsOpen
-                              ? APP_CONTENT.process.hideReasoning
-                              : APP_CONTENT.process.viewReasoning}
-                          </span>
-                          {isDetailsOpen ? (
-                            <ChevronUp className="size-2.5" />
-                          ) : (
-                            <ChevronDown className="size-2.5" />
-                          )}
-                        </span>
+                        isDetailsOpen ? (
+                          <ChevronUp className="size-2.5 text-theme-text-muted group-hover:text-theme-text-primary transition-colors" />
+                        ) : (
+                          <ChevronDown className="size-2.5 text-theme-text-muted group-hover:text-theme-text-primary transition-colors" />
+                        )
                       )}
                     </button>
 
                     {/* Reasoning Details Drawer */}
                     {canExpand && isDetailsOpen && (
-                      <div className="ml-4 p-spacing-sm rounded bg-theme-bg-surface border border-theme-border-subtle text-theme-text-secondary font-mono text-2xs leading-relaxed whitespace-pre-wrap max-h-48 overflow-y-auto shadow-2xs">
+                      <div className="ml-4 text-theme-text-secondary font-mono text-2xs leading-relaxed whitespace-pre-wrap max-h-48 overflow-y-auto">
                         {step.reasoningText?.trim()}
                       </div>
                     )}
