@@ -22,6 +22,39 @@ export interface ChatMessageRecord {
 }
 
 /**
+ * Normalizes a ChatMessageRecord's steps for presentation.
+ * Backwards-compatible with legacy messages that only have toolCalls.
+ */
+export function normalizeMessageSteps(
+  message: Pick<ChatMessageRecord, 'id' | 'steps' | 'toolCalls' | 'timestamp'>,
+  fallbackThinkingLabel: string
+): AgentExecutionStep[] {
+  if (message.steps && message.steps.length > 0) {
+    return message.steps;
+  }
+  if (message.toolCalls && message.toolCalls.length > 0) {
+    return [
+      {
+        id: `step_legacy_think_${message.id}`,
+        type: 'thinking',
+        label: fallbackThinkingLabel,
+        status: 'completed',
+        timestamp: message.timestamp,
+      },
+      ...message.toolCalls.map((t, idx) => ({
+        id: `step_legacy_tool_${message.id}_${idx}`,
+        type: 'tool' as const,
+        toolName: t.toolName,
+        label: t.toolName,
+        status: 'completed' as const,
+        timestamp: message.timestamp,
+      })),
+    ];
+  }
+  return [];
+}
+
+/**
  * Maximum messages retained per conversation to prevent IndexedDB bloat
  */
 export const MAX_MESSAGES_PER_CONVERSATION = 100;

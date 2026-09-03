@@ -41,6 +41,8 @@ export interface AgentExecutionStep {
   reasoningText?: string;
   status: 'active' | 'completed' | 'error';
   timestamp: number;
+  toolArgs?: Record<string, unknown>;
+  toolResult?: unknown;
 }
 
 /**
@@ -54,6 +56,8 @@ export type AgentStreamEvent =
       status?: 'completed' | 'error';
       label?: string;
       reasoningText?: string;
+      toolArgs?: Record<string, unknown>;
+      toolResult?: unknown;
     }
   | { type: 'reasoning_delta'; stepId: string; delta: string }
   | { type: 'text_delta'; delta: string }

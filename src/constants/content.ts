@@ -70,6 +70,7 @@ export const APP_CONTENT = {
     title: 'Process',
     thinking: 'Thinking...',
     analyzing: 'Analyzing market data...',
+    generatingResponse: 'Generating response...',
     toolRunning: 'Running',
     toolCompleted: 'Completed',
     toolFailed: 'Failed',
@@ -84,6 +85,8 @@ export const APP_CONTENT = {
     successBadge: 'Success',
     viewReasoning: 'View thoughts',
     hideReasoning: 'Hide thoughts',
+    toolArgumentsLabel: 'Arguments:',
+    toolResultLabel: 'Result:',
     toolNames: {
       get_ticker_price: 'get_ticker_price',
       get_order_book: 'get_order_book',

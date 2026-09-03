@@ -15,7 +15,8 @@ import {
   listConversations,
   type ChatMessageRecord,
 } from '@/lib/db';
-import type { AgentResult, AgentStreamEvent, AgentExecutionStep } from '@/agent';
+import { prepareConversationHistory, streamAgentChat } from '@/lib/agents';
+import type { AgentResult, AgentExecutionStep } from '@/agent';
 import type { ExecutionMode } from '@/lib/types';
 
 export interface UseAgentChatOptions {
@@ -184,116 +185,71 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
     setIsLoading(true);
 
     try {
-      // Send sliding window of past 10 valid messages from this session
-      const conversationHistory = messages
-        .filter((m) => m.status !== 'error')
-        .slice(-10)
-        .map((m) => ({
-          role: m.role,
-          content: m.content,
-        }));
-
+      const conversationHistory = prepareConversationHistory(messages);
       const isFirstTurn = conversationHistory.length === 0;
 
-      const response = await fetch('/api/agent/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: prompt,
-          mode,
-          history: conversationHistory,
-          isFirstTurn,
-        }),
-      });
-
-      if (!response.ok || !response.body) {
-        throw new Error(APP_CONTENT.chat.errorNotice);
-      }
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
       let currentSteps: AgentExecutionStep[] = [];
       let currentText = '';
-      let finalResult: AgentResult | null = null;
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+      const finalResult: AgentResult | null = await streamAgentChat({
+        message: prompt,
+        mode,
+        history: conversationHistory,
+        isFirstTurn,
+        onEvent: async (event) => {
+          if (event.type === 'step_start') {
+            currentSteps = [...currentSteps, event.step];
+            setActiveStreamMessage((prev) =>
+              prev ? { ...prev, steps: currentSteps } : prev
+            );
+          } else if (event.type === 'step_update') {
+            currentSteps = currentSteps.map((s) =>
+              s.id === event.stepId
+                ? {
+                    ...s,
+                    ...(event.status ? { status: event.status } : {}),
+                    ...(event.label ? { label: event.label } : {}),
+                    ...(event.reasoningText !== undefined ? { reasoningText: event.reasoningText } : {}),
+                    ...(event.toolArgs !== undefined ? { toolArgs: event.toolArgs } : {}),
+                    ...(event.toolResult !== undefined ? { toolResult: event.toolResult } : {}),
+                  }
+                : s
+            );
+            setActiveStreamMessage((prev) =>
+              prev ? { ...prev, steps: currentSteps } : prev
+            );
+          } else if (event.type === 'reasoning_delta') {
+            currentSteps = currentSteps.map((s) =>
+              s.id === event.stepId
+                ? { ...s, reasoningText: (s.reasoningText ?? '') + event.delta }
+                : s
+            );
+            setActiveStreamMessage((prev) =>
+              prev ? { ...prev, steps: currentSteps } : prev
+            );
+          } else if (event.type === 'text_delta') {
+            currentText += event.delta;
+            // Strip any complete or in-progress session_title markup from live markdown display
+            const displayContent = currentText
+              .replace(/<session_title>[\s\S]*?<\/session_title>\s*/gi, '')
+              .replace(/<session_title[\s\S]*$/gi, '');
+            setActiveStreamMessage((prev) =>
+              prev ? { ...prev, content: displayContent } : prev
+            );
+          } else if (event.type === 'session_title') {
+            const convRecord = await db.conversations.get(activeConversationId);
+            const isDefaultTitle =
+              !convRecord ||
+              (APP_CONTENT.chat.defaultSessionTitles as readonly string[]).includes(convRecord.title);
 
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() ?? '';
-
-        for (const line of lines) {
-          const trimmed = line.trim();
-          if (!trimmed.startsWith('data:')) continue;
-          const jsonStr = trimmed.slice(5).trim();
-          if (!jsonStr) continue;
-
-          try {
-            const event: AgentStreamEvent = JSON.parse(jsonStr);
-
-            if (event.type === 'step_start') {
-              currentSteps = [...currentSteps, event.step];
-              setActiveStreamMessage((prev) =>
-                prev ? { ...prev, steps: currentSteps } : prev
-              );
-            } else if (event.type === 'step_update') {
-              currentSteps = currentSteps.map((s) =>
-                s.id === event.stepId
-                  ? {
-                      ...s,
-                      ...(event.status ? { status: event.status } : {}),
-                      ...(event.label ? { label: event.label } : {}),
-                      ...(event.reasoningText !== undefined ? { reasoningText: event.reasoningText } : {}),
-                    }
-                  : s
-              );
-              setActiveStreamMessage((prev) =>
-                prev ? { ...prev, steps: currentSteps } : prev
-              );
-            } else if (event.type === 'reasoning_delta') {
-              currentSteps = currentSteps.map((s) =>
-                s.id === event.stepId
-                  ? { ...s, reasoningText: (s.reasoningText ?? '') + event.delta }
-                  : s
-              );
-              setActiveStreamMessage((prev) =>
-                prev ? { ...prev, steps: currentSteps } : prev
-              );
-            } else if (event.type === 'text_delta') {
-              currentText += event.delta;
-              // Strip any complete or in-progress session_title markup from live markdown display
-              const displayContent = currentText
-                .replace(/<session_title>[\s\S]*?<\/session_title>\s*/gi, '')
-                .replace(/<session_title[\s\S]*$/gi, '');
-              setActiveStreamMessage((prev) =>
-                prev ? { ...prev, content: displayContent } : prev
-              );
-            } else if (event.type === 'session_title') {
-              const convRecord = await db.conversations.get(activeConversationId);
-              const isDefaultTitle =
-                !convRecord ||
-                (APP_CONTENT.chat.defaultSessionTitles as readonly string[]).includes(convRecord.title);
-
-              if (isDefaultTitle) {
-                await renameConversation(activeConversationId, event.title);
-              }
-            } else if (event.type === 'done') {
-              finalResult = event.result;
-            } else if (event.type === 'error') {
-              throw new Error(event.message);
+            if (isDefaultTitle) {
+              await renameConversation(activeConversationId, event.title);
             }
-          } catch (parseErr: unknown) {
-            if (parseErr instanceof Error && !parseErr.message.includes('JSON')) {
-              throw parseErr;
-            }
+          } else if (event.type === 'error') {
+            throw new Error(event.message);
           }
-        }
-      }
+        },
+      });
 
       // Finalize and persist completed agent message into Dexie
       const finalMessage: ChatMessageRecord = {

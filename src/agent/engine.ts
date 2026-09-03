@@ -202,6 +202,7 @@ export async function executeAgentStream(
         label: part.toolName,
         status: 'active',
         timestamp: Date.now(),
+        toolArgs: (part.input as Record<string, unknown>) ?? undefined,
       };
       steps.push(toolStep);
       activeStepId = toolStepId;
@@ -215,7 +216,17 @@ export async function executeAgentStream(
 
       if (matchingToolStep) {
         matchingToolStep.status = 'completed';
-        onEvent({ type: 'step_update', stepId: matchingToolStep.id, status: 'completed' });
+        matchingToolStep.toolResult = part.output;
+        if (!matchingToolStep.toolArgs && part.input) {
+          matchingToolStep.toolArgs = part.input as Record<string, unknown>;
+        }
+        onEvent({
+          type: 'step_update',
+          stepId: matchingToolStep.id,
+          status: 'completed',
+          toolArgs: matchingToolStep.toolArgs,
+          toolResult: part.output,
+        });
         if (activeStepId === matchingToolStep.id) {
           activeStepId = null;
         }
