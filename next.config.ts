@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  allowedDevOrigins: ["harmonics-paternity-blighted.ngrok-free.dev"],
 };
 
 export default nextConfig;
