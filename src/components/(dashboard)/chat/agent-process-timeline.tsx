@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import {
-  Terminal,
   Check,
   ChevronDown,
   ChevronUp,
@@ -12,6 +11,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
+import { getToolDisplayInfo, ToolResultCard } from './tool-result-card';
 import type { AgentExecutionStep } from '@/agent';
 
 interface AgentProcessTimelineProps {
@@ -102,74 +102,76 @@ export function AgentProcessTimeline({
                 {isTool ? (
                   /* Tool Call with Inline Status and Expandable Details */
                   <div className="flex flex-col gap-1 py-0.5">
-                    <div className="flex flex-wrap items-center gap-spacing-xs py-0.5">
-                      <button
-                        type="button"
-                        onClick={() => canExpand && toggleDetails(step.id)}
-                        className={`flex items-center gap-1.5 text-left transition-colors select-none w-fit ${canExpand
-                            ? 'cursor-pointer group text-theme-text-secondary hover:text-theme-text-primary'
-                            : 'cursor-default text-theme-text-muted'
-                          }`}
-                      >
-                        <Terminal className="size-3 text-theme-brand-binance shrink-0" />
-                        <span
-                          className={`font-mono ${isActive
-                              ? 'text-theme-text-primary font-semibold'
-                              : canExpand
-                                ? 'text-theme-text-secondary group-hover:text-theme-text-primary'
-                                : 'text-theme-text-muted'
-                            }`}
-                        >
-                          {step.toolName ?? step.label}
-                        </span>
-                        {canExpand && (
-                          isDetailsOpen ? (
-                            <ChevronUp className="size-2.5 text-theme-text-muted group-hover:text-theme-text-primary transition-colors" />
-                          ) : (
-                            <ChevronDown className="size-2.5 text-theme-text-muted group-hover:text-theme-text-primary transition-colors" />
-                          )
-                        )}
-                      </button>
+                    {(() => {
+                      const displayInfo = getToolDisplayInfo(step.toolName, step.toolArgs);
+                      const ToolIcon = displayInfo.icon;
 
-                      {isActive && (
-                        <span className="inline-flex items-center gap-1 px-spacing-xs py-0.5 rounded text-2xs bg-theme-brand-binance/10 text-theme-brand-binance font-medium border border-theme-brand-binance/30 animate-pulse font-mono">
-                          <Loader2 className="size-2.5 animate-spin" />
-                          {APP_CONTENT.process.toolRunning}
-                        </span>
-                      )}
+                      return (
+                        <>
+                          <div className="flex flex-wrap items-center gap-spacing-xs py-0.5">
+                            <button
+                              type="button"
+                              onClick={() => canExpand && toggleDetails(step.id)}
+                              className={`flex items-center gap-1.5 text-left transition-colors select-none w-fit ${canExpand
+                                  ? 'cursor-pointer group text-theme-text-secondary hover:text-theme-text-primary'
+                                  : 'cursor-default text-theme-text-muted'
+                                }`}
+                            >
+                              <ToolIcon className="size-3 text-theme-brand-binance shrink-0" />
+                              <span
+                                className={`text-2xs ${isActive
+                                    ? 'text-theme-text-primary font-semibold'
+                                    : canExpand
+                                      ? 'text-theme-text-secondary group-hover:text-theme-text-primary font-medium'
+                                      : 'text-theme-text-muted'
+                                  }`}
+                              >
+                                {displayInfo.title}
+                              </span>
+                              {canExpand && (
+                                isDetailsOpen ? (
+                                  <ChevronUp className="size-2.5 text-theme-text-muted group-hover:text-theme-text-primary transition-colors" />
+                                ) : (
+                                  <ChevronDown className="size-2.5 text-theme-text-muted group-hover:text-theme-text-primary transition-colors" />
+                                )
+                              )}
+                            </button>
 
-                      {isCompleted && (
-                        <span className="inline-flex items-center gap-1 px-spacing-xs py-0.5 rounded text-2xs bg-theme-status-success/15 text-theme-status-success font-medium border border-theme-status-success/30 font-mono">
-                          <Check className="size-2.5" />
-                          {APP_CONTENT.process.successBadge}
-                        </span>
-                      )}
+                            {isActive && (
+                              <span className="inline-flex items-center gap-1 px-spacing-xs py-0.5 rounded text-2xs bg-theme-brand-binance/10 text-theme-brand-binance font-medium border border-theme-brand-binance/30 animate-pulse font-mono">
+                                <Loader2 className="size-2.5 animate-spin" />
+                                {APP_CONTENT.process.toolRunning}
+                              </span>
+                            )}
 
-                      {isStepError && (
-                        <span className="inline-flex items-center gap-1 px-spacing-xs py-0.5 rounded text-2xs bg-theme-status-danger/15 text-theme-status-danger font-medium border border-theme-status-danger/30 font-mono">
-                          <AlertCircle className="size-2.5" />
-                          {APP_CONTENT.process.toolFailed}
-                        </span>
-                      )}
-                    </div>
+                            {isCompleted && (
+                              <span className="inline-flex items-center gap-1 px-spacing-xs py-0.5 rounded text-2xs bg-theme-status-success/15 text-theme-status-success font-medium border border-theme-status-success/30 font-mono">
+                                <Check className="size-2.5" />
+                                {APP_CONTENT.process.successBadge}
+                              </span>
+                            )}
 
-                    {/* Tool Arguments/Results Drawer */}
-                    {canExpand && isDetailsOpen && (
-                      <div className="ml-4 text-theme-text-secondary font-mono text-2xs leading-relaxed max-h-48 overflow-y-auto whitespace-pre-wrap">
-                        {Boolean(step.toolArgs) && (
-                          <div className="mb-1">
-                            <span className="text-theme-text-muted uppercase text-2xs block">{APP_CONTENT.process.toolArgumentsLabel}</span>
-                            {JSON.stringify(step.toolArgs, null, 2)}
+                            {isStepError && (
+                              <span className="inline-flex items-center gap-1 px-spacing-xs py-0.5 rounded text-2xs bg-theme-status-danger/15 text-theme-status-danger font-medium border border-theme-status-danger/30 font-mono">
+                                <AlertCircle className="size-2.5" />
+                                {APP_CONTENT.process.toolFailed}
+                              </span>
+                            )}
                           </div>
-                        )}
-                        {Boolean(step.toolResult) && (
-                          <div>
-                            <span className="text-theme-text-muted uppercase text-2xs block">{APP_CONTENT.process.toolResultLabel}</span>
-                            {JSON.stringify(step.toolResult, null, 2)}
-                          </div>
-                        )}
-                      </div>
-                    )}
+
+                          {/* Tool Arguments/Results Drawer */}
+                          {canExpand && isDetailsOpen && (
+                            <div className="ml-4 pt-1">
+                              <ToolResultCard
+                                toolName={step.toolName}
+                                toolArgs={step.toolArgs}
+                                toolResult={step.toolResult}
+                              />
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
                 ) : (
                   /* Thinking Step with Dropdown */
@@ -177,15 +179,16 @@ export function AgentProcessTimeline({
                     <button
                       type="button"
                       onClick={() => canExpand && toggleDetails(step.id)}
-                      className={`flex items-center gap-1.5 text-left transition-colors select-none w-fit ${canExpand
+                      disabled={!canExpand}
+                      className={`inline-flex items-center gap-1.5 text-left transition-colors select-none w-fit font-mono ${canExpand
                           ? 'cursor-pointer group text-theme-text-secondary hover:text-theme-text-primary'
                           : 'cursor-default text-theme-text-muted'
                         }`}
                     >
-                      <Brain className="size-3 text-theme-brand-binance shrink-0" />
+                      <Brain className="size-3 text-theme-brand-binance/80 shrink-0" />
                       <span
-                        className={`font-mono ${isActive
-                            ? 'text-theme-text-primary font-semibold'
+                        className={`${isActive
+                            ? 'text-theme-text-primary font-medium'
                             : canExpand
                               ? 'text-theme-text-muted group-hover:text-theme-text-primary'
                               : 'text-theme-text-muted'
@@ -200,16 +203,16 @@ export function AgentProcessTimeline({
 
                       {canExpand && (
                         isDetailsOpen ? (
-                          <ChevronUp className="size-2.5 text-theme-text-muted group-hover:text-theme-text-primary transition-colors" />
+                          <ChevronUp className="size-2.5 text-theme-text-muted/60 group-hover:text-theme-text-primary transition-colors ml-0.5 shrink-0" />
                         ) : (
-                          <ChevronDown className="size-2.5 text-theme-text-muted group-hover:text-theme-text-primary transition-colors" />
+                          <ChevronDown className="size-2.5 text-theme-text-muted/60 group-hover:text-theme-text-primary transition-colors ml-0.5 shrink-0" />
                         )
                       )}
                     </button>
 
                     {/* Reasoning Details Drawer */}
                     {canExpand && isDetailsOpen && (
-                      <div className="ml-4 text-theme-text-secondary font-mono text-2xs leading-relaxed whitespace-pre-wrap max-h-48 overflow-y-auto">
+                      <div className="ml-3 pl-2 border-l border-theme-text-muted/20 text-theme-text-secondary font-mono text-2xs leading-relaxed whitespace-pre-wrap max-h-48 overflow-y-auto">
                         {step.reasoningText?.trim()}
                       </div>
                     )}
