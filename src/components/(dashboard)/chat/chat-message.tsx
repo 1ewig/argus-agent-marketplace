@@ -6,6 +6,7 @@ import { ArgusIcon } from '../argus-icon';
 import { APP_CONTENT } from '@/constants/content';
 import { MarkdownView } from '../markdown-view';
 import { AgentProcessTimeline } from './agent-process-timeline';
+import { AgentThoughtAccordion } from './agent-thought-accordion';
 import { normalizeMessageSteps } from '@/lib/db';
 import type { ExecutedToolCall, AgentExecutionStep } from '@/agent';
 
@@ -91,7 +92,12 @@ export const ChatMessage = memo(function ChatMessage({
           )}
         </div>
 
-        {/* Process Timeline */}
+        {/* Separated Thought Accordion (Markdown-rendered reasoning) */}
+        {hasSteps && (
+          <AgentThoughtAccordion steps={effectiveSteps} isStreaming={isStreaming} />
+        )}
+
+        {/* Separated Tool Process Timeline */}
         {hasSteps && (
           <AgentProcessTimeline steps={effectiveSteps} isStreaming={isStreaming} />
         )}
