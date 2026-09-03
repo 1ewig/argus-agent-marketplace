@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Sparkles, RefreshCw } from 'lucide-react';
+import { Send, RefreshCw } from 'lucide-react';
+import { ArgusIcon } from '../argus-icon';
 import { APP_CONTENT } from '@/constants/content';
 import { generateMessageId, getNowTimestamp } from '@/lib/utils';
 import { getStoredMessages, saveStoredMessage, clearStoredMessages } from '@/lib/db';
@@ -143,7 +144,7 @@ export function ChatWindow({ mode = 'simulation' }: ChatWindowProps) {
       {/* Header bar */}
       <div className="flex items-center justify-between p-spacing-sm px-spacing-md bg-theme-bg-elevated border-b border-theme-border-subtle">
         <div className="flex items-center gap-spacing-xs">
-          <div className="size-2 rounded-full bg-theme-status-success animate-pulse" />
+          <ArgusIcon className="size-4 text-theme-brand-binance shrink-0" />
           <div>
             <h2 className="text-xs font-bold text-theme-text-primary tracking-wide">
               {APP_CONTENT.chat.title}
@@ -170,8 +171,8 @@ export function ChatWindow({ mode = 'simulation' }: ChatWindowProps) {
       <div className="flex-1 overflow-y-auto p-spacing-md flex flex-col gap-spacing-sm min-h-0">
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center flex-1 text-center py-spacing-lg">
-            <div className="size-10 rounded-full flex items-center justify-center bg-theme-bg-overlay text-theme-brand-binance mb-spacing-sm shadow-sm">
-              <Sparkles className="size-5" />
+            <div className="size-11 rounded-lg flex items-center justify-center bg-theme-bg-overlay text-theme-brand-binance mb-spacing-sm shadow-sm border border-theme-border-strong">
+              <ArgusIcon className="size-6 text-theme-brand-binance" />
             </div>
             <h3 className="text-sm font-bold text-theme-text-primary mb-spacing-xs">
               {APP_CONTENT.chat.emptyTitle}

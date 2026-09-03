@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { ChatWindow } from '@/components/(dashboard)/chat/chat-window';
+import { ArgusIcon } from '@/components/(dashboard)/argus-icon';
 import { APP_CONTENT } from '@/constants/content';
 import type { ExecutionMode } from '@/lib/types';
 
@@ -15,7 +16,7 @@ export default function Home() {
         <header className="flex flex-wrap items-center justify-between gap-spacing-sm pb-spacing-sm border-b border-theme-border-subtle mb-spacing-sm shrink-0">
           {/* Brand & Track Identification */}
           <div className="flex items-center gap-spacing-xs">
-            <div className="size-3 rounded-xs bg-theme-brand-binance" />
+            <ArgusIcon className="size-3.5 text-theme-brand-binance" />
             <span className="text-xs font-extrabold tracking-widest text-theme-text-primary uppercase">
               {APP_CONTENT.header.brand}
             </span>

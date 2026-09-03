@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Bot, User, ChevronDown, ChevronUp, Terminal } from 'lucide-react';
+import { User, ChevronDown, ChevronUp, Terminal } from 'lucide-react';
+import { ArgusIcon } from '../argus-icon';
 import { APP_CONTENT } from '@/constants/content';
 import { MarkdownView } from '../markdown-view';
 import type { ExecutedToolCall } from '@/agent';
@@ -42,7 +43,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
                 : 'bg-theme-bg-overlay text-theme-brand-binance'
             }`}
           >
-            {isUser ? <User className="size-4" /> : <Bot className="size-4" />}
+            {isUser ? <User className="size-4" /> : <ArgusIcon className="size-4 text-theme-brand-binance" />}
           </div>
           <span className="text-2xs font-bold tracking-wider">
             {isUser ? APP_CONTENT.chat.userRole : APP_CONTENT.chat.agentRole}
