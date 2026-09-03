@@ -22,6 +22,18 @@ Behavior guidelines:
 - Synthesize findings into clear, pro-grade analysis highlighting price, spread, depth imbalance, and key trend levels.
 `;
 
+/**
+ * Directive injected on the initial conversation turn to autonomously
+ * generate a clean institutional session title for the mission thread.
+ */
+export const FIRST_TURN_SESSION_TITLE_DIRECTIVE = `Session Title Directive:
+Because this is the first turn of this intelligence mission, you MUST formulate a concise 2-4 word institutional session title (e.g., "SOLUSDT Liquidity Scan", "BTC Trend Momentum", "Wallet Balance Audit") representing the user's intent.
+Begin your response by outputting this title enclosed in <session_title>...</session_title> tags on its own line.
+Do not put quotation marks or extra punctuation inside the tags.
+Example:
+<session_title>SOL Liquidity Depth</session_title>
+`;
+
 export const AGENT_TOOL_DESCRIPTIONS = {
   getTickerPrice: 'Fetch the real-time ticker price for a Binance trading pair (e.g. SOLUSDT, BTCUSDT, ETHUSDT).',
   getOrderBook: 'Fetch the live order book depth (top bids and asks) to evaluate liquidity and compute slippage.',

@@ -176,6 +176,9 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
           content: m.content,
         }));
 
+      // Determine if this is the opening message of the session thread
+      const isFirstTurn = conversationHistory.length === 0;
+
       const response = await fetch('/api/agent/chat', {
         method: 'POST',
         headers: {
@@ -185,6 +188,7 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
           message: prompt,
           mode,
           history: conversationHistory,
+          isFirstTurn,
         }),
       });
 
@@ -195,6 +199,19 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
       }
 
       const agentData: AgentResult = json.data;
+
+      // Autonomously assign the agent-generated title to the mission session
+      // only if the conversation still holds a default system placeholder title
+      if (agentData.sessionTitle) {
+        const convRecord = await db.conversations.get(activeConversationId);
+        const isDefaultTitle =
+          !convRecord ||
+          (APP_CONTENT.chat.defaultSessionTitles as readonly string[]).includes(convRecord.title);
+
+        if (isDefaultTitle) {
+          await renameConversation(activeConversationId, agentData.sessionTitle);
+        }
+      }
 
       const agentMessage: ChatMessageRecord = {
         id: generateMessageId('agt'),

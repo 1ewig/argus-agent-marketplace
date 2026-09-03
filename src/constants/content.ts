@@ -52,6 +52,7 @@ export const APP_CONTENT = {
     newSessionButton: 'New Session',
     sessionsLabel: 'Sessions',
     defaultSessionTitle: 'Intelligence Session',
+    defaultSessionTitles: ['Active Session', 'New Mission', 'Intelligence Session'] as const,
     errorMessageTitle: 'Execution Error',
   },
   sessions: {

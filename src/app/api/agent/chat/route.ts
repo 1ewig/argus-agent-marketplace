@@ -17,7 +17,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const { message, symbol, mode, apiKey, history } = parseResult.data;
+    const { message, symbol, mode, apiKey, history, isFirstTurn } = parseResult.data;
 
     const result = await executeAgent({
       prompt: message,
@@ -25,6 +25,7 @@ export async function POST(req: Request) {
       mode,
       apiKey,
       history,
+      isFirstTurn,
     });
 
     return NextResponse.json({

@@ -64,7 +64,7 @@ export function ChatWindow({ mode = 'simulation' }: ChatWindowProps) {
               onClick={handleToggleMenu}
               title={APP_CONTENT.sessions.openMenuAria}
               aria-label={APP_CONTENT.sessions.openMenuAria}
-              className="flex items-center gap-spacing-xs text-2xs font-medium bg-theme-bg-surface hover:bg-theme-bg-base text-theme-text-primary border border-theme-border-subtle hover:border-theme-border-strong rounded px-spacing-sm py-1 cursor-pointer transition-colors shadow-2xs max-w-[150px] sm:max-w-[200px]"
+              className="h-7 flex items-center gap-spacing-xs text-2xs font-medium bg-theme-bg-surface hover:bg-theme-bg-base text-theme-text-primary border border-theme-border-subtle hover:border-theme-border-strong rounded px-spacing-sm cursor-pointer transition-colors shadow-2xs max-w-[150px] sm:max-w-[200px]"
             >
               <span className="truncate">{currentTitle}</span>
               <ChevronDown className={`size-3 text-theme-text-muted shrink-0 transition-transform ${isMenuOpen ? 'rotate-180' : ''}`} />
@@ -94,9 +94,8 @@ export function ChatWindow({ mode = 'simulation' }: ChatWindowProps) {
                       return (
                         <div
                           key={conv.id}
-                          className={`flex items-center justify-between gap-spacing-xs px-spacing-sm py-spacing-xs transition-colors ${
-                            isActive ? 'bg-theme-bg-elevated/70' : 'hover:bg-theme-bg-base'
-                          }`}
+                          className={`flex items-center justify-between gap-spacing-xs px-spacing-sm py-spacing-xs transition-colors ${isActive ? 'bg-theme-bg-elevated/70' : 'hover:bg-theme-bg-base'
+                            }`}
                         >
                           {isEditing ? (
                             <div className="flex items-center gap-spacing-xs w-full py-0.5">
@@ -145,11 +144,10 @@ export function ChatWindow({ mode = 'simulation' }: ChatWindowProps) {
                                   <span className="size-1.5 rounded-full bg-theme-brand-binance shrink-0" />
                                 )}
                                 <span
-                                  className={`text-2xs truncate ${
-                                    isActive
+                                  className={`text-2xs truncate ${isActive
                                       ? 'text-theme-text-primary font-bold'
                                       : 'text-theme-text-secondary hover:text-theme-text-primary'
-                                  }`}
+                                    }`}
                                 >
                                   {conv.title}
                                 </span>
@@ -192,7 +190,7 @@ export function ChatWindow({ mode = 'simulation' }: ChatWindowProps) {
             onClick={() => void handleNewSession()}
             title={APP_CONTENT.chat.newSessionButton}
             aria-label={APP_CONTENT.chat.newSessionButton}
-            className="flex items-center justify-center size-7 rounded bg-theme-bg-surface hover:bg-theme-bg-base border border-theme-border-subtle text-theme-brand-binance hover:text-theme-brand-accent cursor-pointer transition-colors shadow-2xs shrink-0"
+            className="size-7 flex items-center justify-center rounded bg-theme-bg-surface hover:bg-theme-bg-base border border-theme-border-subtle hover:border-theme-border-strong text-theme-brand-binance hover:text-theme-brand-accent cursor-pointer transition-colors shadow-2xs shrink-0"
           >
             <Plus className="size-3.5" />
           </button>

@@ -146,22 +146,16 @@ export async function saveStoredMessage(msg: ChatMessageRecord): Promise<string>
   // 1. Put message in database
   await db.messages.put(normalizedMsg);
 
-  // 2. Touch conversation updatedAt and update title if it's the first prompt
+  // 2. Touch conversation updatedAt
   const conv = await db.conversations.get(conversationId);
   if (conv) {
-    const shouldUpdateTitle = (conv.title === 'Active Session' || conv.title === 'New Mission') && msg.role === 'user';
-    const newTitle = shouldUpdateTitle
-      ? msg.content.slice(0, 32).trim() + (msg.content.length > 32 ? '...' : '')
-      : conv.title;
-
     await db.conversations.update(conversationId, {
-      title: newTitle,
       updatedAt: Date.now(),
     });
   } else {
     await db.conversations.put({
       id: conversationId,
-      title: msg.role === 'user' ? msg.content.slice(0, 32) : 'Session',
+      title: 'New Mission',
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });

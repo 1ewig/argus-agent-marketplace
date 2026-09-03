@@ -36,6 +36,8 @@ export interface AgentOptions {
   apiKey?: string;
   history?: HistoryMessage[];
   maxSteps?: number;
+  isFirstTurn?: boolean;
+  systemDirective?: string;
 }
 
 /**
@@ -43,6 +45,7 @@ export interface AgentOptions {
  */
 export interface AgentResult {
   symbol?: string;
+  sessionTitle?: string;
   analysis: string;
   toolCalls: ExecutedToolCall[];
   stepCount: number;
@@ -59,6 +62,7 @@ export const AgentChatRequestSchema = z.object({
   mode: z.enum(['simulation', 'live_mcp']).default('simulation'),
   apiKey: z.string().optional(),
   history: z.array(HistoryMessageSchema).optional(),
+  isFirstTurn: z.boolean().optional(),
 });
 
 export type AgentChatRequest = z.infer<typeof AgentChatRequestSchema>;
