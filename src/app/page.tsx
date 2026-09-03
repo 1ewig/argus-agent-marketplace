@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { ChatWindow } from '@/components/(dashboard)/chat/chat-window';
 import { ArgusIcon } from '@/components/(dashboard)/argus-icon';
 import { APP_CONTENT } from '@/constants/content';
-import type { ExecutionMode } from '@/lib/types';
+import { useExecutionMode } from '@/hooks';
 
 export default function Home() {
-  const [executionMode, setExecutionMode] = useState<ExecutionMode>('simulation');
+  const { executionMode, setExecutionMode } = useExecutionMode('simulation');
 
   return (
     <main className="h-screen w-screen bg-theme-bg-base p-spacing-sm sm:p-spacing-md flex flex-col overflow-hidden">
