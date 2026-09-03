@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, RefreshCw, Plus } from 'lucide-react';
+import { Send, RefreshCw, Plus, ChevronDown, Pencil, Trash2, Check, X } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { ArgusIcon } from '../argus-icon';
 import { APP_CONTENT } from '@/constants/content';
@@ -11,7 +11,8 @@ import {
   DEFAULT_CONVERSATION_ID,
   ensureDefaultConversation,
   createConversation,
-  clearConversationMessages,
+  deleteConversation,
+  renameConversation,
   saveStoredMessage,
   listConversations,
   type ChatMessageRecord,
@@ -29,7 +30,11 @@ export function ChatWindow({ mode = 'simulation' }: ChatWindowProps) {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorNotice, setErrorNotice] = useState<string | null>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   // 1. Initialize default conversation record safely on client mount
   useEffect(() => {
@@ -49,25 +54,89 @@ export function ChatWindow({ mode = 'simulation' }: ChatWindowProps) {
 
   const messagesCount = messages.length;
 
-  // 2. Auto-scroll to latest message whenever messages count or loading state updates
+  // 3. Auto-scroll to latest message whenever messages count or loading state updates
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messagesCount, isLoading]);
 
-  // 3. Create a brand new session thread
+  // 4. Click-outside listener for sessions overflow menu
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+        setEditingId(null);
+      }
+    };
+    if (isMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isMenuOpen]);
+
+  // Active session title
+  const activeConversation = conversations.find((c) => c.id === activeConversationId);
+  const currentTitle = activeConversation?.title ?? APP_CONTENT.chat.defaultSessionTitle;
+
+  // 5. Create a brand new session thread
   const handleNewSession = async () => {
     setErrorNotice(null);
+    setIsMenuOpen(false);
+    setEditingId(null);
     const newConv = await createConversation();
     setActiveConversationId(newConv.id);
   };
 
-  // 4. Clear current session messages
-  const handleClear = async () => {
-    setErrorNotice(null);
-    await clearConversationMessages(activeConversationId);
+  // 6. Switch session
+  const handleSelectSession = (id: string) => {
+    setActiveConversationId(id);
+    setIsMenuOpen(false);
+    setEditingId(null);
   };
 
-  // 5. Send message with multi-turn context and persistent Dexie transactions
+  // 7. Start renaming session
+  const handleStartRename = (id: string, sessionTitle: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingId(id);
+    setEditTitle(sessionTitle);
+  };
+
+  // 8. Save renamed session
+  const handleSaveRename = async (id: string, e?: React.FormEvent | React.MouseEvent) => {
+    e?.stopPropagation();
+    const trimmed = editTitle.trim();
+    if (!trimmed) {
+      setEditingId(null);
+      return;
+    }
+    await renameConversation(id, trimmed);
+    setEditingId(null);
+  };
+
+  // 9. Cancel renaming
+  const handleCancelRename = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setEditingId(null);
+    setEditTitle('');
+  };
+
+  // 10. Delete session
+  const handleDeleteSession = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    await deleteConversation(id);
+    if (activeConversationId === id) {
+      const remaining = conversations.filter((c) => c.id !== id);
+      if (remaining.length > 0) {
+        setActiveConversationId(remaining[0].id);
+      } else {
+        const newConv = await createConversation();
+        setActiveConversationId(newConv.id);
+      }
+    }
+  };
+
+  // 11. Send message with multi-turn context and persistent Dexie transactions
   const handleSend = async (textToSend?: string) => {
     const prompt = (textToSend ?? input).trim();
     if (!prompt || isLoading) return;
@@ -173,40 +242,149 @@ export function ChatWindow({ mode = 'simulation' }: ChatWindowProps) {
           </div>
         </div>
 
-        {/* Sessions Switcher & Actions */}
+        {/* Sessions Overflow Menu & New Session Action */}
         <div className="flex items-center gap-spacing-xs">
-          {conversations.length > 1 && (
-            <select
-              value={activeConversationId}
-              onChange={(e) => setActiveConversationId(e.target.value)}
-              aria-label={APP_CONTENT.chat.sessionsLabel}
-              className="text-2xs font-medium bg-theme-bg-surface text-theme-text-primary border border-theme-border-subtle rounded px-spacing-xs py-1 max-w-[140px] truncate cursor-pointer outline-hidden"
+          {/* Sessions Dropdown / Overflow Menu */}
+          <div className="relative" ref={menuRef}>
+            <button
+              type="button"
+              onClick={() => {
+                setIsMenuOpen((prev) => !prev);
+                setEditingId(null);
+              }}
+              title={APP_CONTENT.sessions.openMenuAria}
+              aria-label={APP_CONTENT.sessions.openMenuAria}
+              className="flex items-center gap-spacing-xs text-2xs font-medium bg-theme-bg-surface hover:bg-theme-bg-base text-theme-text-primary border border-theme-border-subtle hover:border-theme-border-strong rounded px-spacing-sm py-1 cursor-pointer transition-colors shadow-2xs max-w-[150px] sm:max-w-[200px]"
             >
-              {conversations.map((conv) => (
-                <option key={conv.id} value={conv.id}>
-                  {conv.title}
-                </option>
-              ))}
-            </select>
-          )}
+              <span className="truncate">{currentTitle}</span>
+              <ChevronDown className={`size-3 text-theme-text-muted shrink-0 transition-transform ${isMenuOpen ? 'rotate-180' : ''}`} />
+            </button>
 
+            {isMenuOpen && (
+              <div className="absolute right-0 mt-spacing-xs w-72 sm:w-80 bg-theme-bg-surface border border-theme-border-subtle rounded-lg shadow-lg z-50 overflow-hidden">
+                {/* Menu Header */}
+                <div className="flex items-center justify-between px-spacing-sm py-spacing-xs bg-theme-bg-elevated border-b border-theme-border-subtle text-2xs font-semibold text-theme-text-secondary">
+                  <span>{APP_CONTENT.sessions.menuTitle}</span>
+                  <span className="px-spacing-xs py-0.5 rounded bg-theme-bg-surface text-theme-text-muted border border-theme-border-subtle text-2xs font-mono">
+                    {conversations.length}
+                  </span>
+                </div>
+
+                {/* Sessions List */}
+                <div className="max-h-64 overflow-y-auto divide-y divide-theme-border-subtle">
+                  {conversations.length === 0 ? (
+                    <div className="p-spacing-sm text-2xs text-theme-text-muted text-center">
+                      {APP_CONTENT.sessions.emptyState}
+                    </div>
+                  ) : (
+                    conversations.map((conv) => {
+                      const isActive = conv.id === activeConversationId;
+                      const isEditing = editingId === conv.id;
+
+                      return (
+                        <div
+                          key={conv.id}
+                          className={`flex items-center justify-between gap-spacing-xs px-spacing-sm py-spacing-xs transition-colors ${
+                            isActive ? 'bg-theme-bg-elevated/70' : 'hover:bg-theme-bg-base'
+                          }`}
+                        >
+                          {isEditing ? (
+                            <div className="flex items-center gap-spacing-xs w-full py-0.5">
+                              <input
+                                type="text"
+                                autoFocus
+                                value={editTitle}
+                                onChange={(e) => setEditTitle(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    void handleSaveRename(conv.id);
+                                  } else if (e.key === 'Escape') {
+                                    handleCancelRename();
+                                  }
+                                }}
+                                placeholder={APP_CONTENT.sessions.renamePlaceholder}
+                                className="flex-1 bg-theme-bg-surface text-2xs text-theme-text-primary px-spacing-xs py-1 rounded border border-theme-border-strong focus:outline-hidden"
+                              />
+                              <button
+                                type="button"
+                                onClick={(e) => void handleSaveRename(conv.id, e)}
+                                title={APP_CONTENT.sessions.saveLabel}
+                                aria-label={APP_CONTENT.sessions.saveLabel}
+                                className="p-1 rounded hover:bg-theme-bg-surface text-theme-status-success cursor-pointer"
+                              >
+                                <Check className="size-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={handleCancelRename}
+                                title={APP_CONTENT.sessions.cancelLabel}
+                                aria-label={APP_CONTENT.sessions.cancelLabel}
+                                className="p-1 rounded hover:bg-theme-bg-surface text-theme-text-muted hover:text-theme-text-primary cursor-pointer"
+                              >
+                                <X className="size-3.5" />
+                              </button>
+                            </div>
+                          ) : (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => handleSelectSession(conv.id)}
+                                className="flex items-center gap-spacing-xs flex-1 text-left min-w-0 cursor-pointer py-1"
+                              >
+                                {isActive && (
+                                  <span className="size-1.5 rounded-full bg-theme-brand-binance shrink-0" />
+                                )}
+                                <span
+                                  className={`text-2xs truncate ${
+                                    isActive
+                                      ? 'text-theme-text-primary font-bold'
+                                      : 'text-theme-text-secondary hover:text-theme-text-primary'
+                                  }`}
+                                >
+                                  {conv.title}
+                                </span>
+                              </button>
+
+                              <div className="flex items-center gap-1 shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={(e) => handleStartRename(conv.id, conv.title, e)}
+                                  title={APP_CONTENT.sessions.renameLabel}
+                                  aria-label={APP_CONTENT.sessions.renameLabel}
+                                  className="p-1 rounded text-theme-text-muted hover:text-theme-text-primary hover:bg-theme-bg-surface cursor-pointer transition-colors"
+                                >
+                                  <Pencil className="size-3" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={(e) => void handleDeleteSession(conv.id, e)}
+                                  title={APP_CONTENT.sessions.deleteLabel}
+                                  aria-label={APP_CONTENT.sessions.deleteLabel}
+                                  className="p-1 rounded text-theme-text-muted hover:text-theme-status-danger hover:bg-theme-bg-surface cursor-pointer transition-colors"
+                                >
+                                  <Trash2 className="size-3" />
+                                </button>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* New Session Button (Plus Icon) */}
           <button
             type="button"
             onClick={() => void handleNewSession()}
             title={APP_CONTENT.chat.newSessionButton}
-            className="flex items-center gap-1 text-2xs font-semibold px-spacing-xs py-1 rounded bg-theme-bg-surface hover:bg-theme-bg-base border border-theme-border-subtle text-theme-text-primary cursor-pointer transition-colors"
+            aria-label={APP_CONTENT.chat.newSessionButton}
+            className="flex items-center justify-center size-7 rounded bg-theme-bg-surface hover:bg-theme-bg-base border border-theme-border-subtle text-theme-brand-binance hover:text-theme-brand-accent cursor-pointer transition-colors shadow-2xs shrink-0"
           >
-            <Plus className="size-3 text-theme-brand-binance" />
-            <span className="hidden sm:inline">{APP_CONTENT.chat.newSessionButton}</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => void handleClear()}
-            title={APP_CONTENT.chat.clearButton}
-            className="text-theme-text-muted hover:text-theme-text-primary p-spacing-xs rounded hover:bg-theme-bg-surface cursor-pointer transition-colors"
-          >
-            <RefreshCw className="size-3.5" />
+            <Plus className="size-3.5" />
           </button>
         </div>
       </div>

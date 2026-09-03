@@ -212,6 +212,19 @@ export async function clearConversationMessages(conversationId: string): Promise
 }
 
 /**
+ * Renames an existing conversation session
+ */
+export async function renameConversation(conversationId: string, newTitle: string): Promise<void> {
+  if (typeof window === 'undefined') return;
+  const trimmed = newTitle.trim();
+  if (!trimmed) return;
+  await db.conversations.update(conversationId, {
+    title: trimmed,
+    updatedAt: Date.now(),
+  });
+}
+
+/**
  * Deletes a conversation and all its messages
  */
 export async function deleteConversation(conversationId: string): Promise<void> {

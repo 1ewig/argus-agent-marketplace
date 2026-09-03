@@ -54,4 +54,15 @@ export const APP_CONTENT = {
     defaultSessionTitle: 'Intelligence Session',
     errorMessageTitle: 'Execution Error',
   },
+  sessions: {
+    menuTitle: 'Intelligence Sessions',
+    renameLabel: 'Rename',
+    deleteLabel: 'Delete',
+    saveLabel: 'Save',
+    cancelLabel: 'Cancel',
+    renamePlaceholder: 'Session title...',
+    emptyState: 'No sessions recorded',
+    activeBadge: 'ACTIVE',
+    openMenuAria: 'Manage sessions and missions',
+  },
 } as const;
