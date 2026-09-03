@@ -82,6 +82,8 @@ export const APP_CONTENT = {
     reasonedFor: 'Reasoned for',
     stepSuffix: 'steps',
     successBadge: 'Success',
+    viewReasoning: 'View thoughts',
+    hideReasoning: 'Hide thoughts',
     toolNames: {
       get_ticker_price: 'get_ticker_price',
       get_order_book: 'get_order_book',

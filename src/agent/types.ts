@@ -38,6 +38,7 @@ export interface AgentExecutionStep {
   type: AgentStepType;
   label: string;
   toolName?: string;
+  reasoningText?: string;
   status: 'active' | 'completed' | 'error';
   timestamp: number;
 }
@@ -47,7 +48,14 @@ export interface AgentExecutionStep {
  */
 export type AgentStreamEvent =
   | { type: 'step_start'; step: AgentExecutionStep }
-  | { type: 'step_update'; stepId: string; status: 'completed' | 'error'; label?: string }
+  | {
+      type: 'step_update';
+      stepId: string;
+      status?: 'completed' | 'error';
+      label?: string;
+      reasoningText?: string;
+    }
+  | { type: 'reasoning_delta'; stepId: string; delta: string }
   | { type: 'text_delta'; delta: string }
   | { type: 'session_title'; title: string }
   | { type: 'done'; result: AgentResult }

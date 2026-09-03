@@ -244,7 +244,21 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
             } else if (event.type === 'step_update') {
               currentSteps = currentSteps.map((s) =>
                 s.id === event.stepId
-                  ? { ...s, status: event.status, ...(event.label ? { label: event.label } : {}) }
+                  ? {
+                      ...s,
+                      ...(event.status ? { status: event.status } : {}),
+                      ...(event.label ? { label: event.label } : {}),
+                      ...(event.reasoningText !== undefined ? { reasoningText: event.reasoningText } : {}),
+                    }
+                  : s
+              );
+              setActiveStreamMessage((prev) =>
+                prev ? { ...prev, steps: currentSteps } : prev
+              );
+            } else if (event.type === 'reasoning_delta') {
+              currentSteps = currentSteps.map((s) =>
+                s.id === event.stepId
+                  ? { ...s, reasoningText: (s.reasoningText ?? '') + event.delta }
                   : s
               );
               setActiveStreamMessage((prev) =>

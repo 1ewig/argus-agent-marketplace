@@ -143,7 +143,47 @@ export async function executeAgentStream(
 
   // 3. Process the full stream parts
   for await (const part of streamResult.fullStream) {
-    if (part.type === 'tool-call') {
+    if (part.type === 'reasoning-delta') {
+      // Stream model's internal thinking/reasoning thoughts
+      let activeThinking = activeStepId
+        ? steps.find((s) => s.id === activeStepId && s.type === 'thinking')
+        : null;
+
+      if (!activeThinking || activeThinking.status !== 'active') {
+        const stepId = `step_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+        activeThinking = {
+          id: stepId,
+          type: 'thinking',
+          label: APP_CONTENT.process.thinking,
+          reasoningText: '',
+          status: 'active',
+          timestamp: Date.now(),
+        };
+        steps.push(activeThinking);
+        activeStepId = stepId;
+        onEvent({ type: 'step_start', step: activeThinking });
+      }
+
+      activeThinking.reasoningText = (activeThinking.reasoningText ?? '') + part.text;
+      onEvent({ type: 'reasoning_delta', stepId: activeThinking.id, delta: part.text });
+    } else if (part.type === 'start-step') {
+      // When a subsequent step starts (e.g. after tool execution), begin a clean thinking step if none active
+      const hasActive = steps.some((s) => s.status === 'active');
+      if (!hasActive) {
+        const nextId = `step_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+        const nextStep: AgentExecutionStep = {
+          id: nextId,
+          type: 'thinking',
+          label: APP_CONTENT.process.thinking,
+          reasoningText: '',
+          status: 'active',
+          timestamp: Date.now(),
+        };
+        steps.push(nextStep);
+        activeStepId = nextId;
+        onEvent({ type: 'step_start', step: nextStep });
+      }
+    } else if (part.type === 'tool-call') {
       // Complete previous thinking step
       if (activeStepId) {
         const prevStep = steps.find((s) => s.id === activeStepId);
@@ -167,12 +207,17 @@ export async function executeAgentStream(
       activeStepId = toolStepId;
       onEvent({ type: 'step_start', step: toolStep });
     } else if (part.type === 'tool-result') {
-      // Complete active tool step
-      if (activeStepId) {
-        const toolStep = steps.find((s) => s.id === activeStepId);
-        if (toolStep && toolStep.type === 'tool') {
-          toolStep.status = 'completed';
-          onEvent({ type: 'step_update', stepId: toolStep.id, status: 'completed' });
+      // Complete matching active tool step
+      const matchingToolStep: AgentExecutionStep | undefined =
+        steps.find(
+          (s) => s.type === 'tool' && s.toolName === part.toolName && s.status === 'active'
+        ) ?? (activeStepId ? steps.find((s) => s.id === activeStepId) : undefined);
+
+      if (matchingToolStep) {
+        matchingToolStep.status = 'completed';
+        onEvent({ type: 'step_update', stepId: matchingToolStep.id, status: 'completed' });
+        if (activeStepId === matchingToolStep.id) {
+          activeStepId = null;
         }
       }
 
@@ -183,20 +228,11 @@ export async function executeAgentStream(
         result: part.output,
       });
 
-      // Begin next thinking step after receiving tool data
-      const nextThinkingId = `step_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-      const nextThinkingStep: AgentExecutionStep = {
-        id: nextThinkingId,
-        type: 'thinking',
-        label: APP_CONTENT.process.analyzing,
-        status: 'active',
-        timestamp: Date.now(),
-      };
-      steps.push(nextThinkingStep);
-      activeStepId = nextThinkingId;
-      onEvent({ type: 'step_start', step: nextThinkingStep });
+      // NOTE: Do not spawn a thinking step on every tool-result!
+      // In parallel tool calling, each tool generates a tool-result; spawning here creates duplicate trails.
+      // Next thinking step naturally begins on 'start-step' or 'reasoning-delta'.
     } else if (part.type === 'text-delta') {
-      // Model is outputting response tokens; complete previous thinking step
+      // Model is outputting response tokens; complete any active thinking step
       if (activeStepId) {
         const activeStep = steps.find((s) => s.id === activeStepId);
         if (activeStep && activeStep.status === 'active') {
