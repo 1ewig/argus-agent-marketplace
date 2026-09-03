@@ -1,4 +1,4 @@
-import { generateText, streamText, isStepCount } from 'ai';
+import { generateText, streamText, isStepCount, smoothStream } from 'ai';
 import { getAgentModel } from './providers';
 import { buildAgentTools } from './tools';
 import { getBinanceAdapter } from '@/lib/binance-mcp';
@@ -81,10 +81,9 @@ export async function executeAgentStream(
   let accumulatedText = '';
   let emittedTitle: string | undefined;
 
-  // Buffer <session_title> so raw XML is never streamed to UI
+  // Buffer <session_title> so raw XML is never leaked to the client stream
   let titleBuffer = '';
-  let isBufferingTitle = false;
-  let titleTagClosed = false;
+  let titleResolved = false;
 
   // 1. Initial Thinking step
   const initialThinkingId = `step_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
@@ -108,6 +107,10 @@ export async function executeAgentStream(
     ...(messages ? { messages } : { prompt: currentUserPrompt }),
     tools,
     stopWhen: isStepCount(maxSteps),
+    experimental_transform: smoothStream({
+      delayInMs: 15,
+      chunking: 'word',
+    }),
     providerOptions: {
       groq: { reasoningEffort },
     },
@@ -224,35 +227,32 @@ export async function executeAgentStream(
 
         accumulatedText += part.text;
 
-        // Buffer <session_title>...</session_title> without emitting to UI
-        if (!titleTagClosed) {
+        // Buffer <session_title>...</session_title> so raw XML is never leaked to the client stream
+        if (!titleResolved) {
           titleBuffer += part.text;
-          if (!isBufferingTitle && titleBuffer.includes('<session_title>')) {
-            isBufferingTitle = true;
-          }
-
-          if (isBufferingTitle) {
-            const endIdx = titleBuffer.indexOf('</session_title>');
-            if (endIdx !== -1) {
-              const fullTag = titleBuffer.slice(0, endIdx + 16);
-              const remainder = titleBuffer.slice(endIdx + 16);
-              titleTagClosed = true;
-              isBufferingTitle = false;
-
-              const titleMatch = fullTag.match(/<session_title>([\s\S]*?)<\/session_title>/i);
-              if (titleMatch) {
-                emittedTitle = titleMatch[1].replace(/^["'`]+|["'`]+$/g, '').trim();
-                if (emittedTitle) {
-                  onEvent({ type: 'session_title', title: emittedTitle });
-                }
-              }
-
-              if (remainder) {
-                onEvent({ type: 'text_delta', delta: remainder.trimStart() });
-              }
+          const match = titleBuffer.match(/<session_title>([\s\S]*?)<\/session_title>/i);
+          if (match) {
+            emittedTitle = match[1].replace(/^["'`]+|["'`]+$/g, '').trim();
+            if (emittedTitle) {
+              onEvent({ type: 'session_title', title: emittedTitle });
+            }
+            titleResolved = true;
+            const afterTag = titleBuffer.slice((match.index ?? 0) + match[0].length);
+            if (afterTag) {
+              onEvent({ type: 'text_delta', delta: afterTag.trimStart() });
             }
             continue;
           }
+
+          // If buffer clearly doesn't start with '<' or exceeds 150 chars, flush and stop buffering
+          if (!titleBuffer.trimStart().startsWith('<') || titleBuffer.length > 150) {
+            titleResolved = true;
+            onEvent({ type: 'text_delta', delta: titleBuffer });
+            continue;
+          }
+
+          // Continue buffering in-flight title tag
+          continue;
         }
 
         onEvent({ type: 'text_delta', delta: part.text });
