@@ -9,6 +9,7 @@ import { generateMessageId, getNowTimestamp } from '@/lib/utils';
 import {
   db,
   DEFAULT_CONVERSATION_ID,
+  ensureDefaultConversation,
   createConversation,
   clearConversationMessages,
   saveStoredMessage,
@@ -30,7 +31,12 @@ export function ChatWindow({ mode = 'simulation' }: ChatWindowProps) {
   const [errorNotice, setErrorNotice] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // 1. Reactive Live Queries directly from Dexie IndexedDB
+  // 1. Initialize default conversation record safely on client mount
+  useEffect(() => {
+    void ensureDefaultConversation();
+  }, []);
+
+  // 2. Reactive Live Queries directly from Dexie IndexedDB (strictly read-only)
   const conversations = useLiveQuery(() => listConversations(), []) ?? [];
   const messages = useLiveQuery(
     () =>

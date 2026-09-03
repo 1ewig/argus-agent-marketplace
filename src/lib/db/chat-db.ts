@@ -112,11 +112,10 @@ export async function createConversation(title?: string): Promise<ConversationRe
 }
 
 /**
- * Lists all conversations ordered by latest update
+ * Lists all conversations ordered by latest update (pure read query for useLiveQuery)
  */
 export async function listConversations(): Promise<ConversationRecord[]> {
   if (typeof window === 'undefined') return [];
-  await ensureDefaultConversation();
   return db.conversations.orderBy('updatedAt').reverse().toArray();
 }
 
