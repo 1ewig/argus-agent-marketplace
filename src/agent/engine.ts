@@ -97,9 +97,9 @@ export async function executeAgent(options: AgentOptions): Promise<AgentResult> 
   let cleanedAnalysis = text.replace(/<session_title>[\s\S]*?<\/session_title>\s*/gi, '').trim();
 
   // If the agent only output the session title tag and no additional commentary,
-  // provide a professional acknowledgement fallback instead of an empty bubble
+  // provide a natural acknowledgement fallback instead of an empty bubble
   if (!cleanedAnalysis && sessionTitle) {
-    cleanedAnalysis = `Session initialized: **${sessionTitle}**. Ready for market analysis and MCP tool execution.`;
+    cleanedAnalysis = `Started a new chat for **${sessionTitle}**. How can I help you today?`;
   }
 
   // 7. Extract executed tool calls and telemetry from all completed steps

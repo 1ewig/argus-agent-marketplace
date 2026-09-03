@@ -71,7 +71,7 @@ export async function ensureDefaultConversation(): Promise<ConversationRecord> {
   if (typeof window === 'undefined') {
     return {
       id: DEFAULT_CONVERSATION_ID,
-      title: 'Active Session',
+      title: 'New Chat',
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
@@ -82,7 +82,7 @@ export async function ensureDefaultConversation(): Promise<ConversationRecord> {
 
   const defaultConv: ConversationRecord = {
     id: DEFAULT_CONVERSATION_ID,
-    title: 'Active Session',
+    title: 'New Chat',
     createdAt: Date.now(),
     updatedAt: Date.now(),
   };
@@ -99,7 +99,7 @@ export async function createConversation(title?: string): Promise<ConversationRe
   const now = Date.now();
   const conv: ConversationRecord = {
     id,
-    title: title || 'New Mission',
+    title: title || 'New Chat',
     createdAt: now,
     updatedAt: now,
   };
@@ -155,7 +155,7 @@ export async function saveStoredMessage(msg: ChatMessageRecord): Promise<string>
   } else {
     await db.conversations.put({
       id: conversationId,
-      title: 'New Mission',
+      title: 'New Chat',
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });

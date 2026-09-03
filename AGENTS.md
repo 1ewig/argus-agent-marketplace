@@ -84,3 +84,14 @@ src/
 * **Self-Documenting & Descriptive:** Use explicit, intention-revealing names for variables, functions, and interfaces. Avoid obscure abbreviations.
 * **TSDoc / JSDoc on Non-Obvious Logic:** Add structured comments to all financial calculations, slippage formulas, cryptographic certificate generation, and agent workflow orchestrations.
 * **Preserve Integrity:** Never introduce dead code, commented-out experiments, or unused imports. Keep codebase lean and production-grade.
+
+---
+
+## 6. Natural & Humane Language: Zero Robotic or Military Fluff
+
+* **Communicate Like a Helpful, Insightful Human:** All user-facing UI text, agent system prompts, placeholder copy, error messages, and responses must sound natural, warm, and conversational.
+* **Strictly Banned Jargon & Fluff:**
+  * **NEVER use pseudo-military or sci-fi robotic jargon:** e.g., "mission", "intelligence stream", "intelligence session", "tactical directive", "telemetry stream", "agent standby", "cockpit deck", "autonomous execution module".
+  * **ALWAYS use plain, intuitive language:** "chat", "conversation", "saved chats", "trading assistant", "tools used", "suggestions", "market check", "ready to help".
+* **Agent Personality:** The AI agent (Argus) must speak like an experienced, approachable colleague. Direct, clear, transparent, and grounded in real market data without corporate boilerplate or robotic theatrics.
+

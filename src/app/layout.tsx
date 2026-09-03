@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Argus — Autonomous Trading & Risk Guardian | Binance Agent OS",
-  description: "Autonomous multi-agent trading intelligence and risk governance powered by Binance Agent OS",
+  title: "Argus — Trading Assistant | Binance Agent OS",
+  description: "Smart, human-centered trading assistant powered by Binance Agent OS",
   icons: {
     icon: "/icon.svg",
   },
