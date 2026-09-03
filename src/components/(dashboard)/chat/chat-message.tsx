@@ -36,15 +36,13 @@ export function ChatMessage({ message }: ChatMessageProps) {
       {/* Header bar: Avatar, Role Badge, Timestamp */}
       <div className="flex items-center justify-between gap-spacing-sm">
         <div className="flex items-center gap-spacing-xs">
-          <div
-            className={`flex items-center justify-center rounded p-spacing-xs ${
-              isUser
-                ? 'bg-theme-bg-surface text-theme-text-secondary border border-theme-border-subtle'
-                : 'bg-theme-bg-overlay text-theme-brand-binance'
-            }`}
-          >
-            {isUser ? <User className="size-4" /> : <ArgusIcon className="size-4 text-theme-brand-binance" />}
-          </div>
+          {isUser ? (
+            <div className="flex items-center justify-center rounded p-spacing-xs bg-theme-bg-surface text-theme-text-secondary border border-theme-border-subtle">
+              <User className="size-4" />
+            </div>
+          ) : (
+            <ArgusIcon className="size-4 text-theme-brand-binance shrink-0" />
+          )}
           <span className="text-2xs font-bold tracking-wider">
             {isUser ? APP_CONTENT.chat.userRole : APP_CONTENT.chat.agentRole}
           </span>
