@@ -15,7 +15,7 @@ import {
   listConversations,
   type ChatMessageRecord,
 } from '@/lib/db';
-import type { AgentResult } from '@/agent';
+import type { AgentResult, AgentStreamEvent, AgentExecutionStep } from '@/agent';
 import type { ExecutionMode } from '@/lib/types';
 
 export interface UseAgentChatOptions {
@@ -23,8 +23,8 @@ export interface UseAgentChatOptions {
 }
 
 /**
- * Custom hook encapsulating all session lifecycle management, reactive IndexedDB queries,
- * and autonomous Binance Agent OS reasoning dispatch.
+ * Custom hook encapsulating session lifecycle management, reactive IndexedDB queries,
+ * and real-time SSE streaming for autonomous Binance Agent OS reasoning steps.
  * 
  * Enforces strict separation of concerns by completely decoupling chat orchestration
  * and database state mutations from UI presentation components.
@@ -36,6 +36,7 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
   const [activeConversationId, setActiveConversationId] = useState<string>(DEFAULT_CONVERSATION_ID);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [activeStreamMessage, setActiveStreamMessage] = useState<ChatMessageRecord | null>(null);
   const [errorNotice, setErrorNotice] = useState<string | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -61,11 +62,13 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
   ) ?? [];
 
   const messagesCount = messages.length;
+  const streamStepCount = activeStreamMessage?.steps?.length ?? 0;
+  const streamContentLength = activeStreamMessage?.content?.length ?? 0;
 
-  // 3. Auto-scroll to latest message whenever messages count or loading state updates
+  // 3. Auto-scroll whenever messages, loading state, or active stream updates
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messagesCount, isLoading]);
+  }, [messagesCount, isLoading, streamStepCount, streamContentLength]);
 
   // 4. Click-outside listener for sessions overflow menu
   useEffect(() => {
@@ -92,6 +95,7 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
     setErrorNotice(null);
     setIsMenuOpen(false);
     setEditingId(null);
+    setActiveStreamMessage(null);
     const newConv = await createConversation();
     setActiveConversationId(newConv.id);
   };
@@ -101,6 +105,7 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
     setActiveConversationId(id);
     setIsMenuOpen(false);
     setEditingId(null);
+    setActiveStreamMessage(null);
   };
 
   // 7. Start renaming session
@@ -144,7 +149,7 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
     }
   };
 
-  // 11. Send message with multi-turn context and persistent Dexie transactions
+  // 11. Send message with real-time SSE streaming and persistent Dexie transactions
   const handleSend = async (textToSend?: string) => {
     const prompt = (textToSend ?? input).trim();
     if (!prompt || isLoading) return;
@@ -161,9 +166,21 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
       timestamp: getNowTimestamp(),
     };
 
-    // Optimistically persist to Dexie (useLiveQuery instantly updates the UI!)
+    // Optimistically persist user prompt to Dexie
     await saveStoredMessage(userMessage);
 
+    const streamMessageId = generateMessageId('agt');
+    const initialStreamRecord: ChatMessageRecord = {
+      id: streamMessageId,
+      conversationId: activeConversationId,
+      role: 'assistant',
+      content: '',
+      status: 'pending',
+      steps: [],
+      timestamp: getNowTimestamp(),
+    };
+
+    setActiveStreamMessage(initialStreamRecord);
     setIsLoading(true);
 
     try {
@@ -176,7 +193,6 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
           content: m.content,
         }));
 
-      // Determine if this is the opening message of the session thread
       const isFirstTurn = conversationHistory.length === 0;
 
       const response = await fetch('/api/agent/chat', {
@@ -192,39 +208,93 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
         }),
       });
 
-      const json = await response.json();
-
-      if (!response.ok || !json.success) {
-        throw new Error(json.error ?? APP_CONTENT.chat.errorNotice);
+      if (!response.ok || !response.body) {
+        throw new Error(APP_CONTENT.chat.errorNotice);
       }
 
-      const agentData: AgentResult = json.data;
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let currentSteps: AgentExecutionStep[] = [];
+      let currentText = '';
+      let finalResult: AgentResult | null = null;
 
-      // Autonomously assign the agent-generated title to the mission session
-      // only if the conversation still holds a default system placeholder title
-      if (agentData.sessionTitle) {
-        const convRecord = await db.conversations.get(activeConversationId);
-        const isDefaultTitle =
-          !convRecord ||
-          (APP_CONTENT.chat.defaultSessionTitles as readonly string[]).includes(convRecord.title);
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
 
-        if (isDefaultTitle) {
-          await renameConversation(activeConversationId, agentData.sessionTitle);
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() ?? '';
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed.startsWith('data:')) continue;
+          const jsonStr = trimmed.slice(5).trim();
+          if (!jsonStr) continue;
+
+          try {
+            const event: AgentStreamEvent = JSON.parse(jsonStr);
+
+            if (event.type === 'step_start') {
+              currentSteps = [...currentSteps, event.step];
+              setActiveStreamMessage((prev) =>
+                prev ? { ...prev, steps: currentSteps } : prev
+              );
+            } else if (event.type === 'step_update') {
+              currentSteps = currentSteps.map((s) =>
+                s.id === event.stepId
+                  ? { ...s, status: event.status, ...(event.label ? { label: event.label } : {}) }
+                  : s
+              );
+              setActiveStreamMessage((prev) =>
+                prev ? { ...prev, steps: currentSteps } : prev
+              );
+            } else if (event.type === 'text_delta') {
+              currentText += event.delta;
+              // Strip any complete or in-progress session_title markup from live markdown display
+              const displayContent = currentText
+                .replace(/<session_title>[\s\S]*?<\/session_title>\s*/gi, '')
+                .replace(/<session_title[\s\S]*$/gi, '');
+              setActiveStreamMessage((prev) =>
+                prev ? { ...prev, content: displayContent } : prev
+              );
+            } else if (event.type === 'session_title') {
+              const convRecord = await db.conversations.get(activeConversationId);
+              const isDefaultTitle =
+                !convRecord ||
+                (APP_CONTENT.chat.defaultSessionTitles as readonly string[]).includes(convRecord.title);
+
+              if (isDefaultTitle) {
+                await renameConversation(activeConversationId, event.title);
+              }
+            } else if (event.type === 'done') {
+              finalResult = event.result;
+            } else if (event.type === 'error') {
+              throw new Error(event.message);
+            }
+          } catch (parseErr: unknown) {
+            if (parseErr instanceof Error && !parseErr.message.includes('JSON')) {
+              throw parseErr;
+            }
+          }
         }
       }
 
-      const agentMessage: ChatMessageRecord = {
-        id: generateMessageId('agt'),
+      // Finalize and persist completed agent message into Dexie
+      const finalMessage: ChatMessageRecord = {
+        id: streamMessageId,
         conversationId: activeConversationId,
         role: 'assistant',
-        content: agentData.analysis,
+        content: finalResult?.analysis ?? currentText.replace(/<session_title>[\s\S]*?<\/session_title>\s*/gi, '').trim(),
         status: 'success',
-        toolCalls: agentData.toolCalls,
-        stepCount: agentData.stepCount,
-        timestamp: agentData.timestamp,
+        toolCalls: finalResult?.toolCalls,
+        steps: finalResult?.steps ?? currentSteps,
+        stepCount: finalResult?.stepCount ?? currentSteps.length,
+        timestamp: finalResult?.timestamp ?? getNowTimestamp(),
       };
 
-      await saveStoredMessage(agentMessage);
+      await saveStoredMessage(finalMessage);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : APP_CONTENT.chat.errorNotice;
       setErrorNotice(msg);
@@ -240,6 +310,7 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
       };
       await saveStoredMessage(errorRecord);
     } finally {
+      setActiveStreamMessage(null);
       setIsLoading(false);
     }
   };
@@ -262,6 +333,7 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
     currentTitle,
     conversations,
     messages,
+    activeStreamMessage,
     input,
     setInput,
     isLoading,

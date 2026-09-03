@@ -18,6 +18,7 @@ export function ChatWindow({ mode = 'simulation' }: ChatWindowProps) {
     currentTitle,
     conversations,
     messages,
+    activeStreamMessage,
     input,
     setInput,
     isLoading,
@@ -234,8 +235,13 @@ export function ChatWindow({ mode = 'simulation' }: ChatWindowProps) {
           <ChatMessage key={msg.id} message={msg} />
         ))}
 
-        {/* Thinking Indicator */}
-        {isLoading && (
+        {/* Live Streaming Message with Real-Time Process Timeline */}
+        {activeStreamMessage && (
+          <ChatMessage message={activeStreamMessage} isStreaming={true} />
+        )}
+
+        {/* Fallback Pulse Indicator before first SSE byte */}
+        {isLoading && !activeStreamMessage && (
           <div className="flex items-center gap-spacing-sm p-spacing-md bg-theme-bg-elevated rounded border border-theme-border-subtle animate-pulse">
             <RefreshCw className="size-4 text-theme-brand-binance animate-spin" />
             <span className="text-xs text-theme-text-secondary font-medium">

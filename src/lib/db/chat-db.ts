@@ -1,5 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie';
-import type { ExecutedToolCall } from '@/agent';
+import type { ExecutedToolCall, AgentExecutionStep } from '@/agent';
 
 export interface ConversationRecord {
   id: string;
@@ -16,6 +16,7 @@ export interface ChatMessageRecord {
   symbol?: string;
   status?: 'success' | 'error' | 'pending';
   toolCalls?: ExecutedToolCall[];
+  steps?: AgentExecutionStep[];
   stepCount?: number;
   timestamp: number;
 }

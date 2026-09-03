@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
-import { executeAgent, AgentChatRequestSchema } from '@/agent';
+import { executeAgentStream, AgentChatRequestSchema } from '@/agent';
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {
@@ -19,18 +21,41 @@ export async function POST(req: Request) {
 
     const { message, symbol, mode, apiKey, history, isFirstTurn } = parseResult.data;
 
-    const result = await executeAgent({
-      prompt: message,
-      symbol,
-      mode,
-      apiKey,
-      history,
-      isFirstTurn,
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream({
+      async start(controller) {
+        const sendEvent = (event: unknown) => {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
+        };
+
+        try {
+          await executeAgentStream(
+            {
+              prompt: message,
+              symbol,
+              mode,
+              apiKey,
+              history,
+              isFirstTurn,
+            },
+            sendEvent
+          );
+        } catch (err: unknown) {
+          const errMsg = err instanceof Error ? err.message : 'Internal agent execution error';
+          sendEvent({ type: 'error', message: errMsg });
+        } finally {
+          controller.close();
+        }
+      },
     });
 
-    return NextResponse.json({
-      success: true,
-      data: result,
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/event-stream; charset=utf-8',
+        'Cache-Control': 'no-cache, no-transform',
+        'Connection': 'keep-alive',
+        'X-Accel-Buffering': 'no',
+      },
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Internal agent execution error';

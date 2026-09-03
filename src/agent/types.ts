@@ -26,6 +26,34 @@ export interface ExecutedToolCall {
 }
 
 /**
+ * Step type for the real-time reasoning and tool execution process
+ */
+export type AgentStepType = 'thinking' | 'tool';
+
+/**
+ * An individual lifecycle step in the agent's real-time reasoning timeline
+ */
+export interface AgentExecutionStep {
+  id: string;
+  type: AgentStepType;
+  label: string;
+  toolName?: string;
+  status: 'active' | 'completed' | 'error';
+  timestamp: number;
+}
+
+/**
+ * Real-time SSE streaming events emitted during agent execution
+ */
+export type AgentStreamEvent =
+  | { type: 'step_start'; step: AgentExecutionStep }
+  | { type: 'step_update'; stepId: string; status: 'completed' | 'error'; label?: string }
+  | { type: 'text_delta'; delta: string }
+  | { type: 'session_title'; title: string }
+  | { type: 'done'; result: AgentResult }
+  | { type: 'error'; message: string };
+
+/**
  * Invocation options for the agent execution engine
  */
 export interface AgentOptions {
@@ -48,6 +76,7 @@ export interface AgentResult {
   sessionTitle?: string;
   analysis: string;
   toolCalls: ExecutedToolCall[];
+  steps: AgentExecutionStep[];
   stepCount: number;
   executionMode: AgentExecutionMode;
   timestamp: number;
