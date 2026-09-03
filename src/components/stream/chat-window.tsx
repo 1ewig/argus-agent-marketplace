@@ -6,15 +6,14 @@ import { APP_CONTENT } from '@/constants/content';
 import { generateMessageId, getNowTimestamp } from '@/lib/utils';
 import { getStoredMessages, saveStoredMessage, clearStoredMessages } from '@/lib/db';
 import { ChatMessage, type ChatMessageData } from './chat-message';
-import type { AnalystAgentResult } from '@/lib/agents/analyst-agent';
+import type { AgentResult } from '@/agent';
 import type { ExecutionMode } from '@/lib/types';
 
 interface ChatWindowProps {
-  symbol?: string;
   mode?: ExecutionMode;
 }
 
-export function ChatWindow({ symbol = 'SOLUSDT', mode = 'simulation' }: ChatWindowProps) {
+export function ChatWindow({ mode = 'simulation' }: ChatWindowProps) {
   const [messages, setMessages] = useState<ChatMessageData[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -25,7 +24,7 @@ export function ChatWindow({ symbol = 'SOLUSDT', mode = 'simulation' }: ChatWind
   useEffect(() => {
     let isMounted = true;
 
-    getStoredMessages(symbol)
+    getStoredMessages()
       .then((records) => {
         if (isMounted) {
           if (records.length > 0) {
@@ -51,7 +50,7 @@ export function ChatWindow({ symbol = 'SOLUSDT', mode = 'simulation' }: ChatWind
     return () => {
       isMounted = false;
     };
-  }, [symbol]);
+  }, []);
 
   // 2. Auto-scroll to latest message
   useEffect(() => {
@@ -60,7 +59,7 @@ export function ChatWindow({ symbol = 'SOLUSDT', mode = 'simulation' }: ChatWind
 
   // 3. Clear persistent history
   const handleClear = async () => {
-    await clearStoredMessages(symbol);
+    await clearStoredMessages();
     setMessages([]);
   };
 
@@ -81,10 +80,7 @@ export function ChatWindow({ symbol = 'SOLUSDT', mode = 'simulation' }: ChatWind
 
     // Optimistically update UI and persist to Dexie
     setMessages((prev) => [...prev, userMessage]);
-    void saveStoredMessage({
-      ...userMessage,
-      symbol,
-    });
+    void saveStoredMessage(userMessage);
 
     setIsLoading(true);
 
@@ -102,7 +98,6 @@ export function ChatWindow({ symbol = 'SOLUSDT', mode = 'simulation' }: ChatWind
         },
         body: JSON.stringify({
           message: prompt,
-          symbol,
           mode,
           history: conversationHistory,
         }),
@@ -114,7 +109,7 @@ export function ChatWindow({ symbol = 'SOLUSDT', mode = 'simulation' }: ChatWind
         throw new Error(json.error ?? APP_CONTENT.chat.errorNotice);
       }
 
-      const agentData: AnalystAgentResult = json.data;
+      const agentData: AgentResult = json.data;
 
       const agentMessage: ChatMessageData = {
         id: generateMessageId('agt'),
@@ -127,10 +122,7 @@ export function ChatWindow({ symbol = 'SOLUSDT', mode = 'simulation' }: ChatWind
 
       // Update state and persist to Dexie
       setMessages((prev) => [...prev, agentMessage]);
-      void saveStoredMessage({
-        ...agentMessage,
-        symbol,
-      });
+      void saveStoredMessage(agentMessage);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : APP_CONTENT.chat.errorNotice;
       setErrorNotice(msg);
@@ -163,9 +155,6 @@ export function ChatWindow({ symbol = 'SOLUSDT', mode = 'simulation' }: ChatWind
         </div>
 
         <div className="flex items-center gap-spacing-xs">
-          <span className="text-2xs font-mono font-bold px-spacing-sm py-spacing-xs rounded bg-theme-bg-surface border border-theme-border-subtle text-theme-brand-binance">
-            {symbol}
-          </span>
           <button
             type="button"
             onClick={() => void handleClear()}

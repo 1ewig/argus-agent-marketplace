@@ -9,14 +9,12 @@ export const APP_CONTENT = {
   header: {
     brand: 'ARGUS // BINANCE AGENT OS',
     title: 'Argus Agent',
-    subtitle: 'Autonomous Binance Agent OS Trading Scout',
+    subtitle: 'Autonomous Binance Agent OS Trading Agent',
     badge: 'Binance Agent OS',
     hackathonTrack: 'Track A',
     mcpActive: 'MCP SERVER: ACTIVE',
     inferenceActive: 'GROQ INFERENCE: ONLINE',
-    activePairLabel: 'TARGET PAIR:',
   },
-  pairs: ['SOLUSDT', 'BTCUSDT', 'ETHUSDT'] as const,
   modes: {
     simulation: {
       label: 'Sandbox Simulation',
@@ -48,7 +46,7 @@ export const APP_CONTENT = {
     hideDetails: 'Collapse',
     thinkingText: 'Argus is reasoning and querying Binance Agent OS...',
     userRole: 'TRADER',
-    agentRole: 'ARGUS SCOUT',
+    agentRole: 'ARGUS AGENT',
     stepCountLabel: 'Steps',
     errorNotice: 'Agent encountered an error. Please check your Groq API key and network connectivity.',
   },

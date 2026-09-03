@@ -1,21 +1,21 @@
 import { tool } from 'ai';
 import { z } from 'zod';
-import type { IBinanceAgentAdapter } from './types';
-import { getBinanceAdapter } from './index';
-import { TOOL_DESCRIPTIONS } from '@/constants/agent-prompts';
+import type { IBinanceAgentAdapter } from '@/lib/binance-mcp/types';
+import { getBinanceAdapter } from '@/lib/binance-mcp';
+import { AGENT_TOOL_DESCRIPTIONS } from './prompts';
 
 /**
- * Creates AI SDK-compatible tools bound to the specified Binance Agent OS adapter.
+ * Builds AI SDK-compatible tools bound to the active Binance Agent OS adapter.
  * 
- * Supports both LiveBinanceMCPAdapter (direct MCP) and SimulatedBinanceAdapter
+ * Supports both LiveBinanceMCPAdapter (remote MCP) and SimulatedBinanceAdapter
  * (live depth + in-memory Agentic sandbox).
  */
-export function createBinanceTools(customAdapter?: IBinanceAgentAdapter) {
+export function buildAgentTools(customAdapter?: IBinanceAgentAdapter) {
   const adapter = customAdapter ?? getBinanceAdapter();
 
   return {
     get_ticker_price: tool({
-      description: TOOL_DESCRIPTIONS.getTickerPrice,
+      description: AGENT_TOOL_DESCRIPTIONS.getTickerPrice,
       inputSchema: z.object({
         symbol: z.string().describe('Trading pair symbol in uppercase (e.g. SOLUSDT, BTCUSDT, ETHUSDT)'),
       }),
@@ -37,7 +37,7 @@ export function createBinanceTools(customAdapter?: IBinanceAgentAdapter) {
     }),
 
     get_order_book: tool({
-      description: TOOL_DESCRIPTIONS.getOrderBook,
+      description: AGENT_TOOL_DESCRIPTIONS.getOrderBook,
       inputSchema: z.object({
         symbol: z.string().describe('Trading pair symbol in uppercase (e.g. SOLUSDT, BTCUSDT)'),
         limit: z.number().int().min(5).max(100).default(20).describe('Depth levels to retrieve (default 20)'),
@@ -82,7 +82,7 @@ export function createBinanceTools(customAdapter?: IBinanceAgentAdapter) {
     }),
 
     get_klines: tool({
-      description: TOOL_DESCRIPTIONS.getKlines,
+      description: AGENT_TOOL_DESCRIPTIONS.getKlines,
       inputSchema: z.object({
         symbol: z.string().describe('Trading pair symbol in uppercase (e.g. SOLUSDT)'),
         interval: z.enum(['1m', '5m', '15m', '1h', '4h', '1d']).default('15m').describe('Candlestick timeframe interval'),
@@ -103,7 +103,7 @@ export function createBinanceTools(customAdapter?: IBinanceAgentAdapter) {
             periodChangePercent,
             latestPrice,
             candleCount: klines.length,
-            klines: klines.slice(-15), // Return last 15 for token efficiency
+            klines: klines.slice(-15),
           };
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : 'Unknown error';
@@ -116,7 +116,7 @@ export function createBinanceTools(customAdapter?: IBinanceAgentAdapter) {
     }),
 
     get_24h_stats: tool({
-      description: TOOL_DESCRIPTIONS.get24hStats,
+      description: AGENT_TOOL_DESCRIPTIONS.get24hStats,
       inputSchema: z.object({
         symbol: z.string().describe('Trading pair symbol in uppercase (e.g. SOLUSDT)'),
       }),
@@ -138,7 +138,7 @@ export function createBinanceTools(customAdapter?: IBinanceAgentAdapter) {
     }),
 
     get_account_balance: tool({
-      description: TOOL_DESCRIPTIONS.getAccountBalances,
+      description: AGENT_TOOL_DESCRIPTIONS.getAccountBalances,
       inputSchema: z.object({}),
       execute: async () => {
         try {
@@ -158,7 +158,7 @@ export function createBinanceTools(customAdapter?: IBinanceAgentAdapter) {
     }),
 
     place_spot_order: tool({
-      description: TOOL_DESCRIPTIONS.placeSpotOrder,
+      description: AGENT_TOOL_DESCRIPTIONS.placeSpotOrder,
       inputSchema: z.object({
         symbol: z.string().describe('Trading pair symbol e.g. SOLUSDT'),
         side: z.enum(['BUY', 'SELL']).describe('Order direction'),
@@ -190,7 +190,7 @@ export function createBinanceTools(customAdapter?: IBinanceAgentAdapter) {
     }),
 
     cancel_order: tool({
-      description: TOOL_DESCRIPTIONS.cancelOrder,
+      description: AGENT_TOOL_DESCRIPTIONS.cancelOrder,
       inputSchema: z.object({
         symbol: z.string().describe('Trading pair symbol e.g. SOLUSDT'),
         orderId: z.string().describe('Order ID to cancel'),

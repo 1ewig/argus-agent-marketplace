@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Bot, User, ChevronDown, ChevronUp, Terminal } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
 import { MarkdownView } from '@/components/common/markdown-view';
-import type { ExecutedToolCall } from '@/lib/agents/analyst-agent';
+import type { ExecutedToolCall } from '@/agent';
 
 export interface ChatMessageData {
   id: string;

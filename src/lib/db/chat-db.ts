@@ -1,11 +1,11 @@
 import Dexie, { type EntityTable } from 'dexie';
-import type { ExecutedToolCall } from '@/lib/agents/analyst-agent';
+import type { ExecutedToolCall } from '@/agent';
 
 export interface ChatMessageRecord {
   id: string;
   role: 'user' | 'assistant';
   content: string;
-  symbol: string;
+  symbol?: string;
   toolCalls?: ExecutedToolCall[];
   stepCount?: number;
   timestamp: number;

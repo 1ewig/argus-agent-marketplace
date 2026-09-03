@@ -1,24 +1,10 @@
 import { NextResponse } from 'next/server';
-import { z } from 'zod';
-import { runAnalystAgent } from '@/lib/agents/analyst-agent';
-
-const ChatMessageSchema = z.object({
-  role: z.enum(['user', 'assistant']),
-  content: z.string(),
-});
-
-const ChatRequestSchema = z.object({
-  message: z.string().min(1, 'Message is required'),
-  symbol: z.string().default('SOLUSDT'),
-  mode: z.enum(['simulation', 'live_mcp']).default('simulation'),
-  apiKey: z.string().optional(),
-  history: z.array(ChatMessageSchema).optional(),
-});
+import { executeAgent, AgentChatRequestSchema } from '@/agent';
 
 export async function POST(req: Request) {
   try {
     const json = await req.json();
-    const parseResult = ChatRequestSchema.safeParse(json);
+    const parseResult = AgentChatRequestSchema.safeParse(json);
 
     if (!parseResult.success) {
       return NextResponse.json(
@@ -33,7 +19,7 @@ export async function POST(req: Request) {
 
     const { message, symbol, mode, apiKey, history } = parseResult.data;
 
-    const result = await runAnalystAgent({
+    const result = await executeAgent({
       prompt: message,
       symbol,
       mode,

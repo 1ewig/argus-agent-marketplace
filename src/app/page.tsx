@@ -6,12 +6,11 @@ import { APP_CONTENT } from '@/constants/content';
 import type { ExecutionMode } from '@/lib/types';
 
 export default function Home() {
-  const [selectedSymbol, setSelectedSymbol] = useState('SOLUSDT');
   const [executionMode, setExecutionMode] = useState<ExecutionMode>('simulation');
 
   return (
     <main className="h-screen w-screen bg-theme-bg-base p-spacing-sm sm:p-spacing-md flex flex-col overflow-hidden">
-      <div className="w-full max-w-5xl mx-auto flex-1 flex flex-col h-full min-h-0">
+      <div className="w-full max-w-4xl mx-auto flex-1 flex flex-col h-full min-h-0">
         {/* Top Minimal Brand & Controls Bar */}
         <header className="flex flex-wrap items-center justify-between gap-spacing-sm pb-spacing-sm border-b border-theme-border-subtle mb-spacing-sm shrink-0">
           {/* Brand & Track Identification */}
@@ -25,29 +24,8 @@ export default function Home() {
             </span>
           </div>
 
-          {/* Controls: Target Pair & Mode Switcher */}
-          <div className="flex flex-wrap items-center gap-spacing-sm">
-            {/* Target Pair Selector */}
-            <div className="flex items-center gap-spacing-xs bg-theme-bg-surface p-0.5 rounded-lg border border-theme-border-subtle">
-              <span className="text-2xs font-bold text-theme-text-muted px-spacing-xs hidden sm:inline">
-                {APP_CONTENT.header.activePairLabel}
-              </span>
-              {APP_CONTENT.pairs.map((sym) => (
-                <button
-                  key={sym}
-                  type="button"
-                  onClick={() => setSelectedSymbol(sym)}
-                  className={`text-2xs font-mono font-bold px-spacing-sm py-spacing-xs rounded-md transition-all cursor-pointer ${
-                    selectedSymbol === sym
-                      ? 'bg-theme-bg-overlay text-theme-brand-binance shadow-2xs'
-                      : 'text-theme-text-secondary hover:text-theme-text-primary'
-                  }`}
-                >
-                  {sym}
-                </button>
-              ))}
-            </div>
-
+          {/* Controls: Mode Switcher & Status */}
+          <div className="flex items-center gap-spacing-sm">
             {/* Mode Selector (Simulation vs Live MCP) */}
             <div className="flex items-center gap-spacing-xs bg-theme-bg-surface p-0.5 rounded-lg border border-theme-border-subtle">
               <button
@@ -75,7 +53,7 @@ export default function Home() {
             </div>
 
             {/* Live Telemetry Indicator */}
-            <div className="hidden md:flex items-center gap-spacing-xs text-2xs font-mono text-theme-text-muted pl-spacing-xs">
+            <div className="flex items-center gap-spacing-xs text-2xs font-mono text-theme-text-muted pl-spacing-xs">
               <span className="size-1.5 rounded-full bg-theme-status-success animate-pulse" />
               <span>{APP_CONTENT.header.mcpActive}</span>
             </div>
@@ -84,10 +62,7 @@ export default function Home() {
 
         {/* Central Agent Interaction Console */}
         <section className="flex-1 flex flex-col min-h-0 overflow-hidden">
-          <ChatWindow
-            symbol={selectedSymbol}
-            mode={executionMode}
-          />
+          <ChatWindow mode={executionMode} />
         </section>
       </div>
     </main>
