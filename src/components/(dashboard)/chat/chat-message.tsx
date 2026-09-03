@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { User, ChevronDown, ChevronUp, Terminal } from 'lucide-react';
+import { User, ChevronDown, ChevronUp, Terminal, AlertCircle } from 'lucide-react';
 import { ArgusIcon } from '../argus-icon';
 import { APP_CONTENT } from '@/constants/content';
 import { MarkdownView } from '../markdown-view';
@@ -11,6 +11,7 @@ export interface ChatMessageData {
   id: string;
   role: 'user' | 'assistant';
   content: string;
+  status?: 'success' | 'error' | 'pending';
   toolCalls?: ExecutedToolCall[];
   stepCount?: number;
   timestamp: number;
@@ -23,12 +24,15 @@ interface ChatMessageProps {
 export function ChatMessage({ message }: ChatMessageProps) {
   const [toolsExpanded, setToolsExpanded] = useState(false);
   const isUser = message.role === 'user';
+  const isError = message.status === 'error';
   const hasToolCalls = Boolean(message.toolCalls && message.toolCalls.length > 0);
 
   return (
     <div
       className={`flex flex-col gap-spacing-xs p-spacing-md rounded-lg shadow-2xs border ${
-        isUser
+        isError
+          ? 'bg-theme-bg-surface border-theme-status-danger'
+          : isUser
           ? 'bg-theme-bg-elevated border-theme-border-subtle'
           : 'bg-theme-bg-surface border-theme-border-strong'
       }`}
@@ -46,7 +50,13 @@ export function ChatMessage({ message }: ChatMessageProps) {
           <span className="text-2xs font-bold tracking-wider">
             {isUser ? APP_CONTENT.chat.userRole : APP_CONTENT.chat.agentRole}
           </span>
-          {!isUser && message.stepCount !== undefined && message.stepCount > 0 && (
+          {isError && (
+            <span className="text-2xs bg-theme-bg-surface text-theme-status-danger px-spacing-xs rounded border border-theme-status-danger font-semibold flex items-center gap-1">
+              <AlertCircle className="size-3 text-theme-status-danger" />
+              {APP_CONTENT.chat.errorMessageTitle}
+            </span>
+          )}
+          {!isUser && !isError && message.stepCount !== undefined && message.stepCount > 0 && (
             <span className="text-2xs bg-theme-bg-elevated text-theme-text-muted px-spacing-xs rounded border border-theme-border-subtle">
               {message.stepCount} {APP_CONTENT.chat.stepCountLabel}
             </span>

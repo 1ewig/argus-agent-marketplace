@@ -1,12 +1,21 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, RefreshCw } from 'lucide-react';
+import { Send, RefreshCw, Plus } from 'lucide-react';
+import { useLiveQuery } from 'dexie-react-hooks';
 import { ArgusIcon } from '../argus-icon';
 import { APP_CONTENT } from '@/constants/content';
 import { generateMessageId, getNowTimestamp } from '@/lib/utils';
-import { getStoredMessages, saveStoredMessage, clearStoredMessages } from '@/lib/db';
-import { ChatMessage, type ChatMessageData } from './chat-message';
+import {
+  db,
+  DEFAULT_CONVERSATION_ID,
+  createConversation,
+  clearConversationMessages,
+  saveStoredMessage,
+  listConversations,
+  type ChatMessageRecord,
+} from '@/lib/db';
+import { ChatMessage } from './chat-message';
 import type { AgentResult } from '@/agent';
 import type { ExecutionMode } from '@/lib/types';
 
@@ -15,56 +24,44 @@ interface ChatWindowProps {
 }
 
 export function ChatWindow({ mode = 'simulation' }: ChatWindowProps) {
-  const [messages, setMessages] = useState<ChatMessageData[]>([]);
+  const [activeConversationId, setActiveConversationId] = useState<string>(DEFAULT_CONVERSATION_ID);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorNotice, setErrorNotice] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // 1. Load persistent chat history from Dexie IndexedDB
-  useEffect(() => {
-    let isMounted = true;
+  // 1. Reactive Live Queries directly from Dexie IndexedDB
+  const conversations = useLiveQuery(() => listConversations(), []) ?? [];
+  const messages = useLiveQuery(
+    () =>
+      db.messages
+        .where('conversationId')
+        .equals(activeConversationId)
+        .sortBy('timestamp'),
+    [activeConversationId]
+  ) ?? [];
 
-    getStoredMessages()
-      .then((records) => {
-        if (isMounted) {
-          if (records.length > 0) {
-            setMessages(
-              records.map((r) => ({
-                id: r.id,
-                role: r.role,
-                content: r.content,
-                toolCalls: r.toolCalls,
-                stepCount: r.stepCount,
-                timestamp: r.timestamp,
-              }))
-            );
-          } else {
-            setMessages([]);
-          }
-        }
-      })
-      .catch(() => {
-        // Fallback gracefully if IndexedDB is unavailable
-      });
+  const messagesCount = messages.length;
 
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  // 2. Auto-scroll to latest message
+  // 2. Auto-scroll to latest message whenever messages count or loading state updates
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isLoading]);
+  }, [messagesCount, isLoading]);
 
-  // 3. Clear persistent history
-  const handleClear = async () => {
-    await clearStoredMessages();
-    setMessages([]);
+  // 3. Create a brand new session thread
+  const handleNewSession = async () => {
+    setErrorNotice(null);
+    const newConv = await createConversation();
+    setActiveConversationId(newConv.id);
   };
 
-  // 4. Send message with multi-turn context and Dexie persistence
+  // 4. Clear current session messages
+  const handleClear = async () => {
+    setErrorNotice(null);
+    await clearConversationMessages(activeConversationId);
+  };
+
+  // 5. Send message with multi-turn context and persistent Dexie transactions
   const handleSend = async (textToSend?: string) => {
     const prompt = (textToSend ?? input).trim();
     if (!prompt || isLoading) return;
@@ -72,25 +69,29 @@ export function ChatWindow({ mode = 'simulation' }: ChatWindowProps) {
     setErrorNotice(null);
     setInput('');
 
-    const userMessage: ChatMessageData = {
+    const userMessage: ChatMessageRecord = {
       id: generateMessageId('usr'),
+      conversationId: activeConversationId,
       role: 'user',
       content: prompt,
+      status: 'success',
       timestamp: getNowTimestamp(),
     };
 
-    // Optimistically update UI and persist to Dexie
-    setMessages((prev) => [...prev, userMessage]);
-    void saveStoredMessage(userMessage);
+    // Optimistically persist to Dexie (useLiveQuery instantly updates the UI!)
+    await saveStoredMessage(userMessage);
 
     setIsLoading(true);
 
     try {
-      // Prepare multi-turn history: send sliding window of past 10 messages
-      const conversationHistory = messages.slice(-10).map((m) => ({
-        role: m.role,
-        content: m.content,
-      }));
+      // Send sliding window of past 10 valid messages from this session
+      const conversationHistory = messages
+        .filter((m) => m.status !== 'error')
+        .slice(-10)
+        .map((m) => ({
+          role: m.role,
+          content: m.content,
+        }));
 
       const response = await fetch('/api/agent/chat', {
         method: 'POST',
@@ -112,21 +113,32 @@ export function ChatWindow({ mode = 'simulation' }: ChatWindowProps) {
 
       const agentData: AgentResult = json.data;
 
-      const agentMessage: ChatMessageData = {
+      const agentMessage: ChatMessageRecord = {
         id: generateMessageId('agt'),
+        conversationId: activeConversationId,
         role: 'assistant',
         content: agentData.analysis,
+        status: 'success',
         toolCalls: agentData.toolCalls,
         stepCount: agentData.stepCount,
         timestamp: agentData.timestamp,
       };
 
-      // Update state and persist to Dexie
-      setMessages((prev) => [...prev, agentMessage]);
-      void saveStoredMessage(agentMessage);
+      await saveStoredMessage(agentMessage);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : APP_CONTENT.chat.errorNotice;
       setErrorNotice(msg);
+
+      // Persist durable error message into Dexie to avoid orphaned prompts
+      const errorRecord: ChatMessageRecord = {
+        id: generateMessageId('err'),
+        conversationId: activeConversationId,
+        role: 'assistant',
+        content: msg,
+        status: 'error',
+        timestamp: getNowTimestamp(),
+      };
+      await saveStoredMessage(errorRecord);
     } finally {
       setIsLoading(false);
     }
@@ -141,21 +153,47 @@ export function ChatWindow({ mode = 'simulation' }: ChatWindowProps) {
 
   return (
     <div className="flex flex-col h-full bg-theme-bg-surface border border-theme-border-subtle rounded-lg overflow-hidden shadow-sm">
-      {/* Header bar */}
-      <div className="flex items-center justify-between p-spacing-sm px-spacing-md bg-theme-bg-elevated border-b border-theme-border-subtle">
+      {/* Header bar: Brand, Session Switcher, Controls */}
+      <div className="flex flex-wrap items-center justify-between gap-spacing-xs p-spacing-sm px-spacing-md bg-theme-bg-elevated border-b border-theme-border-subtle shrink-0">
         <div className="flex items-center gap-spacing-xs">
           <ArgusIcon className="size-4 text-theme-brand-binance shrink-0" />
           <div>
             <h2 className="text-xs font-bold text-theme-text-primary tracking-wide">
               {APP_CONTENT.chat.title}
             </h2>
-            <p className="text-2xs text-theme-text-muted">
+            <p className="text-2xs text-theme-text-muted hidden sm:block">
               {APP_CONTENT.chat.subtitle}
             </p>
           </div>
         </div>
 
+        {/* Sessions Switcher & Actions */}
         <div className="flex items-center gap-spacing-xs">
+          {conversations.length > 1 && (
+            <select
+              value={activeConversationId}
+              onChange={(e) => setActiveConversationId(e.target.value)}
+              aria-label={APP_CONTENT.chat.sessionsLabel}
+              className="text-2xs font-medium bg-theme-bg-surface text-theme-text-primary border border-theme-border-subtle rounded px-spacing-xs py-1 max-w-[140px] truncate cursor-pointer outline-hidden"
+            >
+              {conversations.map((conv) => (
+                <option key={conv.id} value={conv.id}>
+                  {conv.title}
+                </option>
+              ))}
+            </select>
+          )}
+
+          <button
+            type="button"
+            onClick={() => void handleNewSession()}
+            title={APP_CONTENT.chat.newSessionButton}
+            className="flex items-center gap-1 text-2xs font-semibold px-spacing-xs py-1 rounded bg-theme-bg-surface hover:bg-theme-bg-base border border-theme-border-subtle text-theme-text-primary cursor-pointer transition-colors"
+          >
+            <Plus className="size-3 text-theme-brand-binance" />
+            <span className="hidden sm:inline">{APP_CONTENT.chat.newSessionButton}</span>
+          </button>
+
           <button
             type="button"
             onClick={() => void handleClear()}
@@ -214,7 +252,7 @@ export function ChatWindow({ mode = 'simulation' }: ChatWindowProps) {
           </div>
         )}
 
-        {/* Error Notice */}
+        {/* Transient Error Notice */}
         {errorNotice && (
           <div className="p-spacing-sm px-spacing-md bg-theme-bg-elevated border border-theme-status-danger text-theme-status-danger rounded text-xs">
             {errorNotice}

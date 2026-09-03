@@ -49,5 +49,9 @@ export const APP_CONTENT = {
     agentRole: 'ARGUS AGENT',
     stepCountLabel: 'Steps',
     errorNotice: 'Agent encountered an error. Please check your Groq API key and network connectivity.',
+    newSessionButton: 'New Session',
+    sessionsLabel: 'Sessions',
+    defaultSessionTitle: 'Intelligence Session',
+    errorMessageTitle: 'Execution Error',
   },
 } as const;
