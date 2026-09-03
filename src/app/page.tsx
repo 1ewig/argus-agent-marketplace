@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ChatWindow } from '@/components/stream/chat-window';
+import { ChatWindow } from '@/components/(dashboard)/chat/chat-window';
 import { APP_CONTENT } from '@/constants/content';
 import type { ExecutionMode } from '@/lib/types';
 
