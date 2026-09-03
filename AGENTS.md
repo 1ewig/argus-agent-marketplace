@@ -95,3 +95,12 @@ src/
   * **ALWAYS use plain, intuitive language:** "chat", "conversation", "saved chats", "trading assistant", "tools used", "suggestions", "market check", "ready to help".
 * **Agent Personality:** The AI agent (Argus) must speak like an experienced, approachable colleague. Direct, clear, transparent, and grounded in real market data without corporate boilerplate or robotic theatrics.
 
+---
+
+## 7. Parallel Tool Execution: Batch Reads & Writes to Save API Calls
+
+* **Mandatory Parallelism:** AI coding agents working in this repository MUST prioritize reading, searching, and writing files in **parallel within a single turn**.
+* **Parallel File Inspections:** When analyzing a feature, debugging, or reviewing architecture across multiple files (e.g., component + hook + constants + types), ALWAYS dispatch all `view_file`, `grep_search`, or directory inspection tool calls concurrently in a single response instead of serial, round-by-round queries.
+* **Parallel File Modifications:** When an update or refactor spans multiple files, dispatch edits and file writes in parallel in the same turn wherever changes are independent.
+* **Token & Latency Efficiency:** Minimizing roundtrips preserves LLM context window health, conserves API rate limits, and dramatically accelerates task completion.
+

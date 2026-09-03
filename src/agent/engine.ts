@@ -1,8 +1,6 @@
 import { generateText, streamText, isStepCount, smoothStream } from 'ai';
-import { getAgentModel } from './providers';
-import { buildAgentTools } from './tools';
-import { getBinanceAdapter } from '@/lib/binance-mcp';
-import { ARGUS_SYSTEM_PROMPT, FIRST_TURN_SESSION_TITLE_DIRECTIVE } from './prompts';
+import { prepareAgentInvocation } from './prepare-invocation';
+import { SessionTitleStreamFilter, extractSessionTitle } from './title-stream-filter';
 import { APP_CONTENT } from '@/constants/content';
 import type {
   AgentOptions,
@@ -12,78 +10,28 @@ import type {
   ExecutedToolCall,
 } from './types';
 
-function prepareAgentInvocation(options: AgentOptions) {
-  const {
-    prompt,
-    symbol,
-    mode = 'simulation',
-    modelName,
-    apiKey,
-    history = [],
-    isFirstTurn,
-    systemDirective,
-  } = options;
-
-  const adapter = getBinanceAdapter(mode);
-  const tools = buildAgentTools(adapter);
-  const model = getAgentModel(modelName, apiKey);
-
-  const currentUserPrompt = symbol
-    ? `[Pair Context: ${symbol.toUpperCase()}]\nUser: ${prompt}`
-    : prompt;
-
-  const effectiveIsFirstTurn = isFirstTurn ?? (!history || history.length === 0);
-  const directives: string[] = [];
-  if (effectiveIsFirstTurn) {
-    directives.push(FIRST_TURN_SESSION_TITLE_DIRECTIVE);
-  }
-  if (systemDirective) {
-    directives.push(systemDirective);
-  }
-
-  const effectiveSystemPrompt = directives.length > 0
-    ? `${ARGUS_SYSTEM_PROMPT}\n\n${directives.join('\n\n')}`
-    : ARGUS_SYSTEM_PROMPT;
-
-  const messages = history && history.length > 0
-    ? [
-      ...history.slice(-10).map((h) => ({
-        role: h.role,
-        content: h.content,
-      })),
-      {
-        role: 'user' as const,
-        content: currentUserPrompt,
-      },
-    ]
-    : undefined;
-
-  return {
-    model,
-    tools,
-    effectiveSystemPrompt,
-    currentUserPrompt,
-    messages,
-  };
-}
-
+/**
+ * Executes an autonomous multi-step agent reasoning stream using Vercel AI SDK.
+ * Emits real-time SSE events for thinking deltas, tool executions, and stream output.
+ */
 export async function executeAgentStream(
   options: AgentOptions,
   onEvent: (event: AgentStreamEvent) => void
 ): Promise<AgentResult> {
   const { maxSteps = 5, mode = 'simulation', symbol } = options;
-  const { model, tools, effectiveSystemPrompt, currentUserPrompt, messages } =
-    prepareAgentInvocation(options);
+  const {
+    model,
+    tools,
+    effectiveSystemPrompt,
+    currentUserPrompt,
+    messages,
+    reasoningEffort,
+  } = prepareAgentInvocation(options);
 
   const steps: AgentExecutionStep[] = [];
   const executedToolCalls: ExecutedToolCall[] = [];
   let activeThinkingStepId: string | null = null;
   let accumulatedText = '';
-  let emittedTitle: string | undefined;
-
-  // Buffer <session_title> so raw XML is never leaked to the client stream
-  let titleBuffer = '';
-  let titleResolved = false;
 
   // 1. Initial Thinking step
   const initialThinkingId = `step_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
@@ -98,8 +46,11 @@ export async function executeAgentStream(
   activeThinkingStepId = initialThinkingId;
   onEvent({ type: 'step_start', step: initialThinkingStep });
 
-  const reasoningEffort =
-    (process.env.GROQ_REASONING_EFFORT as 'high' | 'medium' | 'low' | 'default' | 'none') || 'high';
+  // 2. Stream interceptor to prevent raw <session_title> XML leaking to the client
+  const titleFilter = new SessionTitleStreamFilter(
+    (title) => onEvent({ type: 'session_title', title }),
+    (delta) => onEvent({ type: 'text_delta', delta })
+  );
 
   const streamParams = {
     model,
@@ -144,7 +95,7 @@ export async function executeAgentStream(
         onEvent({ type: 'reasoning_delta', stepId: activeThinking.id, delta: part.text });
 
       } else if (part.type === 'start-step') {
-        // Only spawn thinking step if no other step (tool or thinking) is active
+        // Spawn a thinking step only if no other step is currently active
         const hasActive = steps.some((s) => s.status === 'active');
         if (!hasActive) {
           const nextId = `step_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
@@ -162,8 +113,7 @@ export async function executeAgentStream(
         }
 
       } else if (part.type === 'tool-call') {
-        // Close ONLY thinking steps when tools start.
-        // DO NOT close concurrent tool steps!
+        // Close active thinking step when tool call initiates
         if (activeThinkingStepId) {
           const activeThinking = steps.find((s) => s.id === activeThinkingStepId);
           if (activeThinking && activeThinking.status === 'active') {
@@ -173,7 +123,6 @@ export async function executeAgentStream(
           activeThinkingStepId = null;
         }
 
-        // Key directly to AI SDK's unique toolCallId
         const toolStepId = `tool_${part.toolCallId}`;
         const toolStep: AgentExecutionStep = {
           id: toolStepId,
@@ -188,7 +137,6 @@ export async function executeAgentStream(
         onEvent({ type: 'step_start', step: toolStep });
 
       } else if (part.type === 'tool-result') {
-        // Direct 1:1 match by unique toolCallId
         const targetId = `tool_${part.toolCallId}`;
         const matchingToolStep = steps.find((s) => s.id === targetId);
 
@@ -226,36 +174,7 @@ export async function executeAgentStream(
         }
 
         accumulatedText += part.text;
-
-        // Buffer <session_title>...</session_title> so raw XML is never leaked to the client stream
-        if (!titleResolved) {
-          titleBuffer += part.text;
-          const match = titleBuffer.match(/<session_title>([\s\S]*?)<\/session_title>/i);
-          if (match) {
-            emittedTitle = match[1].replace(/^["'`]+|["'`]+$/g, '').trim();
-            if (emittedTitle) {
-              onEvent({ type: 'session_title', title: emittedTitle });
-            }
-            titleResolved = true;
-            const afterTag = titleBuffer.slice((match.index ?? 0) + match[0].length);
-            if (afterTag) {
-              onEvent({ type: 'text_delta', delta: afterTag.trimStart() });
-            }
-            continue;
-          }
-
-          // If buffer clearly doesn't start with '<' or exceeds 150 chars, flush and stop buffering
-          if (!titleBuffer.trimStart().startsWith('<') || titleBuffer.length > 150) {
-            titleResolved = true;
-            onEvent({ type: 'text_delta', delta: titleBuffer });
-            continue;
-          }
-
-          // Continue buffering in-flight title tag
-          continue;
-        }
-
-        onEvent({ type: 'text_delta', delta: part.text });
+        titleFilter.processChunk(part.text);
       }
     }
   } catch (err) {
@@ -278,19 +197,18 @@ export async function executeAgentStream(
     }
   }
 
-  const titleMatch = accumulatedText.match(/<session_title>([\s\S]*?)<\/session_title>/i);
-  const rawTitle = titleMatch ? titleMatch[1].trim() : undefined;
-  const sessionTitle = emittedTitle ?? (rawTitle ? rawTitle.replace(/^["'`]+|["'`]+$/g, '').trim() : undefined);
+  // Flush any remaining buffer in the title filter
+  titleFilter.flush();
 
-  let cleanedAnalysis = accumulatedText.replace(/<session_title>[\s\S]*?<\/session_title>\s*/gi, '').trim();
-  if (!cleanedAnalysis && sessionTitle) {
-    cleanedAnalysis = `Started a new chat for **${sessionTitle}**. How can I help you today?`;
-  }
+  const { sessionTitle, cleanedText } = extractSessionTitle(
+    accumulatedText,
+    titleFilter.getEmittedTitle()
+  );
 
   const finalResult: AgentResult = {
     symbol: symbol?.toUpperCase(),
     sessionTitle,
-    analysis: cleanedAnalysis,
+    analysis: cleanedText,
     toolCalls: executedToolCalls,
     steps,
     stepCount: steps.length,
@@ -302,13 +220,19 @@ export async function executeAgentStream(
   return finalResult;
 }
 
+/**
+ * Executes a one-shot batch agent inference without SSE streaming.
+ */
 export async function executeAgent(options: AgentOptions): Promise<AgentResult> {
   const { maxSteps = 5, mode = 'simulation', symbol } = options;
-  const { model, tools, effectiveSystemPrompt, currentUserPrompt, messages } =
-    prepareAgentInvocation(options);
-
-  const reasoningEffort =
-    (process.env.GROQ_REASONING_EFFORT as 'high' | 'medium' | 'low' | 'default' | 'none') || 'high';
+  const {
+    model,
+    tools,
+    effectiveSystemPrompt,
+    currentUserPrompt,
+    messages,
+    reasoningEffort,
+  } = prepareAgentInvocation(options);
 
   const generateParams = {
     model,
@@ -328,17 +252,8 @@ export async function executeAgent(options: AgentOptions): Promise<AgentResult> 
     .filter((t): t is string => typeof t === 'string' && t.trim().length > 0)
     .join('\n');
   const candidateText = `${stepTexts}\n${text}`;
-  const titleMatch = candidateText.match(/<session_title>([\s\S]*?)<\/session_title>/i);
 
-  const rawTitle = titleMatch ? titleMatch[1].trim() : undefined;
-  const sessionTitle = rawTitle
-    ? rawTitle.replace(/^["'`]+|["'`]+$/g, '').trim()
-    : undefined;
-
-  let cleanedAnalysis = text.replace(/<session_title>[\s\S]*?<\/session_title>\s*/gi, '').trim();
-  if (!cleanedAnalysis && sessionTitle) {
-    cleanedAnalysis = `Started a new chat for **${sessionTitle}**. How can I help you today?`;
-  }
+  const { sessionTitle, cleanedText } = extractSessionTitle(candidateText);
 
   const executedToolCalls: ExecutedToolCall[] = [];
   const executionSteps: AgentExecutionStep[] = [];
@@ -368,7 +283,6 @@ export async function executeAgent(options: AgentOptions): Promise<AgentResult> 
           result,
         });
 
-        // toolArgs and toolResult are now populated for every tool
         executionSteps.push({
           id: `tool_${call.toolCallId ?? stepSeq++}`,
           type: 'tool',
@@ -386,7 +300,7 @@ export async function executeAgent(options: AgentOptions): Promise<AgentResult> 
   return {
     symbol: symbol?.toUpperCase(),
     sessionTitle,
-    analysis: cleanedAnalysis,
+    analysis: cleanedText,
     toolCalls: executedToolCalls,
     steps: executionSteps,
     stepCount: executionSteps.length,

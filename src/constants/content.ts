@@ -54,6 +54,8 @@ export const APP_CONTENT = {
     defaultSessionTitle: 'New Chat',
     defaultSessionTitles: ['Active Session', 'New Mission', 'Intelligence Session', 'New Chat', 'Chat', 'Active Chat'] as const,
     errorMessageTitle: 'Error',
+    newSessionGreeting: (title: string) =>
+      `Started a new chat for **${title}**. How can I help you today?`,
   },
   sessions: {
     menuTitle: 'Conversations',

@@ -1,0 +1,77 @@
+import { getAgentModel } from './providers';
+import { buildAgentTools } from './tools';
+import { getBinanceAdapter } from '@/lib/binance-mcp';
+import { ARGUS_SYSTEM_PROMPT, FIRST_TURN_SESSION_TITLE_DIRECTIVE } from './prompts';
+import type { AgentOptions } from './types';
+
+export interface PreparedAgentInvocation {
+  model: ReturnType<typeof getAgentModel>;
+  tools: ReturnType<typeof buildAgentTools>;
+  effectiveSystemPrompt: string;
+  currentUserPrompt: string;
+  messages?: Array<{ role: 'user' | 'assistant'; content: string }>;
+  reasoningEffort: 'high' | 'medium' | 'low' | 'default' | 'none';
+}
+
+/**
+ * Prepares the model, tools, prompt context, and directives for agent execution.
+ * Decouples prompt formatting and adapter assembly from the execution loop.
+ */
+export function prepareAgentInvocation(options: AgentOptions): PreparedAgentInvocation {
+  const {
+    prompt,
+    symbol,
+    mode = 'simulation',
+    modelName,
+    apiKey,
+    history = [],
+    isFirstTurn,
+    systemDirective,
+  } = options;
+
+  const adapter = getBinanceAdapter(mode);
+  const tools = buildAgentTools(adapter);
+  const model = getAgentModel(modelName, apiKey);
+
+  const currentUserPrompt = symbol
+    ? `[Pair Context: ${symbol.toUpperCase()}]\nUser: ${prompt}`
+    : prompt;
+
+  const effectiveIsFirstTurn = isFirstTurn ?? (!history || history.length === 0);
+  const directives: string[] = [];
+  if (effectiveIsFirstTurn) {
+    directives.push(FIRST_TURN_SESSION_TITLE_DIRECTIVE);
+  }
+  if (systemDirective) {
+    directives.push(systemDirective);
+  }
+
+  const effectiveSystemPrompt = directives.length > 0
+    ? `${ARGUS_SYSTEM_PROMPT}\n\n${directives.join('\n\n')}`
+    : ARGUS_SYSTEM_PROMPT;
+
+  const messages = history && history.length > 0
+    ? [
+        ...history.slice(-10).map((h) => ({
+          role: h.role,
+          content: h.content,
+        })),
+        {
+          role: 'user' as const,
+          content: currentUserPrompt,
+        },
+      ]
+    : undefined;
+
+  const reasoningEffort =
+    (process.env.GROQ_REASONING_EFFORT as 'high' | 'medium' | 'low' | 'default' | 'none') || 'high';
+
+  return {
+    model,
+    tools,
+    effectiveSystemPrompt,
+    currentUserPrompt,
+    messages,
+    reasoningEffort,
+  };
+}
