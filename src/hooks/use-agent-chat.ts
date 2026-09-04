@@ -246,10 +246,13 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
     // Re-enable auto-scroll when user submits a new prompt
     isAutoScrollEnabledRef.current = true;
     if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTo({
-        top: scrollContainerRef.current.scrollHeight,
-        behavior: 'smooth',
-      });
+      const container = scrollContainerRef.current;
+      if (container.scrollHeight > container.clientHeight) {
+        container.scrollTo({
+          top: container.scrollHeight,
+          behavior: 'smooth',
+        });
+      }
     }
 
     const streamMessageId = generateMessageId('agt');

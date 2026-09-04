@@ -80,17 +80,21 @@ export const dropdownMenuVariants: Variants = {
  * Subtle staggered container for the empty chat suggestions interface.
  */
 export const emptyStateContainerVariants: Variants = {
-  hidden: { opacity: 0 },
+  hidden: { opacity: 0, scale: 0.98 },
   visible: {
     opacity: 1,
+    scale: 1,
     transition: {
-      staggerChildren: 0.05,
+      duration: 0.22,
+      ease: EASING_ARCHITECTURAL,
+      staggerChildren: 0.04,
       delayChildren: 0.02,
     },
   },
   exit: {
     opacity: 0,
-    y: -6,
+    scale: 0.97,
+    pointerEvents: 'none',
     transition: {
       duration: 0.16,
       ease: 'easeOut',

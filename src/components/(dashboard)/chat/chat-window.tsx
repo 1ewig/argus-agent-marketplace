@@ -99,9 +99,9 @@ export function ChatWindow({ mode = 'simulation' }: ChatWindowProps) {
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto overscroll-y-contain [will-change:scroll-position] [transform:translateZ(0)] p-spacing-md sm:p-spacing-lg flex flex-col gap-spacing-md min-h-0"
+        className="relative flex-1 overflow-y-auto overscroll-y-contain [will-change:scroll-position] [transform:translateZ(0)] p-spacing-md sm:p-spacing-lg flex flex-col gap-spacing-md min-h-0"
       >
-        <AnimatePresence mode="wait">
+        <AnimatePresence>
           {messages.length === 0 && (
             <motion.div
               key={`empty-${activeConversationId}`}
@@ -109,53 +109,55 @@ export function ChatWindow({ mode = 'simulation' }: ChatWindowProps) {
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="flex flex-col items-center justify-center flex-1 text-center py-spacing-xl"
+              className="absolute inset-0 flex flex-col items-center justify-center p-spacing-md sm:p-spacing-lg text-center overflow-y-auto pointer-events-auto z-10"
             >
-              {/* Category Tag */}
-              <motion.div
-                variants={emptyStateItemVariants}
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-theme-brand-binance/10 border border-theme-brand-binance/30 text-theme-brand-binance text-2xs font-extrabold uppercase tracking-widest mb-spacing-sm"
-              >
-                <ArgusIcon className="size-3.5 text-theme-brand-binance" />
-                <span>{APP_CONTENT.chat.emptyCategory}</span>
-              </motion.div>
+              <div className="my-auto flex flex-col items-center justify-center w-full py-spacing-md">
+                {/* Category Tag */}
+                <motion.div
+                  variants={emptyStateItemVariants}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-theme-brand-binance/10 border border-theme-brand-binance/30 text-theme-brand-binance text-2xs font-extrabold uppercase tracking-widest mb-spacing-sm"
+                >
+                  <ArgusIcon className="size-3.5 text-theme-brand-binance" />
+                  <span>{APP_CONTENT.chat.emptyCategory}</span>
+                </motion.div>
 
-              {/* Dominant Swiss Headline */}
-              <motion.div variants={emptyStateItemVariants} className="flex flex-col items-center">
-                <h3 className="text-2xl sm:text-3xl font-extrabold text-theme-text-primary tracking-tight mb-spacing-xs max-w-lg">
-                  {APP_CONTENT.chat.emptyTitle}
-                </h3>
-                <p className="text-xs text-theme-text-secondary max-w-md mb-spacing-xl leading-relaxed">
-                  {APP_CONTENT.chat.emptySubtitle}
-                </p>
-              </motion.div>
+                {/* Dominant Swiss Headline */}
+                <motion.div variants={emptyStateItemVariants} className="flex flex-col items-center">
+                  <h3 className="text-2xl sm:text-3xl font-extrabold text-theme-text-primary tracking-tight mb-spacing-xs max-w-lg">
+                    {APP_CONTENT.chat.emptyTitle}
+                  </h3>
+                  <p className="text-xs text-theme-text-secondary max-w-md mb-spacing-xl leading-relaxed">
+                    {APP_CONTENT.chat.emptySubtitle}
+                  </p>
+                </motion.div>
 
-              {/* Structured Architectural Suggestion Tiles */}
-              <motion.div variants={emptyStateItemVariants} className="flex flex-col gap-spacing-xs w-full max-w-lg">
-                <div className="flex items-center justify-between mb-spacing-xs px-1">
-                  <span className="text-2xs font-extrabold uppercase tracking-wider text-theme-text-muted">
-                    {APP_CONTENT.chat.quickPromptsTitle}
-                  </span>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-spacing-xs">
-                  {APP_CONTENT.chat.quickPrompts.map((prompt) => (
-                    <motion.button
-                      key={prompt}
-                      variants={emptyStateItemVariants}
-                      type="button"
-                      whileHover={{ y: -2 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => void handleSend(prompt)}
-                      className="text-left text-xs p-3.5 rounded-xl bg-theme-bg-elevated/60 hover:bg-theme-bg-surface border border-theme-border-subtle hover:border-theme-border-strong text-theme-text-primary cursor-pointer transition-colors shadow-2xs hover:shadow-xs group flex items-start justify-between gap-spacing-sm"
-                    >
-                      <span className="leading-snug text-theme-text-primary group-hover:text-theme-text-primary font-medium">
-                        {prompt}
-                      </span>
-                      <ArrowUpRight className="size-3.5 text-theme-text-muted group-hover:text-theme-brand-binance group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0 mt-0.5" />
-                    </motion.button>
-                  ))}
-                </div>
-              </motion.div>
+                {/* Structured Architectural Suggestion Tiles */}
+                <motion.div variants={emptyStateItemVariants} className="flex flex-col gap-spacing-xs w-full max-w-lg">
+                  <div className="flex items-center justify-between mb-spacing-xs px-1">
+                    <span className="text-2xs font-extrabold uppercase tracking-wider text-theme-text-muted">
+                      {APP_CONTENT.chat.quickPromptsTitle}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-spacing-xs">
+                    {APP_CONTENT.chat.quickPrompts.map((prompt) => (
+                      <motion.button
+                        key={prompt}
+                        variants={emptyStateItemVariants}
+                        type="button"
+                        whileHover={{ y: -2 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => void handleSend(prompt)}
+                        className="text-left text-xs p-3.5 rounded-xl bg-theme-bg-elevated/60 hover:bg-theme-bg-surface border border-theme-border-subtle hover:border-theme-border-strong text-theme-text-primary cursor-pointer transition-colors shadow-2xs hover:shadow-xs group flex items-start justify-between gap-spacing-sm"
+                      >
+                        <span className="leading-snug text-theme-text-primary group-hover:text-theme-text-primary font-medium">
+                          {prompt}
+                        </span>
+                        <ArrowUpRight className="size-3.5 text-theme-text-muted group-hover:text-theme-brand-binance group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0 mt-0.5" />
+                      </motion.button>
+                    ))}
+                  </div>
+                </motion.div>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

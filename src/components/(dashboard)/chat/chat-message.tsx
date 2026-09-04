@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { User, AlertCircle, Loader2 } from 'lucide-react';
 import { ArgusIcon } from '../argus-icon';
 import { APP_CONTENT } from '@/constants/content';
+import { EASING_ARCHITECTURAL } from '@/constants/animation';
 import { MarkdownView } from '../markdown-view';
 import { AgentProcessTimeline } from './agent-process-timeline';
 import { normalizeMessageSteps } from '@/lib/db';
@@ -35,10 +36,15 @@ function AgentWorkingDraftIndicator({ startedAt }: { startedAt: number }) {
   const elapsedSeconds = useActiveTimer(startedAt, true);
 
   return (
-    <div className="flex items-center gap-spacing-xs text-xs text-theme-text-muted py-1">
+    <motion.div
+      initial={{ opacity: 0, y: 4 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2, ease: EASING_ARCHITECTURAL }}
+      className="flex items-center gap-spacing-xs text-xs text-theme-text-muted py-1"
+    >
       <Loader2 className="size-3.5 text-theme-brand-binance animate-spin shrink-0" />
       <span>{APP_CONTENT.process.agentWorking(elapsedSeconds)}</span>
-    </div>
+    </motion.div>
   );
 }
 
@@ -62,9 +68,9 @@ export const ChatMessage = memo(function ChatMessage({
   if (isUser) {
     return (
       <motion.div
-        initial={{ opacity: 0, y: 6 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.18, ease: 'easeOut' }}
+        initial={{ opacity: 0, y: 8, scale: 0.99 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.24, ease: EASING_ARCHITECTURAL }}
         className="flex justify-end items-start gap-spacing-xs w-full py-1 [content-visibility:auto] [contain-intrinsic-size:0_60px]"
       >
         <div className="flex flex-col items-end gap-1 max-w-[85%] sm:max-w-[75%]">
@@ -96,9 +102,9 @@ export const ChatMessage = memo(function ChatMessage({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.18, ease: 'easeOut' }}
+      initial={{ opacity: 0, y: 8, scale: 0.99 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.28, delay: 0.04, ease: EASING_ARCHITECTURAL }}
       className="flex items-start gap-spacing-sm w-full max-w-[95%] py-1 [content-visibility:auto] [contain-intrinsic-size:0_100px]"
     >
       {/* Brand Monogram Icon */}
