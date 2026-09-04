@@ -100,8 +100,6 @@ export const APP_CONTENT = {
     successBadge: 'Success',
     viewReasoning: 'View thoughts',
     hideReasoning: 'Hide thoughts',
-    toolArgumentsLabel: 'Arguments:',
-    toolResultLabel: 'Result:',
     toolLabels: {
       get_ticker_price: (symbol?: string) =>
         symbol ? `Checking ${symbol} price` : 'Checking price',
@@ -119,8 +117,8 @@ export const APP_CONTENT = {
       default: (name: string) => name.replace(/_/g, ' '),
     },
     results: {
-      rawToggleShow: 'Show raw details',
-      rawToggleHide: 'Hide raw details',
+      actionSuccess: 'Action completed',
+      orderCanceled: 'Order Canceled',
       livePrice: 'Live Price',
       spread: 'Spread',
       spreadPercent: 'Spread %',

@@ -37,11 +37,11 @@ Argus implements a unified `IBinanceAgentAdapter` interface supporting two execu
 * **Live MCP Mode (`live_mcp`):** Connects directly over Model Context Protocol (MCP) to the official Binance Agent OS endpoint (`https://agent.binance.com/mcp/agentic`).
 
 ### 4. Unified "Worked for # seconds" Process Timeline
-* **Single Collapsible Group:** All agent execution steps (thinking blocks, tool invocations, and raw data payloads) are cleanly wrapped inside an overarching "Worked for # seconds" accordion.
+* **Single Collapsible Group:** All agent execution steps (thinking blocks, tool invocations, and formatted tool results) are cleanly wrapped inside an overarching "Worked for # seconds" accordion.
 * **Live Elapsed Timer:** Real-time counter updates dynamically during execution (`Working (4s)`) before finalizing to elapsed duration (`Worked for 4 seconds`).
 * **Smart Auto-Collapse:** Automatically collapses once the final answer arrives, preserving a clean reading flow while keeping the entire execution history one click away.
 * **Intermediate Response Isolation:** Any preliminary agent thoughts or intermediate LLM text emitted prior to tool calls are safely isolated inside the process group, keeping the final assistant bubble pristine.
-* **Inspectable Tool Data:** Sub-accordions provide complete transparency into exact tool arguments, raw JSON responses, and internal reasoning on demand.
+* **Inspectable Tool Cards:** Sub-accordions provide clean, human-friendly summary cards for each tool execution (live price, order book depth, 24h market stats, and charts) with zero technical clutter or raw JSON.
 
 ### 5. Local-First Session Management
 * Powered by **Dexie IndexedDB** for private, client-side conversation persistence.

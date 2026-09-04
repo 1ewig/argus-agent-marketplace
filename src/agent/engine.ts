@@ -102,13 +102,18 @@ export async function executeAgentStream(
 
       } else if (part.type === 'tool-call') {
         // If text was generated prior to this tool call, convert it to an intermediate_text step
-        if (currentStepPreToolText.trim().length > 0) {
+        const cleanedPreToolText = currentStepPreToolText
+          .replace(/<session_title>[\s\S]*?<\/session_title>\s*/gi, '')
+          .replace(/<session_title[\s\S]*$/gi, '')
+          .trim();
+
+        if (cleanedPreToolText.length > 0) {
           const intermediateStepId = `step_text_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
           const intermediateStep: AgentExecutionStep = {
             id: intermediateStepId,
             type: 'intermediate_text',
             label: APP_CONTENT.process.intermediateUpdateLabel,
-            intermediateText: currentStepPreToolText.trim(),
+            intermediateText: cleanedPreToolText,
             status: 'completed',
             timestamp: Date.now(),
             durationMs: 1000,
