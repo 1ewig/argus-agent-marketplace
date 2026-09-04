@@ -90,7 +90,7 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
               exit="exit"
               className="absolute inset-0 flex flex-col items-center justify-center p-spacing-md sm:p-spacing-lg text-center overflow-y-auto pointer-events-auto z-10"
             >
-              <div className="my-auto flex flex-col items-center justify-center w-full py-spacing-md max-w-lg">
+              <div className="my-auto flex flex-col items-center justify-center w-full py-spacing-md max-w-3xl">
                 {/* Category Tag */}
                 <motion.div
                   variants={emptyStateItemVariants}
@@ -101,11 +101,11 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
                 </motion.div>
 
                 {/* Practical Utilitarian Headline */}
-                <motion.div variants={emptyStateItemVariants} className="flex flex-col items-center">
-                  <h3 className="text-xl sm:text-2xl font-bold text-theme-text-primary tracking-tight mb-spacing-xs max-w-md font-sans leading-tight">
+                <motion.div variants={emptyStateItemVariants} className="flex flex-col items-center w-full">
+                  <h3 className="text-xl sm:text-2xl font-bold text-theme-text-primary tracking-tight mb-spacing-xs max-w-3xl font-sans leading-tight">
                     {APP_CONTENT.chat.emptyTitle}
                   </h3>
-                  <p className="text-xs sm:text-sm text-theme-text-secondary max-w-md mb-spacing-md leading-relaxed">
+                  <p className="text-xs sm:text-sm text-theme-text-secondary max-w-2xl mb-spacing-md leading-relaxed">
                     {APP_CONTENT.chat.emptySubtitle}
                   </p>
                 </motion.div>

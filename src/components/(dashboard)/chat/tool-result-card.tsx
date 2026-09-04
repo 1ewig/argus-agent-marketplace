@@ -239,13 +239,12 @@ export const ToolResultCard = React.memo(function ToolResultCard({
                 return (
                   <div
                     key={i}
-                    className={`flex-1 h-full rounded-xs transition-all ${
-                      isSpreadZone
+                    className={`flex-1 h-full rounded-xs transition-all ${isSpreadZone
                         ? 'bg-theme-brand-binance'
                         : isBidHeavy
-                        ? 'bg-theme-status-success/40'
-                        : 'bg-theme-status-danger/40'
-                    }`}
+                          ? 'bg-theme-status-success/40'
+                          : 'bg-theme-status-danger/40'
+                      }`}
                   />
                 );
               })}
@@ -340,13 +339,12 @@ export const ToolResultCard = React.memo(function ToolResultCard({
             <div className="flex flex-col">
               <span className="text-2xs font-bold uppercase tracking-wider text-theme-text-muted">{res.change24h}</span>
               <span
-                className={`text-base font-extrabold font-mono ${
-                  change.isPositive
+                className={`text-base font-extrabold font-mono ${change.isPositive
                     ? 'text-theme-status-success'
                     : change.isNegative
-                    ? 'text-theme-status-danger'
-                    : 'text-theme-text-primary'
-                }`}
+                      ? 'text-theme-status-danger'
+                      : 'text-theme-text-primary'
+                  }`}
               >
                 {change.text}
               </span>
@@ -379,13 +377,12 @@ export const ToolResultCard = React.memo(function ToolResultCard({
             <div className="flex flex-col">
               <span className="text-theme-text-muted">{res.periodChange}</span>
               <span
-                className={`font-bold ${
-                  change.isPositive
+                className={`font-bold ${change.isPositive
                     ? 'text-theme-status-success'
                     : change.isNegative
-                    ? 'text-theme-status-danger'
-                    : 'text-theme-text-primary'
-                }`}
+                      ? 'text-theme-status-danger'
+                      : 'text-theme-text-primary'
+                  }`}
               >
                 {change.text}
               </span>
@@ -549,4 +546,3 @@ export const ToolResultCard = React.memo(function ToolResultCard({
     </div>
   );
 });
-
