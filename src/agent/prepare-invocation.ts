@@ -73,7 +73,7 @@ export function prepareAgentInvocation(options: AgentOptions): PreparedAgentInvo
   const envMaxTokens = Number(process.env.GROQ_MAX_TOKENS);
   const maxTokens =
     options.maxTokens ??
-    (Number.isFinite(envMaxTokens) && envMaxTokens > 0 ? envMaxTokens : 2048);
+    (Number.isFinite(envMaxTokens) && envMaxTokens > 0 ? envMaxTokens : 6000);
 
   return {
     model,
