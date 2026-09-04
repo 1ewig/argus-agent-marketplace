@@ -208,6 +208,7 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
                 ? {
                     ...s,
                     ...(event.status ? { status: event.status } : {}),
+                    ...(event.durationMs !== undefined ? { durationMs: event.durationMs } : {}),
                     ...(event.label ? { label: event.label } : {}),
                     ...(event.reasoningText !== undefined ? { reasoningText: event.reasoningText } : {}),
                     ...(event.toolArgs !== undefined ? { toolArgs: event.toolArgs } : {}),

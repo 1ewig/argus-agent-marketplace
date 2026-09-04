@@ -26,6 +26,28 @@ interface ChatMessageProps {
 }
 
 /**
+ * Live drafting indicator displaying elapsed execution time while the assistant prepares a response.
+ */
+function AgentWorkingDraftIndicator({ startedAt }: { startedAt: number }) {
+  const [elapsedSeconds, setElapsedSeconds] = React.useState<number>(1);
+
+  React.useEffect(() => {
+    const updateElapsed = () =>
+      setElapsedSeconds(Math.max(1, Math.floor((Date.now() - startedAt) / 1000)));
+    updateElapsed();
+    const timer = setInterval(updateElapsed, 1000);
+    return () => clearInterval(timer);
+  }, [startedAt]);
+
+  return (
+    <div className="flex items-center gap-spacing-xs text-xs text-theme-text-muted py-1">
+      <Loader2 className="size-3.5 text-theme-brand-binance animate-spin shrink-0" />
+      <span>{APP_CONTENT.process.agentWorking(elapsedSeconds)}</span>
+    </div>
+  );
+}
+
+/**
  * Message bubble with user/assistant asymmetry.
  * Wrapped in React.memo to prevent token streaming from re-rendering the full chat history.
  */
@@ -110,11 +132,8 @@ export const ChatMessage = memo(function ChatMessage({
             )}
           </div>
         ) : isStreaming ? (
-          /* Subtle Drafting Indicator while LLM generates tokens */
-          <div className="flex items-center gap-spacing-xs p-spacing-sm text-xs text-theme-text-muted bg-theme-bg-surface border border-theme-border-subtle rounded-2xl rounded-tl-xs w-fit">
-            <Loader2 className="size-3.5 text-theme-brand-binance animate-spin" />
-            <span>{hasSteps ? APP_CONTENT.process.generatingResponse : APP_CONTENT.process.thinking}</span>
-          </div>
+          /* Live Drafting Indicator while assistant generates response */
+          <AgentWorkingDraftIndicator startedAt={message.timestamp} />
         ) : null}
       </div>
     </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Brain, ChevronDown, ChevronUp, Loader2, Sparkles } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
 import { MarkdownView } from '../markdown-view';
@@ -25,6 +25,18 @@ export function AgentThoughtAccordion({
   const [isExpanded, setIsExpanded] = useState<boolean>(isActive);
   const [prevActive, setPrevActive] = useState<boolean>(isActive);
 
+  // Live timer for active thinking phase
+  const [elapsedSeconds, setElapsedSeconds] = useState<number>(1);
+
+  useEffect(() => {
+    if (!isActive) return;
+    const updateElapsed = () =>
+      setElapsedSeconds(Math.max(1, Math.floor((Date.now() - step.timestamp) / 1000)));
+    updateElapsed();
+    const timer = setInterval(updateElapsed, 1000);
+    return () => clearInterval(timer);
+  }, [isActive, step.timestamp]);
+
   // Auto-expand when this specific thinking phase starts streaming
   if (isActive && !prevActive) {
     setPrevActive(true);
@@ -39,7 +51,17 @@ export function AgentThoughtAccordion({
     return null;
   }
 
-  const isCompleted = !isActive && reasoningText.length > 0;
+  const isCompleted = !isActive && (reasoningText.length > 0 || Boolean(step.durationMs));
+
+  // Compute final thought duration in seconds without calling impure Date.now() during render
+  const completedDurationSeconds = Math.max(
+    1,
+    step.durationMs ? Math.round(step.durationMs / 1000) : elapsedSeconds
+  );
+
+  const headerLabel = isActive
+    ? APP_CONTENT.process.thinkingWithSeconds(elapsedSeconds)
+    : APP_CONTENT.process.thoughtForDuration(completedDurationSeconds);
 
   return (
     <div className="flex flex-col gap-spacing-xs text-2xs mb-spacing-xs">
@@ -58,7 +80,7 @@ export function AgentThoughtAccordion({
         )}
 
         <span className="text-2xs font-medium group-hover:underline text-theme-text-secondary">
-          {isActive ? APP_CONTENT.process.thinking : APP_CONTENT.process.thoughtProcess}
+          {headerLabel}
         </span>
 
         {isExpanded ? (
@@ -78,7 +100,7 @@ export function AgentThoughtAccordion({
           ) : isActive ? (
             <div className="flex items-center gap-1.5 text-2xs text-theme-text-muted italic py-1">
               <Loader2 className="size-2.5 animate-spin text-theme-brand-binance" />
-              <span>{APP_CONTENT.process.thinking}</span>
+              <span>{APP_CONTENT.process.thinkingWithSeconds(elapsedSeconds)}</span>
             </div>
           ) : null}
         </div>

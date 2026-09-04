@@ -71,6 +71,10 @@ export const APP_CONTENT = {
   process: {
     title: 'Process',
     thinking: 'Thinking...',
+    thinkingWithSeconds: (seconds: number) => `Thinking (${seconds}s)`,
+    thoughtForDuration: (seconds: number) =>
+      `Thought for ${seconds} ${seconds === 1 ? 'second' : 'seconds'}`,
+    agentWorking: (seconds: number) => `Agent working (${seconds}s)`,
     analyzing: 'Analyzing market data...',
     generatingResponse: 'Generating response...',
     toolRunning: 'Running',

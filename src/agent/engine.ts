@@ -123,7 +123,13 @@ export async function executeAgentStream(
           const activeThinking = steps.find((s) => s.id === activeThinkingStepId);
           if (activeThinking && activeThinking.status === 'active') {
             activeThinking.status = 'completed';
-            onEvent({ type: 'step_update', stepId: activeThinking.id, status: 'completed' });
+            activeThinking.durationMs = Math.max(1000, Date.now() - activeThinking.timestamp);
+            onEvent({
+              type: 'step_update',
+              stepId: activeThinking.id,
+              status: 'completed',
+              durationMs: activeThinking.durationMs,
+            });
           }
           activeThinkingStepId = null;
         }
@@ -147,6 +153,7 @@ export async function executeAgentStream(
 
         if (matchingToolStep) {
           matchingToolStep.status = 'completed';
+          matchingToolStep.durationMs = Math.max(1000, Date.now() - matchingToolStep.timestamp);
           matchingToolStep.toolResult = part.output;
           if (!matchingToolStep.toolArgs && part.input) {
             matchingToolStep.toolArgs = part.input as Record<string, unknown>;
@@ -156,6 +163,7 @@ export async function executeAgentStream(
             type: 'step_update',
             stepId: matchingToolStep.id,
             status: 'completed',
+            durationMs: matchingToolStep.durationMs,
             toolArgs: matchingToolStep.toolArgs,
             toolResult: matchingToolStep.toolResult,
           });
@@ -173,7 +181,13 @@ export async function executeAgentStream(
           const activeThinking = steps.find((s) => s.id === activeThinkingStepId);
           if (activeThinking && activeThinking.status === 'active') {
             activeThinking.status = 'completed';
-            onEvent({ type: 'step_update', stepId: activeThinking.id, status: 'completed' });
+            activeThinking.durationMs = Math.max(1000, Date.now() - activeThinking.timestamp);
+            onEvent({
+              type: 'step_update',
+              stepId: activeThinking.id,
+              status: 'completed',
+              durationMs: activeThinking.durationMs,
+            });
           }
           activeThinkingStepId = null;
         }
@@ -211,7 +225,13 @@ export async function executeAgentStream(
     const activeThinking = steps.find((s) => s.id === activeThinkingStepId);
     if (activeThinking && activeThinking.status === 'active') {
       activeThinking.status = 'completed';
-      onEvent({ type: 'step_update', stepId: activeThinking.id, status: 'completed' });
+      activeThinking.durationMs = Math.max(1000, Date.now() - activeThinking.timestamp);
+      onEvent({
+        type: 'step_update',
+        stepId: activeThinking.id,
+        status: 'completed',
+        durationMs: activeThinking.durationMs,
+      });
     }
   }
 

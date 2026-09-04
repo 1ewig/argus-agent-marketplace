@@ -41,6 +41,7 @@ export interface AgentExecutionStep {
   reasoningText?: string;
   status: 'active' | 'completed' | 'error';
   timestamp: number;
+  durationMs?: number;
   toolArgs?: Record<string, unknown>;
   toolResult?: unknown;
 }
@@ -54,6 +55,7 @@ export type AgentStreamEvent =
       type: 'step_update';
       stepId: string;
       status?: 'completed' | 'error';
+      durationMs?: number;
       label?: string;
       reasoningText?: string;
       toolArgs?: Record<string, unknown>;
