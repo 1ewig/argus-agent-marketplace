@@ -15,20 +15,20 @@ export function MarketChartView() {
       </div>
 
       {/* Pill Badge */}
-      <span className="text-2xs font-extrabold uppercase tracking-widest text-theme-brand-binance px-spacing-sm py-0.5 rounded-full bg-theme-brand-binance/10 border border-theme-brand-binance/30 mb-spacing-xs">
+      <span className="text-xs font-bold uppercase tracking-widest text-theme-brand-binance px-spacing-sm py-0.5 rounded-full bg-theme-brand-binance/10 border border-theme-brand-binance/30 mb-spacing-xs">
         {chartContent.badge}
       </span>
 
-      {/* Title & Description */}
-      <h3 className="text-base font-bold text-theme-text-primary mb-spacing-xs">
+      {/* Colossal Title & Description */}
+      <h3 className="text-2xl sm:text-3xl font-extrabold text-theme-text-primary tracking-tight mb-spacing-xs font-sans">
         {chartContent.emptyTitle}
       </h3>
-      <p className="text-xs text-theme-text-secondary max-w-sm leading-relaxed mb-spacing-md">
+      <p className="text-sm sm:text-base text-theme-text-secondary max-w-md leading-relaxed mb-spacing-md">
         {chartContent.emptySubtitle}
       </p>
 
       {/* Hint Box */}
-      <div className="text-2xs font-medium text-theme-text-muted bg-theme-bg-elevated border border-theme-border-subtle rounded-lg px-spacing-md py-spacing-xs max-w-xs">
+      <div className="text-xs font-medium text-theme-text-muted bg-theme-bg-elevated border border-theme-border-subtle rounded-xl px-spacing-md py-spacing-xs max-w-sm">
         {chartContent.switchHint}
       </div>
     </div>

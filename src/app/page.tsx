@@ -13,9 +13,9 @@ export default function Home() {
   const stageView = useAppStore((state) => state.stageView);
 
   return (
-    <main className="h-screen w-screen pt-navbar flex flex-col overflow-hidden bg-theme-bg-base">
+    <main className="flex-1 min-h-0 w-full flex flex-col overflow-hidden bg-theme-bg-base">
       {/* Dynamic Multi-Column Workspace */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-spacing-md lg:gap-spacing-lg px-spacing-md sm:px-spacing-lg lg:px-spacing-xl py-spacing-sm sm:py-spacing-md lg:py-spacing-lg min-h-0 overflow-y-auto lg:overflow-hidden">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-spacing-md lg:gap-spacing-lg p-spacing-sm sm:p-spacing-md lg:p-spacing-lg min-h-0 overflow-y-auto lg:overflow-hidden">
         {/* Left Hero Stage: Chat/Chart Canvas (~65% width) */}
         <section className="lg:col-span-8 flex flex-col h-full min-h-0">
           {/* Central Stage View (Zero-flash dual-render with CSS toggle) */}

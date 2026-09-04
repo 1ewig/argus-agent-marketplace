@@ -105,8 +105,10 @@ export const ChatSessionsMenu = React.memo(function ChatSessionsMenu({
                   return (
                     <div
                       key={conv.id}
-                      className={`flex items-center justify-between gap-spacing-xs px-spacing-sm py-spacing-xs transition-colors ${
-                        isActive ? 'bg-theme-bg-elevated/70' : 'hover:bg-theme-bg-base'
+                      className={`flex items-center justify-between gap-spacing-xs px-spacing-sm py-spacing-xs transition-colors rounded-xl mx-1 my-0.5 ${
+                        isActive
+                          ? 'bg-theme-bg-elevated text-theme-text-primary font-semibold shadow-2xs'
+                          : 'text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-elevated/80'
                       }`}
                     >
                       {isEditing ? (

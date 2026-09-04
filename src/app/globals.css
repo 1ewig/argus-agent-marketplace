@@ -3,37 +3,39 @@
 :root {
   /* ==========================================================================
      1. THEME VARIABLES (15)
-     Calibrated to the Neo-Minimalist Architectural / Swiss FinTech aesthetic:
-     Crisp off-white canvas, pure white card surfaces, high-contrast jet-black
-     accent panels, subtle hairline borders, and signature Binance gold highlights.
+     Calibrated to the Modernist Architectural aesthetic from reference:
+     Studio neutral slate backdrop, warm architectural stone/bone deck canvas,
+     high-contrast pitch-black focus panels, crisp hairline borders,
+     and signature Binance canary gold highlights.
      ========================================================================== */
-  --theme-bg-base: #f0f2f5;             /* Soft architectural studio backdrop */
-  --theme-bg-surface: #ffffff;          /* Pure white card containers & dashboard deck */
-  --theme-bg-elevated: #f8f9fa;         /* Subtle secondary card surfaces & search bars */
-  --theme-bg-overlay: #0a0a0a;          /* High-contrast jet-black focus cards & badges */
-  --theme-border-subtle: #e2e8f0;       /* Hairline micro-dividers & container borders */
-  --theme-border-strong: #0f172a;       /* Pitch black active borders & focused indicators */
-  --theme-text-primary: #0a0a0a;        /* Pitch black for display headings & key stats */
+  --theme-bg-base: #f0f2f5;             /* Clean, refined architectural gallery stone backdrop */
+  --theme-bg-surface: #ffffff;          /* Crisp card containers & deck surfaces */
+  --theme-bg-elevated: #e8ecf1;         /* Soft secondary controls, chips, tabs & hover */
+  --theme-bg-overlay: #09090b;          /* Pitch-black high-contrast focus cards & docks */
+  --theme-border-subtle: #dbe0e8;       /* Subtle hairline micro-dividers & borders */
+  --theme-border-strong: #09090b;       /* Pitch black active borders & focused indicators */
+  --theme-text-primary: #09090b;        /* Pitch black for display headings & colossal stats */
   --theme-text-secondary: #475569;      /* Refined neutral slate for subtitles & labels */
-  --theme-text-muted: #94a3b8;          /* Light slate for timestamps & micro-details */
+  --theme-text-muted: #8290a2;          /* Legible slate for timestamps & micro-details */
   --theme-brand-binance: #f0b90b;       /* Primary Binance yellow accent */
-  --theme-brand-accent: #fde047;        /* Canary gold for active meters & hover highlights */
+  --theme-brand-accent: #fcd535;        /* Canary gold for active meters & hover highlights */
   --theme-status-success: #10b981;      /* Emerald mint for positive PnL & confirmed fills */
   --theme-status-danger: #ef4444;       /* Crimson for risk violations & emergency triggers */
   --theme-status-warning: #f59e0b;      /* Warm amber for risk checks & caution alerts */
-  --theme-status-info: #0284c7;         /* Clean technical cyan for analyst intelligence stream */
+  --theme-status-info: #0284c7;         /* Clean technical cyan for analyst stream */
 
   /* ==========================================================================
      2. TEXT SIZE VARIABLES (8)
+     Scaled up to eliminate ant-sized fonts and deliver colossal, confident impact:
      ========================================================================== */
-  --text-2xs: 0.6875rem; /* 11px - Micro-annotations & tag badges */
-  --text-xs: 0.75rem;    /* 12px - Section uppercase labels & sub-stats */
-  --text-sm: 0.875rem;   /* 14px - Body copy & stream dialogue */
-  --text-base: 1rem;     /* 16px - Form inputs & prominent card headers */
-  --text-lg: 1.25rem;    /* 20px - Sub-headings & medium metrics */
-  --text-xl: 1.75rem;    /* 28px - Moderate stats & lead values */
-  --text-2xl: 2.5rem;    /* 40px - Large statistics */
-  --text-3xl: 3.5rem;    /* 56px - Hero display titles & portfolio balances */
+  --text-2xs: 0.75rem;   /* 12px - Sharp legible tag badges & micro-annotations */
+  --text-xs: 0.875rem;   /* 14px - Section uppercase labels & sub-stats */
+  --text-sm: 1rem;       /* 16px - Body copy & stream dialogue */
+  --text-base: 1.125rem; /* 18px - Form inputs & prominent card headers */
+  --text-lg: 1.375rem;   /* 22px - Sub-headings & medium metrics */
+  --text-xl: 2rem;       /* 32px - Moderate stats & lead values */
+  --text-2xl: 3rem;      /* 48px - Large statistics */
+  --text-3xl: 4.25rem;   /* 68px - Hero display titles & colossal portfolio balances */
 
   /* ==========================================================================
      3. FONT WEIGHT VARIABLES (5)
@@ -175,7 +177,7 @@
 body {
   background: var(--theme-bg-base);
   color: var(--theme-text-primary);
-  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  letter-spacing: -0.015em;
+  font-family: var(--font-plus-jakarta), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  letter-spacing: -0.025em;
   overflow: hidden;
 }

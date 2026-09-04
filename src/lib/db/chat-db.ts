@@ -164,6 +164,14 @@ export async function listConversations(): Promise<ConversationRecord[]> {
 }
 
 /**
+ * Retrieves a single conversation by its ID
+ */
+export async function getConversation(conversationId: string): Promise<ConversationRecord | undefined> {
+  if (typeof window === 'undefined') return undefined;
+  return db.conversations.get(conversationId);
+}
+
+/**
  * Retrieves messages for a specific conversation ordered chronologically
  */
 export async function getConversationMessages(conversationId: string): Promise<ChatMessageRecord[]> {

@@ -88,7 +88,7 @@ export function ChatWindow({ mode = 'simulation' }: ChatWindowProps) {
             onClick={() => void handleNewSession()}
             title={APP_CONTENT.chat.newSessionButton}
             aria-label={APP_CONTENT.chat.newSessionButton}
-            className="size-8 flex items-center justify-center rounded-xl bg-theme-bg-elevated hover:bg-theme-bg-base border border-theme-border-subtle hover:border-theme-border-strong text-theme-brand-binance hover:text-theme-brand-accent cursor-pointer transition-all shadow-2xs shrink-0"
+            className="size-8 flex items-center justify-center rounded-xl bg-theme-bg-elevated hover:bg-theme-bg-surface border border-theme-border-subtle hover:border-theme-border-strong text-theme-brand-binance hover:text-theme-brand-accent cursor-pointer transition-all shadow-2xs shrink-0"
           >
             <Plus className="size-3.5" />
           </motion.button>
@@ -115,26 +115,26 @@ export function ChatWindow({ mode = 'simulation' }: ChatWindowProps) {
                 {/* Category Tag */}
                 <motion.div
                   variants={emptyStateItemVariants}
-                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-theme-brand-binance/10 border border-theme-brand-binance/30 text-theme-brand-binance text-2xs font-extrabold uppercase tracking-widest mb-spacing-sm"
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-theme-brand-binance/10 border border-theme-brand-binance/30 text-theme-brand-binance text-xs font-bold uppercase tracking-widest mb-spacing-sm"
                 >
-                  <ArgusIcon className="size-3.5 text-theme-brand-binance" />
+                  <ArgusIcon className="size-4 text-theme-brand-binance" />
                   <span>{APP_CONTENT.chat.emptyCategory}</span>
                 </motion.div>
 
-                {/* Dominant Swiss Headline */}
+                {/* Colossal Architectural Headline */}
                 <motion.div variants={emptyStateItemVariants} className="flex flex-col items-center">
-                  <h3 className="text-2xl sm:text-3xl font-extrabold text-theme-text-primary tracking-tight mb-spacing-xs max-w-lg">
+                  <h3 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-theme-text-primary tracking-tighter mb-spacing-xs max-w-xl font-sans leading-tight">
                     {APP_CONTENT.chat.emptyTitle}
                   </h3>
-                  <p className="text-xs text-theme-text-secondary max-w-md mb-spacing-xl leading-relaxed">
+                  <p className="text-sm sm:text-base text-theme-text-secondary max-w-lg mb-spacing-lg leading-relaxed">
                     {APP_CONTENT.chat.emptySubtitle}
                   </p>
                 </motion.div>
 
                 {/* Structured Architectural Suggestion Tiles */}
-                <motion.div variants={emptyStateItemVariants} className="flex flex-col gap-spacing-xs w-full max-w-lg">
+                <motion.div variants={emptyStateItemVariants} className="flex flex-col gap-spacing-xs w-full max-w-xl">
                   <div className="flex items-center justify-between mb-spacing-xs px-1">
-                    <span className="text-2xs font-extrabold uppercase tracking-wider text-theme-text-muted">
+                    <span className="text-xs font-bold uppercase tracking-wider text-theme-text-muted">
                       {APP_CONTENT.chat.quickPromptsTitle}
                     </span>
                   </div>
@@ -147,12 +147,12 @@ export function ChatWindow({ mode = 'simulation' }: ChatWindowProps) {
                         whileHover={{ y: -2 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => void handleSend(prompt)}
-                        className="text-left text-xs p-3.5 rounded-xl bg-theme-bg-elevated/60 hover:bg-theme-bg-surface border border-theme-border-subtle hover:border-theme-border-strong text-theme-text-primary cursor-pointer transition-colors shadow-2xs hover:shadow-xs group flex items-start justify-between gap-spacing-sm"
+                        className="text-left text-xs sm:text-sm p-4 rounded-xl bg-theme-bg-elevated/80 hover:bg-theme-bg-surface border border-theme-border-subtle hover:border-theme-border-strong text-theme-text-primary cursor-pointer transition-colors shadow-2xs hover:shadow-xs group flex items-start justify-between gap-spacing-sm"
                       >
                         <span className="leading-snug text-theme-text-primary group-hover:text-theme-text-primary font-medium">
                           {prompt}
                         </span>
-                        <ArrowUpRight className="size-3.5 text-theme-text-muted group-hover:text-theme-brand-binance group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0 mt-0.5" />
+                        <ArrowUpRight className="size-4 text-theme-text-muted group-hover:text-theme-brand-binance group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0 mt-0.5" />
                       </motion.button>
                     ))}
                   </div>

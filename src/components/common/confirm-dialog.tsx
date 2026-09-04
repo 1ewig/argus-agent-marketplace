@@ -144,7 +144,7 @@ export function ConfirmDialog({
                 type="button"
                 onClick={onCancel}
                 disabled={isLoading}
-                className="h-9 px-spacing-md flex items-center justify-center rounded-xl bg-theme-bg-elevated hover:bg-theme-bg-base text-theme-text-secondary hover:text-theme-text-primary border border-theme-border-subtle text-xs font-semibold cursor-pointer transition-colors shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed"
+                className="h-9 px-spacing-md flex items-center justify-center rounded-xl bg-theme-bg-elevated hover:bg-theme-bg-surface text-theme-text-secondary hover:text-theme-text-primary border border-theme-border-subtle text-xs font-semibold cursor-pointer transition-colors shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {effectiveCancelLabel}
               </button>

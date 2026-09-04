@@ -1,23 +1,21 @@
 'use client';
 
-import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { useLiveQuery } from 'dexie-react-hooks';
+import { useCallback } from 'react';
 import { APP_CONTENT } from '@/constants/content';
 import { generateMessageId, getNowTimestamp } from '@/lib/utils';
 import { useAppStore } from '@/stores/app-store';
 import {
-  db,
-  ensureDefaultConversation,
-  createConversation,
-  deleteConversation,
+  getConversation,
   renameConversation,
   saveStoredMessage,
-  listConversations,
+  useMessages,
   type ChatMessageRecord,
 } from '@/lib/db';
 import { prepareConversationHistory, streamAgentChat } from '@/lib/agents';
 import type { AgentResult, AgentExecutionStep } from '@/agent';
 import type { ExecutionMode } from '@/lib/types';
+import { useChatSessions } from './use-chat-sessions';
+import { useChatScroll } from './use-chat-scroll';
 
 const SESSION_TITLE_TAG_REGEX = /<session_title>[\s\S]*?<\/session_title>\s*/gi;
 const INCOMPLETE_SESSION_TITLE_TAG_REGEX = /<session_title[\s\S]*$/gi;
@@ -27,18 +25,16 @@ export interface UseAgentChatOptions {
 }
 
 /**
- * Custom hook encapsulating session lifecycle management, reactive IndexedDB queries,
+ * Custom hook orchestrating agent chat interaction, Dexie message persistence,
  * and real-time SSE streaming for autonomous Binance Agent OS reasoning steps.
  * 
- * Enforces strict separation of concerns by completely decoupling chat orchestration
- * and database state mutations from UI presentation components.
+ * Composes specialized `useChatSessions`, `useChatScroll`, and `useMessages`
+ * to maintain strict separation of concerns.
  * 
  * @param options - Execution mode ('simulation' | 'live_mcp')
  * @returns State, refs, and action handlers for the chat console
  */
 export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) {
-  const activeConversationId = useAppStore((state) => state.activeConversationId);
-  const setActiveConversationId = useAppStore((state) => state.setActiveConversationId);
   const isLoading = useAppStore((state) => state.isLoading);
   const setIsLoading = useAppStore((state) => state.setIsLoading);
   const activeStreamMessage = useAppStore((state) => state.activeStreamMessage);
@@ -46,185 +42,27 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
   const errorNotice = useAppStore((state) => state.errorNotice);
   const setErrorNotice = useAppStore((state) => state.setErrorNotice);
 
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editTitle, setEditTitle] = useState('');
+  // 1. Session and menu management
+  const sessions = useChatSessions();
+  const { activeConversationId } = sessions;
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const isAutoScrollEnabledRef = useRef<boolean>(true);
-  const rafIdRef = useRef<number | null>(null);
-  const isScrollPendingRef = useRef<boolean>(false);
-
-  // 1. Initialize default conversation record safely on client mount
-  useEffect(() => {
-    void ensureDefaultConversation();
-  }, []);
-
-  // 2. Reactive Live Queries directly from Dexie IndexedDB (strictly read-only)
-  const liveConversations = useLiveQuery(() => listConversations(), []);
-  const conversations = useMemo(() => liveConversations ?? [], [liveConversations]);
-
-  const liveMessages = useLiveQuery(
-    () =>
-      db.messages
-        .where('conversationId')
-        .equals(activeConversationId)
-        .sortBy('timestamp'),
-    [activeConversationId]
-  );
-  const messages = useMemo(() => liveMessages ?? [], [liveMessages]);
+  // 2. Reactive query for active conversation messages
+  const messages = useMessages(activeConversationId);
 
   const messagesCount = messages.length;
   const streamStepCount = activeStreamMessage?.steps?.length ?? 0;
   const streamContentLength = activeStreamMessage?.content?.length ?? 0;
 
-  // RAF-throttled scroll listener detecting if user manually scrolled up without layout thrashing
-  const handleScroll = useCallback(() => {
-    if (isScrollPendingRef.current) return;
-    isScrollPendingRef.current = true;
+  // 3. Scroll orchestration with RAF throttling
+  const scroll = useChatScroll({
+    activeConversationId,
+    messagesCount,
+    streamStepCount,
+    streamContentLength,
+    isLoading,
+  });
 
-    requestAnimationFrame(() => {
-      isScrollPendingRef.current = false;
-      const container = scrollContainerRef.current;
-      if (!container) return;
-      const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
-      // Keep auto-scroll active if within 80px of bottom; lock if scrolled up
-      isAutoScrollEnabledRef.current = distanceFromBottom <= 80;
-    });
-  }, []);
-
-  // Instant scroll to bottom when switching conversations
-  useEffect(() => {
-    isAutoScrollEnabledRef.current = true;
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
-    } else {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
-    }
-  }, [activeConversationId]);
-
-  // Instant scroll on message count changes if auto-scroll is active
-  useEffect(() => {
-    if (!isAutoScrollEnabledRef.current) return;
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
-    } else {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
-    }
-  }, [messagesCount]);
-
-  // RAF-throttled scroll during active streaming — eliminates forced smooth reflow thrashing
-  useEffect(() => {
-    if (!isAutoScrollEnabledRef.current) return;
-
-    if (rafIdRef.current !== null) {
-      cancelAnimationFrame(rafIdRef.current);
-    }
-
-    rafIdRef.current = requestAnimationFrame(() => {
-      rafIdRef.current = null;
-      if (!isAutoScrollEnabledRef.current) return;
-
-      if (scrollContainerRef.current) {
-        scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
-      } else {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
-      }
-    });
-
-    return () => {
-      if (rafIdRef.current !== null) {
-        cancelAnimationFrame(rafIdRef.current);
-        rafIdRef.current = null;
-      }
-    };
-  }, [streamStepCount, streamContentLength, isLoading]);
-
-  // 4. Click-outside listener for sessions overflow menu
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsMenuOpen(false);
-        setEditingId(null);
-      }
-    };
-    if (isMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isMenuOpen]);
-
-  // Active session title
-  const activeConversation = useMemo(
-    () => conversations.find((c) => c.id === activeConversationId),
-    [conversations, activeConversationId]
-  );
-  const currentTitle = activeConversation?.title ?? APP_CONTENT.chat.defaultSessionTitle;
-
-  // 5. Create a brand new session thread
-  const handleNewSession = useCallback(async () => {
-    setErrorNotice(null);
-    setIsMenuOpen(false);
-    setEditingId(null);
-    setActiveStreamMessage(null);
-    const newConv = await createConversation();
-    setActiveConversationId(newConv.id);
-  }, [setErrorNotice, setActiveStreamMessage, setActiveConversationId]);
-
-  // 6. Switch session
-  const handleSelectSession = useCallback((id: string) => {
-    setActiveConversationId(id);
-    setIsMenuOpen(false);
-    setEditingId(null);
-    setActiveStreamMessage(null);
-  }, [setActiveConversationId, setActiveStreamMessage]);
-
-  // 7. Start renaming session
-  const handleStartRename = useCallback((id: string, sessionTitle: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setEditingId(id);
-    setEditTitle(sessionTitle);
-  }, []);
-
-  // 8. Save renamed session
-  const handleSaveRename = useCallback(async (id: string, e?: React.FormEvent | React.MouseEvent) => {
-    e?.stopPropagation();
-    const trimmed = editTitle.trim();
-    if (!trimmed) {
-      setEditingId(null);
-      return;
-    }
-    await renameConversation(id, trimmed);
-    setEditingId(null);
-  }, [editTitle]);
-
-  // 9. Cancel renaming
-  const handleCancelRename = useCallback((e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    setEditingId(null);
-    setEditTitle('');
-  }, []);
-
-  // 10. Delete session
-  const handleDeleteSession = useCallback(async (id: string, e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    await deleteConversation(id);
-    if (activeConversationId === id) {
-      const remaining = conversations.filter((c) => c.id !== id);
-      if (remaining.length > 0) {
-        setActiveConversationId(remaining[0].id);
-      } else {
-        const newConv = await createConversation();
-        setActiveConversationId(newConv.id);
-      }
-    }
-  }, [activeConversationId, conversations, setActiveConversationId]);
-
-  // 11. Send message with real-time SSE streaming and persistent Dexie transactions
+  // 4. Send message with real-time SSE streaming and persistent Dexie transactions
   const handleSend = useCallback(async (textToSend?: string) => {
     const prompt = (textToSend ?? '').trim();
     if (!prompt || isLoading) return;
@@ -243,17 +81,8 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
     // Optimistically persist user prompt to Dexie
     await saveStoredMessage(userMessage);
 
-    // Re-enable auto-scroll when user submits a new prompt
-    isAutoScrollEnabledRef.current = true;
-    if (scrollContainerRef.current) {
-      const container = scrollContainerRef.current;
-      if (container.scrollHeight > container.clientHeight) {
-        container.scrollTo({
-          top: container.scrollHeight,
-          behavior: 'smooth',
-        });
-      }
-    }
+    // Smooth scroll down on user send
+    scroll.scrollToBottom(true);
 
     const streamMessageId = generateMessageId('agt');
     const initialStreamRecord: ChatMessageRecord = {
@@ -328,7 +157,7 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
               prev ? { ...prev, content: '' } : prev
             );
           } else if (event.type === 'session_title') {
-            const convRecord = await db.conversations.get(activeConversationId);
+            const convRecord = await getConversation(activeConversationId);
             const isDefaultTitle =
               !convRecord ||
               (APP_CONTENT.chat.defaultSessionTitles as readonly string[]).includes(convRecord.title);
@@ -375,43 +204,47 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
       setActiveStreamMessage(null);
       setIsLoading(false);
     }
-  }, [isLoading, activeConversationId, mode, messages, setActiveStreamMessage, setIsLoading, setErrorNotice]);
-
-  const handleToggleMenu = () => {
-    setIsMenuOpen((prev) => !prev);
-    setEditingId(null);
-  };
+  }, [
+    isLoading,
+    activeConversationId,
+    mode,
+    messages,
+    scroll,
+    setActiveStreamMessage,
+    setIsLoading,
+    setErrorNotice,
+  ]);
 
   return {
     // State
-    activeConversationId,
-    currentTitle,
-    conversations,
+    activeConversationId: sessions.activeConversationId,
+    currentTitle: sessions.currentTitle,
+    conversations: sessions.conversations,
     messages,
     activeStreamMessage,
     isLoading,
     errorNotice,
-    isMenuOpen,
-    setIsMenuOpen,
-    editingId,
-    setEditingId,
-    editTitle,
-    setEditTitle,
+    isMenuOpen: sessions.isMenuOpen,
+    setIsMenuOpen: sessions.setIsMenuOpen,
+    editingId: sessions.editingId,
+    setEditingId: sessions.setEditingId,
+    editTitle: sessions.editTitle,
+    setEditTitle: sessions.setEditTitle,
 
     // Element Refs
-    messagesEndRef,
-    scrollContainerRef,
-    menuRef,
+    messagesEndRef: scroll.messagesEndRef,
+    scrollContainerRef: scroll.scrollContainerRef,
+    menuRef: sessions.menuRef,
 
     // Action Handlers
-    handleScroll,
-    handleToggleMenu,
-    handleNewSession,
-    handleSelectSession,
-    handleStartRename,
-    handleSaveRename,
-    handleCancelRename,
-    handleDeleteSession,
+    handleScroll: scroll.handleScroll,
+    handleToggleMenu: sessions.handleToggleMenu,
+    handleNewSession: sessions.handleNewSession,
+    handleSelectSession: sessions.handleSelectSession,
+    handleStartRename: sessions.handleStartRename,
+    handleSaveRename: sessions.handleSaveRename,
+    handleCancelRename: sessions.handleCancelRename,
+    handleDeleteSession: sessions.handleDeleteSession,
     handleSend,
   };
 }

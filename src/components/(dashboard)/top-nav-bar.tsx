@@ -7,15 +7,20 @@ import { StageViewSwitcher } from './stage-view-switcher';
 
 export function TopNavBar() {
   return (
-    <header className="fixed top-0 left-0 right-0 z-30 h-navbar flex items-center justify-between gap-spacing-md px-spacing-lg bg-theme-bg-surface border-b border-theme-border-subtle shrink-0">
-      {/* Left Area: Title & Brand Info */}
+    <header className="relative z-30 h-navbar flex items-center justify-between gap-spacing-md px-spacing-lg bg-theme-bg-surface border-b border-theme-border-subtle shrink-0 w-full">
+      {/* Left Area: Monogram & Brand Info */}
       <div className="flex items-center gap-spacing-sm">
-        <span className="text-xs font-bold uppercase tracking-wider text-theme-text-primary">
-          {APP_CONTENT.header.title}
-        </span>
-        <span className="text-2xs text-theme-text-muted hidden md:inline">
-          {APP_CONTENT.header.subtitle}
-        </span>
+        <div className="size-9 rounded-xl bg-theme-bg-overlay text-white flex items-center justify-center font-extrabold text-sm tracking-tighter shadow-sm border border-theme-border-strong shrink-0">
+          <span>A<span className="text-theme-brand-binance">.</span></span>
+        </div>
+        <div className="flex flex-col">
+          <span className="text-xs font-bold uppercase tracking-wider text-theme-text-primary">
+            {APP_CONTENT.header.title}
+          </span>
+          <span className="text-2xs text-theme-text-muted hidden md:inline">
+            {APP_CONTENT.header.subtitle}
+          </span>
+        </div>
       </div>
 
       {/* Right Area: Stage Switcher, Search, Notifications, Paper Sandbox Pill */}
@@ -36,7 +41,7 @@ export function TopNavBar() {
           type="button"
           title={APP_CONTENT.nav.notificationsTitle}
           aria-label={APP_CONTENT.nav.notificationsTitle}
-          className="relative size-8 rounded-lg flex items-center justify-center bg-theme-bg-elevated hover:bg-theme-bg-base border border-theme-border-subtle text-theme-text-secondary cursor-pointer transition-colors"
+          className="relative size-8 rounded-lg flex items-center justify-center bg-theme-bg-elevated hover:bg-theme-bg-surface border border-theme-border-subtle text-theme-text-secondary cursor-pointer transition-colors"
         >
           <Bell className="size-4" />
           <span className="absolute -top-1 -right-1 size-4 rounded-full bg-theme-brand-binance text-theme-bg-overlay text-2xs font-extrabold flex items-center justify-center shadow-2xs">
