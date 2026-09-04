@@ -6,6 +6,29 @@
  */
 
 export const APP_CONTENT = {
+  sidebar: {
+    brand: 'Argus',
+    subtitle: 'Binance Agent OS',
+    badge: 'Track A',
+    newChat: 'New Chat',
+    viewsTitle: 'Workspace Views',
+    agentView: 'Agent Chat',
+    chartView: 'Trading Chart',
+    historyTitle: 'Saved Conversations',
+    emptyHistory: 'No conversations yet',
+    statusOnline: 'Live Binance Feeds',
+    themeLight: 'Light Mode',
+    themeDark: 'Dark Mode',
+    deleteChat: 'Delete Chat',
+    renameChat: 'Rename Chat',
+    deleteDialogTitle: 'Delete Conversation',
+    deleteDialogDescription: (title?: string) =>
+      title
+        ? `Are you sure you want to delete "${title}"? All messages and market research from this chat will be permanently removed.`
+        : 'Are you sure you want to delete this conversation? All messages and market research will be permanently removed.',
+    deleteDialogConfirm: 'Delete Chat',
+    deleteDialogCancel: 'Cancel',
+  },
   header: {
     brand: 'ARGUS // BINANCE AGENT OS',
     title: 'Argus',

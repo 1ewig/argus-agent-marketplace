@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { TopNavBar } from "@/components/(dashboard)/top-nav-bar";
+import { LeftSidebar } from "@/components/(dashboard)/left-sidebar";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta",
@@ -48,9 +48,11 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
-      <body className="h-full bg-theme-bg-base flex flex-col overflow-hidden">
-        <TopNavBar />
-        {children}
+      <body className="h-full bg-theme-bg-base flex flex-row overflow-hidden">
+        <LeftSidebar />
+        <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden">
+          {children}
+        </div>
       </body>
     </html>
   );
