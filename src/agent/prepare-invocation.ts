@@ -1,7 +1,11 @@
 import { getAgentModel, getBackupAgentModel } from './providers';
 import { buildAgentTools } from './tools';
 import { getBinanceAdapter } from '@/lib/binance-mcp';
-import { ARGUS_SYSTEM_PROMPT, FIRST_TURN_SESSION_TITLE_DIRECTIVE } from './prompts';
+import {
+  ARGUS_SYSTEM_PROMPT,
+  FIRST_TURN_SESSION_TITLE_DIRECTIVE,
+  getEnvironmentDirective,
+} from './prompts';
 import type { AgentOptions } from './types';
 
 export interface PreparedAgentInvocation {
@@ -43,7 +47,7 @@ export function prepareAgentInvocation(options: AgentOptions): PreparedAgentInvo
     : prompt;
 
   const effectiveIsFirstTurn = isFirstTurn ?? (!history || history.length === 0);
-  const directives: string[] = [];
+  const directives: string[] = [getEnvironmentDirective(mode)];
   if (effectiveIsFirstTurn) {
     directives.push(FIRST_TURN_SESSION_TITLE_DIRECTIVE);
   }

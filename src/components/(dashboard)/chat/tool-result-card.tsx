@@ -12,6 +12,9 @@ import {
   Sparkles,
   AlertCircle,
   CheckCircle2,
+  Percent,
+  Calculator,
+  History,
 } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
 
@@ -59,6 +62,24 @@ export function getToolDisplayInfo(
       return {
         title: labels.get_24h_stats(symbol),
         icon: Activity,
+        symbol,
+      };
+    case 'get_funding_rate':
+      return {
+        title: labels.get_funding_rate(symbol),
+        icon: Percent,
+        symbol,
+      };
+    case 'get_average_price':
+      return {
+        title: labels.get_average_price(symbol),
+        icon: Calculator,
+        symbol,
+      };
+    case 'get_recent_trades':
+      return {
+        title: labels.get_recent_trades(symbol),
+        icon: History,
         symbol,
       };
     case 'get_account_balance':
@@ -369,6 +390,106 @@ export function ToolResultCard({
               <span className="text-theme-text-muted">{res.candlesCount}</span>
               <span className="font-semibold text-theme-text-secondary">{String(resultObj?.candleCount ?? '—')}</span>
             </div>
+          </div>
+        );
+      }
+
+      case 'get_funding_rate': {
+        const data = (resultObj?.data as Record<string, unknown>) ?? resultObj;
+        const rate = typeof data?.lastFundingRate === 'number' ? data.lastFundingRate : 0;
+        const ratePct = +(rate * 100).toFixed(4);
+        const apr = typeof data?.annualizedRatePercent === 'number' ? data.annualizedRatePercent : +(ratePct * 3 * 365).toFixed(2);
+        const isPositive = rate > 0;
+        const nextTime = typeof data?.nextFundingTime === 'number' ? new Date(data.nextFundingTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—';
+
+        return (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-spacing-xs p-spacing-xs rounded-md bg-theme-bg-elevated border border-theme-border-subtle text-2xs">
+            <div className="flex flex-col">
+              <span className="text-theme-text-muted">{res.fundingRate}</span>
+              <span className={`font-bold ${isPositive ? 'text-theme-status-success' : rate < 0 ? 'text-theme-status-danger' : 'text-theme-text-primary'}`}>
+                {rate > 0 ? `+${ratePct}%` : `${ratePct}%`}
+              </span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-theme-text-muted">{res.annualizedRate}</span>
+              <span className="font-semibold text-theme-brand-binance">{apr > 0 ? `+${apr}%` : `${apr}%`}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-theme-text-muted">{res.markPrice}</span>
+              <span className="font-semibold text-theme-text-primary">{formatUsd(data?.markPrice)}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-theme-text-muted">{res.nextFunding}</span>
+              <span className="font-semibold text-theme-text-secondary">{nextTime}</span>
+            </div>
+          </div>
+        );
+      }
+
+      case 'get_average_price': {
+        const data = (resultObj?.data as Record<string, unknown>) ?? resultObj;
+        const avgPrice = typeof data?.price === 'number' ? data.price : Number(data?.price);
+        const mins = data?.mins ?? 5;
+
+        return (
+          <div className="flex flex-wrap items-center gap-spacing-sm p-spacing-xs rounded-md bg-theme-bg-elevated border border-theme-border-subtle text-2xs">
+            <span className="px-spacing-xs py-0.5 rounded font-bold uppercase bg-theme-brand-binance/15 text-theme-brand-binance">
+              {String(mins)}m VWAP
+            </span>
+            <div className="flex items-baseline gap-spacing-xs">
+              <span className="text-theme-text-muted">{res.averagePrice}:</span>
+              <span className="text-xs font-bold text-theme-text-primary">
+                {formatUsd(avgPrice)}
+              </span>
+            </div>
+          </div>
+        );
+      }
+
+      case 'get_recent_trades': {
+        const summary = (resultObj?.summary as Record<string, unknown>) ?? {};
+        const trades = Array.isArray(resultObj?.trades) ? (resultObj.trades as Array<{ id: number; price: number; qty: number; time: number; isBuyerMaker: boolean }>) : [];
+        const buyRatio = typeof summary?.buyRatio === 'number' ? summary.buyRatio : 50;
+
+        return (
+          <div className="flex flex-col gap-spacing-xs p-spacing-xs rounded-md bg-theme-bg-elevated border border-theme-border-subtle text-2xs">
+            <div className="flex items-center justify-between px-1 py-0.5 border-b border-theme-border-subtle/50 text-2xs">
+              <span className="font-semibold text-theme-text-secondary uppercase tracking-wider">
+                {res.recentTrades}
+              </span>
+              <div className="flex items-center gap-spacing-xs">
+                <span className="text-theme-text-muted">{res.buyPressure}:</span>
+                <span className={`font-bold ${buyRatio >= 50 ? 'text-theme-status-success' : 'text-theme-status-danger'}`}>
+                  {buyRatio}%
+                </span>
+              </div>
+            </div>
+
+            {trades.length > 0 && (
+              <div className="flex flex-col gap-0.5 font-mono">
+                {trades.slice(0, 5).map((t, idx) => {
+                  const isBuy = !t.isBuyerMaker;
+                  return (
+                    <div key={t.id ?? `tr_${idx}`} className="flex justify-between items-center px-1.5 py-0.5 rounded-xs hover:bg-theme-bg-surface/50 text-2xs">
+                      <div className="flex items-center gap-1.5">
+                        <span className={`px-1 py-0.5 rounded-xs text-2xs font-bold ${isBuy ? 'bg-theme-status-success/15 text-theme-status-success' : 'bg-theme-status-danger/15 text-theme-status-danger'}`}>
+                          {isBuy ? res.takerBuy : res.takerSell}
+                        </span>
+                        <span className={isBuy ? 'text-theme-status-success font-medium' : 'text-theme-status-danger font-medium'}>
+                          {formatUsd(t.price)}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-spacing-sm">
+                        <span className="text-theme-text-secondary">{formatOrderQty(t.qty)}</span>
+                        <span className="text-theme-text-muted text-2xs">
+                          {new Date(t.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         );
       }

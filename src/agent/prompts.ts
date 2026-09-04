@@ -68,6 +68,22 @@ Example:
 <session_title>SOL Price & Liquidity</session_title>
 `;
 
+/**
+ * Environment directive informing the agent of the active execution mode (Sandbox vs Live MCP).
+ */
+export function getEnvironmentDirective(mode: 'simulation' | 'live_mcp'): string {
+  if (mode === 'simulation') {
+    return `### Active Execution Environment: Sandbox (Simulation) Mode
+- **Market Data Feeds**: 100% real-time, live Binance production exchange data (tickers, order books, klines, funding rates, trades).
+- **Wallet & Trading**: Isolated in-memory sandbox/demo wallet pre-funded with $500 USDT and $500 USDC test funds. Orders execute safely without risking real funds.
+- **Transparency**: When asked about trading, balances, or whether real money is at risk, candidly explain that market data is real-time from Binance, but trades and balances operate safely in the sandbox.`;
+  }
+
+  return `### Active Execution Environment: Live Binance Agent OS Mode
+- **Connection**: Connected directly via Model Context Protocol (MCP) to the official Binance Agent OS endpoint.
+- **Wallet & Trading**: Actions interact with the user's authorized, dedicated Agentic sub-account on Binance.`;
+}
+
 export const AGENT_TOOL_DESCRIPTIONS = {
   getTickerPrice: 'Fetch the real-time ticker price for a Binance trading pair (e.g. SOLUSDT, BTCUSDT, ETHUSDT). MUST be called before stating or reporting the price of any symbol.',
   getOrderBook: 'Fetch the live order book depth (top bids and asks) to evaluate liquidity and compute slippage. MUST be called before reporting order book state or depth.',
@@ -76,6 +92,9 @@ export const AGENT_TOOL_DESCRIPTIONS = {
   getAccountBalances: 'Query the current balances inside the isolated Binance Agentic Wallet sandbox. MUST be called before reporting wallet balances.',
   placeSpotOrder: 'Execute an idempotent spot market or limit order in the Binance Agentic sub-account.',
   cancelOrder: 'Cancel an active open order in the Binance Agentic sub-account by order ID.',
+  getFundingRate: 'Fetch the real-time perpetual futures funding rate, mark price, and next settlement time for a trading pair. Essential for derivative sentiment, funding cost, and long/short positioning.',
+  getAveragePrice: 'Fetch the 5-minute rolling average price (VWAP) for a trading pair to evaluate execution price quality and fair market value.',
+  getRecentTrades: 'Fetch recent market trade executions (trade tape) to assess real-time buying vs selling pressure and trade momentum.',
 } as const;
 
 export const AGENT_ERROR_MESSAGES = {

@@ -72,6 +72,40 @@ export interface OrderExecutionResult {
 }
 
 /**
+ * Funding Rate & Mark Price for Perpetual Futures
+ */
+export interface FundingRateData {
+  symbol: string;
+  markPrice: number;
+  indexPrice: number;
+  lastFundingRate: number;
+  annualizedRatePercent: number;
+  nextFundingTime: number;
+  interestRate: number;
+}
+
+/**
+ * Rolling Average Price (VWAP)
+ */
+export interface AveragePriceData {
+  symbol: string;
+  price: number;
+  mins: number;
+}
+
+/**
+ * Public Market Trade execution print
+ */
+export interface RecentTradeData {
+  id: number;
+  price: number;
+  qty: number;
+  quoteQty: number;
+  time: number;
+  isBuyerMaker: boolean;
+}
+
+/**
  * Unified Binance Agent OS Adapter Interface
  * Implemented by both LiveBinanceMCPAdapter and SimulatedBinanceAdapter
  */
@@ -104,6 +138,21 @@ export interface IBinanceAgentAdapter {
     highPrice: number;
     lowPrice: number;
   }>;
+
+  /**
+   * Retrieves perpetual futures funding rate, mark price, and next settlement time
+   */
+  getFundingRate(symbol: string): Promise<FundingRateData>;
+
+  /**
+   * Retrieves 5-minute rolling average price (VWAP benchmark)
+   */
+  getAveragePrice(symbol: string): Promise<AveragePriceData>;
+
+  /**
+   * Retrieves recent public market trade prints
+   */
+  getRecentTrades(symbol: string, limit?: number): Promise<RecentTradeData[]>;
 
   /**
    * Retrieves balances inside the isolated Agentic Wallet sandbox

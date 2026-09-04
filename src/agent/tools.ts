@@ -211,5 +211,85 @@ export function buildAgentTools(customAdapter?: IBinanceAgentAdapter) {
         }
       },
     }),
+
+    get_funding_rate: tool({
+      description: AGENT_TOOL_DESCRIPTIONS.getFundingRate,
+      inputSchema: z.object({
+        symbol: z.string().describe('Trading pair or perpetual contract symbol in uppercase (e.g. BTCUSDT, ETHUSDT, SOLUSDT)'),
+      }),
+      execute: async ({ symbol }) => {
+        try {
+          const result = await adapter.getFundingRate(symbol.toUpperCase());
+          return {
+            success: true,
+            data: result,
+          };
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : 'Failed to retrieve funding rate';
+          return {
+            success: false,
+            error: message,
+          };
+        }
+      },
+    }),
+
+    get_average_price: tool({
+      description: AGENT_TOOL_DESCRIPTIONS.getAveragePrice,
+      inputSchema: z.object({
+        symbol: z.string().describe('Trading pair symbol in uppercase (e.g. BTCUSDT, SOLUSDT)'),
+      }),
+      execute: async ({ symbol }) => {
+        try {
+          const result = await adapter.getAveragePrice(symbol.toUpperCase());
+          return {
+            success: true,
+            data: result,
+          };
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : 'Failed to retrieve average price';
+          return {
+            success: false,
+            error: message,
+          };
+        }
+      },
+    }),
+
+    get_recent_trades: tool({
+      description: AGENT_TOOL_DESCRIPTIONS.getRecentTrades,
+      inputSchema: z.object({
+        symbol: z.string().describe('Trading pair symbol in uppercase (e.g. BTCUSDT, SOLUSDT)'),
+        limit: z.number().int().min(5).max(50).default(15).describe('Number of recent trades to fetch (default 15)'),
+      }),
+      execute: async ({ symbol, limit }) => {
+        try {
+          const trades = await adapter.getRecentTrades(symbol.toUpperCase(), limit);
+          const totalVolume = trades.reduce((sum, t) => sum + t.qty, 0);
+          const buyerMakerVolume = trades.filter((t) => t.isBuyerMaker).reduce((sum, t) => sum + t.qty, 0);
+          const takerBuyVolume = +(totalVolume - buyerMakerVolume).toFixed(4);
+          const takerSellVolume = +buyerMakerVolume.toFixed(4);
+
+          return {
+            success: true,
+            symbol: symbol.toUpperCase(),
+            summary: {
+              tradeCount: trades.length,
+              totalVolume: +totalVolume.toFixed(4),
+              takerBuyVolume,
+              takerSellVolume,
+              buyRatio: totalVolume > 0 ? +((takerBuyVolume / totalVolume) * 100).toFixed(1) : 50,
+            },
+            trades: trades.slice(0, 10),
+          };
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : 'Failed to retrieve recent trades';
+          return {
+            success: false,
+            error: message,
+          };
+        }
+      },
+    }),
   };
 }

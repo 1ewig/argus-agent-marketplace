@@ -269,4 +269,103 @@ export class SimulatedBinanceAdapter implements IBinanceAgentAdapter {
       orderId,
     };
   }
+
+  /**
+   * Fetches perpetual futures funding rate and mark price
+   */
+  public async getFundingRate(symbol: string) {
+    const formatted = symbol.toUpperCase();
+    try {
+      const res = await fetch(`https://fapi.binance.com/fapi/v1/premiumIndex?symbol=${formatted}`, {
+        next: { revalidate: 15 },
+      });
+      if (!res.ok) throw new Error(`Binance funding rate error: ${res.status}`);
+      const data = await res.json();
+      const lastFundingRate = parseFloat(data.lastFundingRate);
+      const annualizedRatePercent = +(lastFundingRate * 3 * 365 * 100).toFixed(2);
+
+      return {
+        symbol: data.symbol,
+        markPrice: parseFloat(data.markPrice),
+        indexPrice: parseFloat(data.indexPrice),
+        lastFundingRate,
+        annualizedRatePercent,
+        nextFundingTime: Number(data.nextFundingTime),
+        interestRate: parseFloat(data.interestRate ?? '0.0001'),
+      };
+    } catch {
+      const ticker = await this.getTickerPrice(formatted);
+      const simulatedRate = 0.0001;
+      return {
+        symbol: formatted,
+        markPrice: ticker.price,
+        indexPrice: ticker.price,
+        lastFundingRate: simulatedRate,
+        annualizedRatePercent: +(simulatedRate * 3 * 365 * 100).toFixed(2),
+        nextFundingTime: Date.now() + 4 * 60 * 60 * 1000,
+        interestRate: 0.0001,
+      };
+    }
+  }
+
+  /**
+   * Fetches 5-minute rolling average price (VWAP benchmark)
+   */
+  public async getAveragePrice(symbol: string) {
+    const formatted = symbol.toUpperCase();
+    try {
+      const res = await fetch(`https://api.binance.com/api/v3/avgPrice?symbol=${formatted}`, {
+        next: { revalidate: 5 },
+      });
+      if (!res.ok) throw new Error(`Binance avgPrice error: ${res.status}`);
+      const data = await res.json();
+      return {
+        symbol: formatted,
+        price: parseFloat(data.price),
+        mins: Number(data.mins ?? 5),
+      };
+    } catch {
+      const ticker = await this.getTickerPrice(formatted);
+      return {
+        symbol: formatted,
+        price: ticker.price,
+        mins: 5,
+      };
+    }
+  }
+
+  /**
+   * Fetches recent public market trades
+   */
+  public async getRecentTrades(symbol: string, limit: number = 15) {
+    const formatted = symbol.toUpperCase();
+    try {
+      const safeLimit = Math.min(Math.max(limit, 5), 50);
+      const res = await fetch(`https://api.binance.com/api/v3/trades?symbol=${formatted}&limit=${safeLimit}`, {
+        next: { revalidate: 2 },
+      });
+      if (!res.ok) throw new Error(`Binance trades error: ${res.status}`);
+      const data = await res.json();
+
+      return data.map((t: Record<string, unknown>) => ({
+        id: Number(t.id),
+        price: parseFloat(String(t.price)),
+        qty: parseFloat(String(t.qty)),
+        quoteQty: parseFloat(String(t.quoteQty)),
+        time: Number(t.time),
+        isBuyerMaker: Boolean(t.isBuyerMaker),
+      }));
+    } catch {
+      const ticker = await this.getTickerPrice(formatted);
+      const now = Date.now();
+      return Array.from({ length: limit }).map((_, i) => ({
+        id: 1000000 + i,
+        price: +(ticker.price * (1 + (Math.random() - 0.5) * 0.001)).toFixed(2),
+        qty: +(0.05 + Math.random() * 2).toFixed(4),
+        quoteQty: +(ticker.price * 0.5).toFixed(2),
+        time: now - (limit - i) * 1000,
+        isBuyerMaker: Math.random() > 0.5,
+      }));
+    }
+  }
 }

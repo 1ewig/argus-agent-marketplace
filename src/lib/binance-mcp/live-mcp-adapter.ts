@@ -147,4 +147,50 @@ export class LiveBinanceMCPAdapter implements IBinanceAgentAdapter {
     }
     return this.fallbackAdapter.cancelOrder(symbol, orderId);
   }
+
+  public async getFundingRate(symbol: string) {
+    const res = await this.invokeTool<{
+      symbol: string;
+      markPrice: number;
+      indexPrice: number;
+      lastFundingRate: number;
+      annualizedRatePercent: number;
+      nextFundingTime: number;
+      interestRate: number;
+    }>('get_funding_rate', { symbol });
+
+    if (res && typeof res.lastFundingRate === 'number') {
+      return res;
+    }
+    return this.fallbackAdapter.getFundingRate(symbol);
+  }
+
+  public async getAveragePrice(symbol: string) {
+    const res = await this.invokeTool<{
+      symbol: string;
+      price: number;
+      mins: number;
+    }>('get_average_price', { symbol });
+
+    if (res && typeof res.price === 'number') {
+      return res;
+    }
+    return this.fallbackAdapter.getAveragePrice(symbol);
+  }
+
+  public async getRecentTrades(symbol: string, limit: number = 15) {
+    const res = await this.invokeTool<Array<{
+      id: number;
+      price: number;
+      qty: number;
+      quoteQty: number;
+      time: number;
+      isBuyerMaker: boolean;
+    }>>('get_recent_trades', { symbol, limit });
+
+    if (Array.isArray(res)) {
+      return res;
+    }
+    return this.fallbackAdapter.getRecentTrades(symbol, limit);
+  }
 }
