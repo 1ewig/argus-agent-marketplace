@@ -104,26 +104,24 @@ export function AgentProcessTimeline({
 
   return (
     <div className="flex flex-col gap-1 text-2xs mb-spacing-xs">
-      {/* Overarching Worked Group Header */}
-      <button
-        type="button"
-        onClick={toggleOpen}
-        className="flex items-center gap-1.5 text-2xs text-theme-text-muted hover:text-theme-text-primary py-0.5 select-none cursor-pointer transition-colors w-fit group"
-      >
-        {isActiveWork ? (
-          <Loader2 className="size-3 text-theme-brand-binance animate-spin shrink-0" />
-        ) : (
+      {/* Overarching Worked Group Header (Shown at top only when completed) */}
+      {!isActiveWork && (
+        <button
+          type="button"
+          onClick={toggleOpen}
+          className="flex items-center gap-1.5 text-2xs text-theme-text-muted hover:text-theme-text-primary py-0.5 select-none cursor-pointer transition-colors w-fit group"
+        >
           <Sparkles className="size-3 text-theme-brand-binance shrink-0" />
-        )}
-        <span className="font-medium text-theme-text-secondary group-hover:underline">
-          {headerLabel}
-        </span>
-        {isOpen ? (
-          <ChevronUp className="size-2.5 text-theme-text-muted group-hover:text-theme-text-primary transition-colors shrink-0" />
-        ) : (
-          <ChevronDown className="size-2.5 text-theme-text-muted group-hover:text-theme-text-primary transition-colors shrink-0" />
-        )}
-      </button>
+          <span className="font-medium text-theme-text-secondary group-hover:underline">
+            {headerLabel}
+          </span>
+          {isOpen ? (
+            <ChevronUp className="size-2.5 text-theme-text-muted group-hover:text-theme-text-primary transition-colors shrink-0" />
+          ) : (
+            <ChevronDown className="size-2.5 text-theme-text-muted group-hover:text-theme-text-primary transition-colors shrink-0" />
+          )}
+        </button>
+      )}
 
       {/* Collapsible Inner Steps */}
       {isOpen && (
@@ -221,6 +219,25 @@ export function AgentProcessTimeline({
           })}
         </div>
       )}
+
+      {/* Active Running State: Working indicator moved to the bottom */}
+      {isActiveWork && (
+        <button
+          type="button"
+          onClick={toggleOpen}
+          className="flex items-center gap-1.5 text-2xs text-theme-text-muted hover:text-theme-text-primary py-0.5 select-none cursor-pointer transition-colors w-fit group mt-0.5"
+        >
+          <Loader2 className="size-3 text-theme-brand-binance animate-spin shrink-0" />
+          <span className="font-medium text-theme-text-secondary group-hover:underline">
+            {headerLabel}
+          </span>
+          {isOpen ? (
+            <ChevronUp className="size-2.5 text-theme-text-muted group-hover:text-theme-text-primary transition-colors shrink-0" />
+          ) : (
+            <ChevronDown className="size-2.5 text-theme-text-muted group-hover:text-theme-text-primary transition-colors shrink-0" />
+          )}
+        </button>
+      )}
     </div>
   );
-}
+}
