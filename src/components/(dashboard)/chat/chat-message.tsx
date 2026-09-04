@@ -140,7 +140,7 @@ export const ChatMessage = memo(function ChatMessage({
         )}
 
         {/* Main Response Markdown Container */}
-        {message.content ? (
+        {message.content && (
           <div
             className={`p-4 sm:p-5 rounded-2xl rounded-tl-xs shadow-2xs border text-xs leading-relaxed transition-colors ${
               isError
@@ -150,10 +150,12 @@ export const ChatMessage = memo(function ChatMessage({
           >
             <MarkdownView content={message.content} />
           </div>
-        ) : isStreaming && !hasSteps ? (
-          /* Live Drafting Indicator while assistant generates response before steps attach */
+        )}
+
+        {/* Live Drafting Indicator at the bottom until the inference ends */}
+        {isStreaming && (
           <AgentWorkingDraftIndicator startedAt={message.timestamp} />
-        ) : null}
+        )}
       </div>
     </motion.div>
   );

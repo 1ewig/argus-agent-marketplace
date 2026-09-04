@@ -14,7 +14,6 @@ import { AgentThoughtAccordion } from './agent-thought-accordion';
 import { MarkdownView } from '../markdown-view';
 import { APP_CONTENT } from '@/constants/content';
 import { accordionVariants, tapScaleAccordion } from '@/constants/animation';
-import { useActiveTimer } from '@/hooks';
 import type { AgentExecutionStep } from '@/agent';
 
 interface AgentProcessTimelineProps {
@@ -30,13 +29,11 @@ export const AgentProcessTimeline = memo(function AgentProcessTimeline({
   isStreaming = false,
   isCompleted = false,
   workedDurationMs,
-  startedAt,
 }: AgentProcessTimelineProps) {
   const [userToggledOpen, setUserToggledOpen] = useState<boolean | null>(null);
   const [expandedDetailsIds, setExpandedDetailsIds] = useState<Record<string, boolean>>({});
 
   const isActiveWork = isStreaming && !isCompleted;
-  const elapsedSeconds = useActiveTimer(startedAt, isActiveWork);
 
   // Default is open while actively working, collapsed when completed, unless explicitly toggled
   const isOpen = userToggledOpen !== null ? userToggledOpen : !isCompleted;
@@ -77,9 +74,7 @@ export const AgentProcessTimeline = memo(function AgentProcessTimeline({
     );
   }, [workedDurationMs, steps]);
 
-  const headerLabel = isActiveWork
-    ? APP_CONTENT.process.workingWithSeconds(elapsedSeconds)
-    : APP_CONTENT.process.workedForDuration(finalWorkedSeconds);
+  const headerLabel = APP_CONTENT.process.workedForDuration(finalWorkedSeconds);
 
   if (visibleSteps.length === 0) {
     return null;
@@ -228,25 +223,6 @@ export const AgentProcessTimeline = memo(function AgentProcessTimeline({
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Active Running State Button */}
-      {isActiveWork && (
-        <motion.button
-          type="button"
-          whileTap={tapScaleAccordion}
-          onClick={toggleOpen}
-          className="flex items-center gap-1.5 text-2xs text-theme-text-muted hover:text-theme-text-primary active:bg-theme-bg-elevated/40 py-0.5 px-1 -ml-1 rounded-md select-none cursor-pointer transition-colors w-fit group mt-0.5"
-        >
-          <Loader2 className="size-3 text-theme-brand-binance animate-spin shrink-0" />
-          <span className="font-medium text-theme-text-secondary group-hover:underline">
-            {headerLabel}
-          </span>
-          <ChevronDown
-            className={`size-2.5 text-theme-text-muted group-hover:text-theme-text-primary transition-transform duration-200 ease-out shrink-0 ${isOpen ? 'rotate-180' : 'rotate-0'
-              }`}
-          />
-        </motion.button>
-      )}
     </div>
   );
 });
