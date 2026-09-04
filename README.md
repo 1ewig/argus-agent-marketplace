@@ -15,9 +15,16 @@ Argus pairs ultra-fast inference with a clean, local-first interactive console�
 
 ## Key Capabilities & Architecture
 
-### 1. High-Throughput Inference with Automatic Failover
-* **Primary Model:** `qwen/qwen3.8-27b` — ultra-fast reasoning, strong tool-calling fidelity, and 128k context window.
-* **Backup Model:** `openai/gpt-oss-120b` — automatically activated if the primary model encounters rate limits (HTTP 429) or capacity issues, ensuring uninterrupted chat availability.
+### 1. Multi-Provider Inference with Automatic Failover
+* **Selectable Providers (`groq` | `fireworks`):** Switch between inference providers via `INFERENCE_PROVIDER` with automatic cross-provider and cross-model failover.
+* **Groq Models:**
+  * **Primary:** `qwen/qwen3.8-27b` — ultra-fast reasoning, high-fidelity tool-calling, and 128k context window.
+  * **Backup:** `openai/gpt-oss-120b` — automatically activated if the primary model encounters rate limits (HTTP 429) or capacity issues.
+* **Fireworks AI Models:**
+  * **Primary:** `accounts/fireworks/models/glm-5p3-flash` — high-speed reasoning model.
+  * **Backup:** `accounts/fireworks/models/deepseek-v4-flash-0731` — rapid secondary reasoning engine.
+* **Thinking & Reasoning Extraction:** Embedded `<think>` blocks are captured and converted into native reasoning streams via `extractReasoningMiddleware`, with configurable reasoning effort (default: `'low'`).
+* **TPM Protection & Conciseness:** Capped to 6,000 max output tokens per turn (`GROQ_MAX_TOKENS`) with concise system prompts to prevent rate-limit exhaustion.
 * **Fluid Word-by-Word Streaming:** Powered by `smoothStream` (15ms delay, word-level chunking) to deliver a smooth, natural reading experience rather than erratic burst streaming.
 
 ### 2. Single-Turn Parallel Tool Execution
@@ -29,10 +36,12 @@ Argus implements a unified `IBinanceAgentAdapter` interface supporting two execu
 * **Sandbox Mode (`simulation`):** Streams live, real-time Binance market feeds while operating an in-memory isolated sandbox wallet. Hackathon judges can evaluate trade analysis, order sizing, and executions with zero wallet deposits required.
 * **Live MCP Mode (`live_mcp`):** Connects directly over Model Context Protocol (MCP) to the official Binance Agent OS endpoint (`https://agent.binance.com/mcp/agentic`).
 
-### 4. Interactive Reasoning & Process Progression
-* **Uncontained, Clean Timeline:** Transparently renders the agent's internal reasoning steps and tool calls without cluttered card containers or distracting dividers.
-* **Live Step States:** Visual indicators for running, completed, and failed tool steps.
-* **Inspectable Data:** Expandable drawers allow users to inspect exact tool arguments, raw JSON responses, and internal reasoning on demand.
+### 4. Unified "Worked for # seconds" Process Timeline
+* **Single Collapsible Group:** All agent execution steps (thinking blocks, tool invocations, and raw data payloads) are cleanly wrapped inside an overarching "Worked for # seconds" accordion.
+* **Live Elapsed Timer:** Real-time counter updates dynamically during execution (`Working (4s)`) before finalizing to elapsed duration (`Worked for 4 seconds`).
+* **Smart Auto-Collapse:** Automatically collapses once the final answer arrives, preserving a clean reading flow while keeping the entire execution history one click away.
+* **Intermediate Response Isolation:** Any preliminary agent thoughts or intermediate LLM text emitted prior to tool calls are safely isolated inside the process group, keeping the final assistant bubble pristine.
+* **Inspectable Tool Data:** Sub-accordions provide complete transparency into exact tool arguments, raw JSON responses, and internal reasoning on demand.
 
 ### 5. Local-First Session Management
 * Powered by **Dexie IndexedDB** for private, client-side conversation persistence.
@@ -53,7 +62,7 @@ Argus outputs clean, easily scannable answers designed for fast decision-making:
 * **Runtime & Package Manager:** Bun (`bun@1.4.0+`) exclusively
 * **Language & Tooling:** TypeScript 7 (native Go compiler), Oxlint (`oxlint@1.81.0+`)
 * **Styling:** Tailwind CSS v4 with Neo-Minimalist Architectural design tokens configured in `globals.css`
-* **Agent Engine:** Vercel AI SDK (`ai@7`, `@ai-sdk/groq`, `@ai-sdk/mcp`)
+* **Agent Engine:** Vercel AI SDK (`ai@7`, `@ai-sdk/groq`, `@ai-sdk/fireworks`, `@ai-sdk/mcp`)
 * **Client Database:** Dexie IndexedDB (`dexie`, `dexie-react-hooks`)
 * **Icons:** Lucide React
 
@@ -84,7 +93,7 @@ src/
 └── agent/                # Core AI agent engine
     ├── engine.ts         # Multi-step streaming loop with rate-limit failover
     ├── prepare-invocation.ts # Model binding, tool configuration, and prompt assembly
-    ├── providers.ts      # Groq model providers (primary & backup)
+    ├── providers.ts      # Multi-provider model factories (Groq & Fireworks AI) with failover
     ├── title-stream-filter.ts # Stream interceptor preventing raw XML tag leakage
     ├── tools.ts          # Binance MCP tool definitions with Zod schemas
     ├── prompts.ts        # System prompts and ChatGPT-style formatting guidelines
@@ -109,7 +118,7 @@ Argus follows strict engineering rules defined in [`AGENTS.md`](./AGENTS.md):
 
 ### Prerequisites
 * [Bun](https://bun.sh/) `v1.4.0` or higher
-* A [Groq API Key](https://console.groq.com/keys)
+* An API key for [Groq](https://console.groq.com/keys) or [Fireworks AI](https://fireworks.ai/api-keys)
 
 ### 1. Clone & Install Dependencies
 ```bash
@@ -126,20 +135,33 @@ cp .env.example .env.local
 
 Configure your credentials in `.env.local`:
 ```env
-# Groq Inference API Key
+# ------------------------------------------------------------------------------
+# 1. Inference Provider ('groq' | 'fireworks')
+# ------------------------------------------------------------------------------
+INFERENCE_PROVIDER=groq
+
+# --- Groq Provider Configuration ---
 GROQ_API_KEY=gsk_your_groq_api_key_here
-
-# Primary Model (Ultra-fast, tool calling)
 GROQ_MODEL=qwen/qwen3.8-27b
-
-# Backup Model (Automatic failover on rate limits)
 GROQ_BACKUP_MODEL=openai/gpt-oss-120b
+GROQ_REASONING_EFFORT=low
+GROQ_MAX_TOKENS=6000
 
-# Reasoning Effort: 'none' | 'low' | 'medium' | 'high'
-GROQ_REASONING_EFFORT=high
+# --- Fireworks AI Provider Configuration ---
+FIREWORKS_API_KEY=your_fireworks_api_key_here
+FIREWORKS_MODEL=accounts/fireworks/models/glm-5p3-flash
+FIREWORKS_BACKUP_MODEL=accounts/fireworks/models/deepseek-v4-flash-0731
+FIREWORKS_REASONING_EFFORT=low
 
-# Execution Mode: 'simulation' | 'live_mcp'
+# Optional: Automatic cross-provider failover
+BACKUP_INFERENCE_PROVIDER=fireworks
+
+# ------------------------------------------------------------------------------
+# 2. Binance Agent OS MCP Configuration
+# ------------------------------------------------------------------------------
+# Mode: 'simulation' (isolated sandbox wallet) | 'live_mcp' (official Agent OS)
 NEXT_PUBLIC_BINANCE_MODE=simulation
+BINANCE_MCP_ENDPOINT=https://agent.binance.com/mcp/agentic
 ```
 
 ### 3. Start Development Server
