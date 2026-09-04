@@ -79,6 +79,7 @@ export interface AgentOptions {
   apiKey?: string;
   history?: HistoryMessage[];
   maxSteps?: number;
+  maxTokens?: number;
   isFirstTurn?: boolean;
   systemDirective?: string;
 }

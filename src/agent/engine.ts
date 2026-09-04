@@ -27,6 +27,7 @@ export async function executeAgentStream(
     currentUserPrompt,
     messages,
     reasoningEffort,
+    maxTokens,
   } = prepareAgentInvocation(options);
 
   const steps: AgentExecutionStep[] = [];
@@ -58,6 +59,7 @@ export async function executeAgentStream(
     system: effectiveSystemPrompt,
     ...(messages ? { messages } : { prompt: currentUserPrompt }),
     tools,
+    maxTokens,
     stopWhen: isStepCount(maxSteps),
     experimental_transform: smoothStream({
       delayInMs: 15,
@@ -271,6 +273,7 @@ export async function executeAgent(options: AgentOptions): Promise<AgentResult> 
     currentUserPrompt,
     messages,
     reasoningEffort,
+    maxTokens,
   } = prepareAgentInvocation(options);
 
   const buildGenerateParams = (activeModel: typeof model) => ({
@@ -278,6 +281,7 @@ export async function executeAgent(options: AgentOptions): Promise<AgentResult> 
     system: effectiveSystemPrompt,
     ...(messages ? { messages } : { prompt: currentUserPrompt }),
     tools,
+    maxTokens,
     stopWhen: isStepCount(maxSteps),
     providerOptions: {
       groq: { reasoningEffort },

@@ -12,6 +12,7 @@ export interface PreparedAgentInvocation {
   currentUserPrompt: string;
   messages?: Array<{ role: 'user' | 'assistant'; content: string }>;
   reasoningEffort: 'high' | 'medium' | 'low' | 'default' | 'none';
+  maxTokens: number;
 }
 
 /**
@@ -69,6 +70,11 @@ export function prepareAgentInvocation(options: AgentOptions): PreparedAgentInvo
   const reasoningEffort =
     (process.env.GROQ_REASONING_EFFORT as 'high' | 'medium' | 'low' | 'default' | 'none') || 'high';
 
+  const envMaxTokens = Number(process.env.GROQ_MAX_TOKENS);
+  const maxTokens =
+    options.maxTokens ??
+    (Number.isFinite(envMaxTokens) && envMaxTokens > 0 ? envMaxTokens : 2048);
+
   return {
     model,
     backupModel,
@@ -77,5 +83,6 @@ export function prepareAgentInvocation(options: AgentOptions): PreparedAgentInvo
     currentUserPrompt,
     messages,
     reasoningEffort,
+    maxTokens,
   };
 }
