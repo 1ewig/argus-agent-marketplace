@@ -6,7 +6,6 @@ import { ArgusIcon } from '../argus-icon';
 import { APP_CONTENT } from '@/constants/content';
 import { MarkdownView } from '../markdown-view';
 import { AgentProcessTimeline } from './agent-process-timeline';
-import { AgentThoughtAccordion } from './agent-thought-accordion';
 import { normalizeMessageSteps } from '@/lib/db';
 import type { ExecutedToolCall, AgentExecutionStep } from '@/agent';
 
@@ -71,9 +70,9 @@ export const ChatMessage = memo(function ChatMessage({
 
   return (
     <div className="flex items-start gap-spacing-sm w-full max-w-[95%] py-1">
-      {/* Brand Icon */}
-      <div className="size-7 rounded-full bg-theme-bg-surface border border-theme-border-subtle flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
-        <ArgusIcon className="size-4 text-theme-brand-binance shrink-0" />
+      {/* Brand Icon (Circular container removed) */}
+      <div className="size-7 flex items-center justify-center shrink-0 -mt-1">
+        <ArgusIcon className="size-5 text-theme-brand-binance shrink-0" />
       </div>
 
       <div className="flex-1 flex flex-col gap-spacing-xs min-w-0">
@@ -92,12 +91,7 @@ export const ChatMessage = memo(function ChatMessage({
           )}
         </div>
 
-        {/* Separated Thought Accordion (Markdown-rendered reasoning) */}
-        {hasSteps && (
-          <AgentThoughtAccordion steps={effectiveSteps} isStreaming={isStreaming} />
-        )}
-
-        {/* Separated Tool Process Timeline */}
+        {/* Chronological Process Timeline (Thoughts & Tools) */}
         {hasSteps && (
           <AgentProcessTimeline steps={effectiveSteps} isStreaming={isStreaming} />
         )}
@@ -106,8 +100,8 @@ export const ChatMessage = memo(function ChatMessage({
         {message.content ? (
           <div
             className={`p-spacing-md rounded-2xl rounded-tl-xs shadow-2xs border text-xs leading-relaxed transition-all ${isError
-                ? 'bg-theme-bg-surface border-theme-status-danger text-theme-status-danger'
-                : 'bg-theme-bg-surface border-theme-border-subtle text-theme-text-primary'
+              ? 'bg-theme-bg-surface border-theme-status-danger text-theme-status-danger'
+              : 'bg-theme-bg-surface border-theme-border-subtle text-theme-text-primary'
               }`}
           >
             <MarkdownView content={message.content} />

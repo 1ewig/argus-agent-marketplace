@@ -2,14 +2,13 @@
 
 import React, { useState } from 'react';
 import {
-  Check,
   ChevronDown,
   ChevronUp,
   Loader2,
   AlertCircle,
 } from 'lucide-react';
-import { APP_CONTENT } from '@/constants/content';
 import { getToolDisplayInfo, ToolResultCard } from './tool-result-card';
+import { AgentThoughtAccordion } from './agent-thought-accordion';
 import type { AgentExecutionStep } from '@/agent';
 
 interface AgentProcessTimelineProps {
@@ -18,17 +17,31 @@ interface AgentProcessTimelineProps {
 }
 
 /**
- * Renders the autonomous tool progression directly in line.
- * Each tool can be expanded individually to inspect its structured result card.
+ * Renders the autonomous reasoning and tool progression in chronological order.
+ * Thinking phases render via AgentThoughtAccordion with MarkdownView.
+ * Tools render inline with contextual icons and expandable result cards.
  */
 export function AgentProcessTimeline({
   steps,
+  isStreaming = false,
 }: AgentProcessTimelineProps) {
   const [expandedDetailsIds, setExpandedDetailsIds] = useState<Record<string, boolean>>({});
 
-  const toolSteps = steps.filter((s) => s.type === 'tool');
+  if (!steps || steps.length === 0) {
+    return null;
+  }
 
-  if (toolSteps.length === 0) {
+  // Filter out completed thinking steps that have no reasoning text
+  const visibleSteps = steps.filter((step) => {
+    if (step.type === 'thinking') {
+      const hasText = Boolean(step.reasoningText?.trim());
+      const isActive = isStreaming && step.status === 'active';
+      return hasText || isActive;
+    }
+    return true; // tool steps
+  });
+
+  if (visibleSteps.length === 0) {
     return null;
   }
 
@@ -41,9 +54,18 @@ export function AgentProcessTimeline({
 
   return (
     <div className="flex flex-col gap-spacing-xs text-2xs mb-spacing-xs">
-      {toolSteps.map((step, idx) => {
+      {visibleSteps.map((step, idx) => {
+        if (step.type === 'thinking') {
+          return (
+            <AgentThoughtAccordion
+              key={step.id ?? `think_${idx}`}
+              step={step}
+              isStreaming={isStreaming}
+            />
+          );
+        }
+
         const isActive = step.status === 'active';
-        const isCompleted = step.status === 'completed';
         const isStepError = step.status === 'error';
         const isDetailsOpen = Boolean(expandedDetailsIds[step.id]);
         const hasToolData = Boolean(step.toolArgs || step.toolResult);
@@ -63,13 +85,21 @@ export function AgentProcessTimeline({
                       : 'cursor-default text-theme-text-muted'
                     }`}
                 >
-                  <ToolIcon className="size-3 text-theme-brand-binance shrink-0" />
+                  {isActive ? (
+                    <Loader2 className="size-3 text-theme-brand-binance animate-spin shrink-0" />
+                  ) : isStepError ? (
+                    <AlertCircle className="size-3 text-theme-status-danger shrink-0" />
+                  ) : (
+                    <ToolIcon className="size-3 text-theme-brand-binance shrink-0" />
+                  )}
                   <span
                     className={`text-2xs ${isActive
                         ? 'text-theme-text-primary font-semibold'
-                        : hasToolData
-                          ? 'text-theme-text-secondary group-hover:text-theme-text-primary font-medium'
-                          : 'text-theme-text-muted'
+                        : isStepError
+                          ? 'text-theme-status-danger font-medium'
+                          : hasToolData
+                            ? 'text-theme-text-secondary group-hover:text-theme-text-primary font-medium'
+                            : 'text-theme-text-muted'
                       }`}
                   >
                     {displayInfo.title}
@@ -82,27 +112,6 @@ export function AgentProcessTimeline({
                     )
                   )}
                 </button>
-
-                {isActive && (
-                  <span className="inline-flex items-center gap-1 px-spacing-xs py-0.5 rounded text-2xs bg-theme-brand-binance/10 text-theme-brand-binance font-medium border border-theme-brand-binance/30 animate-pulse font-mono">
-                    <Loader2 className="size-2.5 animate-spin" />
-                    {APP_CONTENT.process.toolRunning}
-                  </span>
-                )}
-
-                {isCompleted && (
-                  <span className="inline-flex items-center gap-1 px-spacing-xs py-0.5 rounded text-2xs bg-theme-status-success/15 text-theme-status-success font-medium border border-theme-status-success/30 font-mono">
-                    <Check className="size-2.5" />
-                    {APP_CONTENT.process.successBadge}
-                  </span>
-                )}
-
-                {isStepError && (
-                  <span className="inline-flex items-center gap-1 px-spacing-xs py-0.5 rounded text-2xs bg-theme-status-danger/15 text-theme-status-danger font-medium border border-theme-status-danger/30 font-mono">
-                    <AlertCircle className="size-2.5" />
-                    {APP_CONTENT.process.toolFailed}
-                  </span>
-                )}
               </div>
 
               {/* Tool Arguments/Results Drawer */}
