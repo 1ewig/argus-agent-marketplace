@@ -3,16 +3,21 @@
 import React from 'react';
 import { Search, Bell, Sparkles } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
+import { useExecutionMode } from '@/hooks';
 import type { ExecutionMode } from '@/lib/types';
 
 interface TopNavBarProps {
-  executionMode: ExecutionMode;
-  onModeChange: (mode: ExecutionMode) => void;
+  executionMode?: ExecutionMode;
+  onModeChange?: (mode: ExecutionMode) => void;
 }
 
-export function TopNavBar({ executionMode, onModeChange }: TopNavBarProps) {
+export function TopNavBar({ executionMode: propMode, onModeChange: propOnModeChange }: TopNavBarProps = {}) {
+  const context = useExecutionMode();
+  const executionMode = propMode ?? context.executionMode;
+  const onModeChange = propOnModeChange ?? context.setExecutionMode;
+
   return (
-    <header className="flex items-center justify-between gap-spacing-md px-spacing-lg py-spacing-sm bg-theme-bg-surface border-b border-theme-border-subtle shrink-0">
+    <header className="fixed top-0 left-0 right-0 z-30 h-navbar flex items-center justify-between gap-spacing-md px-spacing-lg bg-theme-bg-surface border-b border-theme-border-subtle shrink-0">
       {/* Left Area: Title & Brand Info */}
       <div className="flex items-center gap-spacing-sm">
         <span className="text-xs font-bold uppercase tracking-wider text-theme-text-primary">

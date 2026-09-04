@@ -61,6 +61,11 @@
   --spacing-md: 1rem;     /* 16px - Standard internal card padding */
   --spacing-lg: 1.5rem;   /* 24px - Grid gutters & module spacing */
   --spacing-xl: 2.5rem;   /* 40px - Large dashboard deck framing */
+
+  /* ==========================================================================
+     6. LAYOUT DIMENSIONS
+     ========================================================================== */
+  --navbar-height: 3.5rem; /* 56px - Architectural top navigation bar height */
 }
 
 @theme inline {
@@ -100,7 +105,13 @@
   --line-height-snug: var(--leading-snug);
   --line-height-normal: var(--leading-normal);
   --line-height-relaxed: var(--leading-relaxed);
+
+  --spacing-navbar: var(--navbar-height);
 }
+
+/* Explicit Layout Utilities Guaranteed Across Build Targets */
+.h-navbar { height: var(--navbar-height); }
+.pt-navbar { padding-top: var(--navbar-height); }
 
 /* Explicit Spacing Utilities Guaranteed Across Build Targets */
 .p-spacing-xs { padding: var(--spacing-xs); }
