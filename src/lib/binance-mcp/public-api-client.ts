@@ -1,12 +1,44 @@
 /**
- * Validates and sanitizes a raw Binance trading symbol.
+ * Sanitizes and validates a Binance trading symbol:
+ * - Strips outer quotes ("BTCUSDT" -> BTCUSDT, 'BTCUSDT' -> BTCUSDT)
+ * - Strips internal separators (BTC/USDT -> BTCUSDT, BTC-USDT -> BTCUSDT)
+ * - Converts to uppercase (btcusdt -> BTCUSDT)
+ * - Enforces length and alphanumeric character format
+ * - Verifies standard quote currency suffix
  */
-export function formatAndValidateSymbol(rawSymbol: string): string {
-  const trimmed = rawSymbol?.trim().toUpperCase();
-  if (!trimmed || trimmed.length < 2) {
+export function normalizeSymbol(rawSymbol: string): string {
+  if (!rawSymbol || typeof rawSymbol !== 'string') {
     throw new Error('Trading symbol cannot be empty');
   }
-  return trimmed;
+
+  // Strip outer quotes and spaces
+  let clean = rawSymbol.trim().replace(/^["']+|["']+$/g, '').trim().toUpperCase();
+
+  // Strip common pairing separators: / \ - _
+  clean = clean.replace(/[/\\_-]/g, '');
+
+  if (!clean || clean.length < 2 || clean.length > 20) {
+    throw new Error('Trading symbol must be between 2 and 20 alphanumeric characters');
+  }
+
+  if (!/^[A-Z0-9]+$/.test(clean)) {
+    throw new Error(`Invalid trading symbol format: "${rawSymbol}". Must be alphanumeric.`);
+  }
+
+  // Must end with a valid quote currency
+  const validQuotes = ['USDT', 'USDC', 'FDUSD', 'EUR', 'TRY', 'BTC', 'ETH', 'BNB'];
+  const hasValidQuote = validQuotes.some((q) => clean.endsWith(q) && clean.length > q.length);
+  if (!hasValidQuote) {
+    throw new Error(
+      `Unrecognized trading pair format for "${rawSymbol}". Must end in a valid quote asset (e.g. USDT, USDC, BTC).`
+    );
+  }
+
+  return clean;
+}
+
+export function formatAndValidateSymbol(rawSymbol: string): string {
+  return normalizeSymbol(rawSymbol);
 }
 
 export interface FetchBinanceOptions {
@@ -24,7 +56,7 @@ export async function fetchBinancePublic<T, R>(
   transform: (data: T) => R,
   options: FetchBinanceOptions = {}
 ): Promise<R> {
-  const formatted = formatAndValidateSymbol(symbol);
+  const formatted = normalizeSymbol(symbol);
   const baseUrl = options.isFutures ? 'https://fapi.binance.com' : 'https://api.binance.com';
   const url = `${baseUrl}${path}`;
 

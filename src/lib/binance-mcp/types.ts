@@ -62,7 +62,7 @@ export interface OrderExecutionResult {
   clientOrderId: string;
   symbol: string;
   side: 'BUY' | 'SELL';
-  status: 'FILLED' | 'PARTIALLY_FILLED' | 'REJECTED';
+  status: 'FILLED' | 'NEW' | 'PARTIALLY_FILLED' | 'CANCELED' | 'REJECTED';
   executedQty: number;
   cummulativeQuoteQty: number;
   price: number;

@@ -1,19 +1,29 @@
 import { tool } from 'ai';
 import { z } from 'zod';
 import type { IBinanceAgentAdapter } from '@/lib/binance-mcp/types';
-import { getBinanceAdapter } from '@/lib/binance-mcp';
+import { getBinanceAdapter, normalizeSymbol } from '@/lib/binance-mcp';
 import { AGENT_TOOL_DESCRIPTIONS } from './prompts';
 
 /**
  * Strict trading pair symbol schema:
- * Disallows empty strings, validates length, and checks alphanumeric format.
+ * Sanitizes separators/quotes, converts casing, and validates quote asset format.
  */
 export const symbolSchema = z
   .string()
   .trim()
   .min(2, 'Trading symbol cannot be empty')
   .max(20, 'Trading symbol is too long')
-  .regex(/^[A-Za-z0-9_]{2,20}$/, 'Trading symbol must be alphanumeric (e.g. BTCUSDT, SOLUSDC)');
+  .superRefine((val, ctx) => {
+    try {
+      normalizeSymbol(val);
+    } catch (err: unknown) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: err instanceof Error ? err.message : 'Invalid trading symbol',
+      });
+    }
+  })
+  .transform((val) => normalizeSymbol(val));
 
 /**
  * Builds AI SDK-compatible tools bound to the active Binance Agent OS adapter.
@@ -176,17 +186,25 @@ export function buildAgentTools(customAdapter?: IBinanceAgentAdapter) {
 
     place_spot_order: tool({
       description: AGENT_TOOL_DESCRIPTIONS.placeSpotOrder,
-      inputSchema: z.object({
-        symbol: symbolSchema.describe('Trading pair symbol e.g. SOLUSDT'),
-        side: z.enum(['BUY', 'SELL']).describe('Order direction'),
-        quantity: z.number().positive().describe('Order size in base currency'),
-        orderType: z.enum(['LIMIT', 'MARKET']).default('MARKET'),
-        price: z.number().positive().optional().describe('Limit price (required for LIMIT orders)'),
-      }),
+      inputSchema: z
+        .object({
+          symbol: symbolSchema.describe('Trading pair symbol e.g. SOLUSDT'),
+          side: z.enum(['BUY', 'SELL']).describe('Order direction'),
+          quantity: z.number().positive().describe('Order size in base currency'),
+          orderType: z.enum(['LIMIT', 'MARKET']).default('MARKET'),
+          price: z.number().positive().optional().describe('Limit price (required for LIMIT orders)'),
+        })
+        .refine(
+          (data) => data.orderType !== 'LIMIT' || (typeof data.price === 'number' && data.price > 0),
+          {
+            message: 'A positive limit price is required when orderType is LIMIT',
+            path: ['price'],
+          }
+        ),
       execute: async ({ symbol, side, quantity, orderType, price }) => {
         try {
           const result = await adapter.placeSpotOrder({
-            symbol: symbol.toUpperCase(),
+            symbol,
             side,
             type: orderType,
             quantity,
