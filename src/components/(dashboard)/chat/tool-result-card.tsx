@@ -156,8 +156,9 @@ interface ToolResultCardProps {
 
 /**
  * Organizes tool results into human-friendly, structured visual cards.
+ * Memoized to prevent re-rendering when parent timeline ticks elapsed seconds.
  */
-export function ToolResultCard({
+export const ToolResultCard = React.memo(function ToolResultCard({
   toolName,
   toolArgs,
   toolResult,
@@ -621,4 +622,5 @@ export function ToolResultCard({
       {renderContent()}
     </div>
   );
-}
+});
+

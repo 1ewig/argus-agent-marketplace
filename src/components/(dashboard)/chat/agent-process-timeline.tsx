@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronDown,
@@ -14,6 +14,7 @@ import { AgentThoughtAccordion } from './agent-thought-accordion';
 import { MarkdownView } from '../markdown-view';
 import { APP_CONTENT } from '@/constants/content';
 import { accordionVariants } from '@/constants/animation';
+import { useActiveTimer } from '@/hooks';
 import type { AgentExecutionStep } from '@/agent';
 
 interface AgentProcessTimelineProps {
@@ -33,7 +34,9 @@ export function AgentProcessTimeline({
 }: AgentProcessTimelineProps) {
   const [userToggledOpen, setUserToggledOpen] = useState<boolean | null>(null);
   const [expandedDetailsIds, setExpandedDetailsIds] = useState<Record<string, boolean>>({});
-  const [elapsedSeconds, setElapsedSeconds] = useState<number>(1);
+
+  const isActiveWork = isStreaming && !isCompleted;
+  const elapsedSeconds = useActiveTimer(startedAt, isActiveWork);
 
   // Default is open while actively working, collapsed when completed, unless explicitly toggled
   const isOpen = userToggledOpen !== null ? userToggledOpen : !isCompleted;
@@ -41,16 +44,6 @@ export function AgentProcessTimeline({
   const toggleOpen = () => {
     setUserToggledOpen(!isOpen);
   };
-
-  // Live timer for active working state
-  useEffect(() => {
-    if (isCompleted || !isStreaming || !startedAt) return;
-    const update = () =>
-      setElapsedSeconds(Math.max(1, Math.floor((Date.now() - startedAt) / 1000)));
-    update();
-    const timer = setInterval(update, 1000);
-    return () => clearInterval(timer);
-  }, [isCompleted, isStreaming, startedAt]);
 
   if (!steps || steps.length === 0) {
     return null;
@@ -87,7 +80,6 @@ export function AgentProcessTimeline({
     )
   );
 
-  const isActiveWork = isStreaming && !isCompleted;
   const headerLabel = isActiveWork
     ? APP_CONTENT.process.workingWithSeconds(elapsedSeconds)
     : APP_CONTENT.process.workedForDuration(finalWorkedSeconds);

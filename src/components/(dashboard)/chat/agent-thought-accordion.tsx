@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Brain, ChevronDown, Loader2, Sparkles } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
 import { accordionVariants } from '@/constants/animation';
+import { useActiveTimer } from '@/hooks';
 import { MarkdownView } from '../markdown-view';
 import type { AgentExecutionStep } from '@/agent';
 
@@ -16,37 +17,21 @@ interface AgentThoughtAccordionProps {
 /**
  * Dedicated Thought Accordion rendering a single reasoning phase with MarkdownView.
  * Ensures multi-turn agent thinking steps render chronologically without merging.
+ * Memoized to prevent re-rendering when other stream steps update.
  */
-export function AgentThoughtAccordion({
+export const AgentThoughtAccordion = memo(function AgentThoughtAccordion({
   step,
   isStreaming = false,
 }: AgentThoughtAccordionProps) {
   const isActive = isStreaming && step.status === 'active';
   const reasoningText = step.reasoningText?.trim() || '';
 
-  const [isExpanded, setIsExpanded] = useState<boolean>(isActive);
-  const [prevActive, setPrevActive] = useState<boolean>(isActive);
+  // Clean user toggle without setState side-effects during render phase
+  const [userToggled, setUserToggled] = useState<boolean | null>(null);
+  const isExpanded = userToggled !== null ? userToggled : isActive;
 
-  // Live timer for active thinking phase
-  const [elapsedSeconds, setElapsedSeconds] = useState<number>(1);
-
-  useEffect(() => {
-    if (!isActive) return;
-    const updateElapsed = () =>
-      setElapsedSeconds(Math.max(1, Math.floor((Date.now() - step.timestamp) / 1000)));
-    updateElapsed();
-    const timer = setInterval(updateElapsed, 1000);
-    return () => clearInterval(timer);
-  }, [isActive, step.timestamp]);
-
-  // Auto-expand when this specific thinking phase starts streaming
-  if (isActive && !prevActive) {
-    setPrevActive(true);
-    setIsExpanded(true);
-  } else if (!isActive && prevActive) {
-    setPrevActive(false);
-    setIsExpanded(false);
-  }
+  // Unified synchronized timer that only runs while actively thinking
+  const elapsedSeconds = useActiveTimer(step.timestamp, isActive);
 
   // If there's no text yet and this phase is not actively streaming, omit it
   if (!reasoningText && !isActive) {
@@ -70,7 +55,7 @@ export function AgentThoughtAccordion({
       {/* Clean Accordion Trigger (Box container removed) */}
       <button
         type="button"
-        onClick={() => setIsExpanded((prev) => !prev)}
+        onClick={() => setUserToggled(!isExpanded)}
         className="inline-flex items-center gap-1.5 py-0.5 text-2xs text-theme-text-secondary hover:text-theme-text-primary transition-colors cursor-pointer group select-none w-fit"
       >
         {isActive ? (
@@ -116,4 +101,4 @@ export function AgentThoughtAccordion({
       </AnimatePresence>
     </div>
   );
-}
+});

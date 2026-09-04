@@ -8,6 +8,7 @@ import { APP_CONTENT } from '@/constants/content';
 import { MarkdownView } from '../markdown-view';
 import { AgentProcessTimeline } from './agent-process-timeline';
 import { normalizeMessageSteps } from '@/lib/db';
+import { useActiveTimer } from '@/hooks';
 import type { ExecutedToolCall, AgentExecutionStep } from '@/agent';
 
 export interface ChatMessageData {
@@ -31,15 +32,7 @@ interface ChatMessageProps {
  * Live drafting indicator displaying elapsed execution time while the assistant prepares a response.
  */
 function AgentWorkingDraftIndicator({ startedAt }: { startedAt: number }) {
-  const [elapsedSeconds, setElapsedSeconds] = React.useState<number>(1);
-
-  React.useEffect(() => {
-    const updateElapsed = () =>
-      setElapsedSeconds(Math.max(1, Math.floor((Date.now() - startedAt) / 1000)));
-    updateElapsed();
-    const timer = setInterval(updateElapsed, 1000);
-    return () => clearInterval(timer);
-  }, [startedAt]);
+  const elapsedSeconds = useActiveTimer(startedAt, true);
 
   return (
     <div className="flex items-center gap-spacing-xs text-xs text-theme-text-muted py-1">
