@@ -83,6 +83,7 @@ export const APP_CONTENT = {
     inputPlaceholder: 'Ask about prices, market trends, order book depth, or wallet balances...',
     sendButton: 'Send',
     clearButton: 'Clear',
+    emptyCategory: 'ARGUS TRADING INTELLIGENCE',
     emptyTitle: 'How can I help you today?',
     emptySubtitle: 'Ask a question about the market or choose one of the suggestions below.',
     quickPromptsTitle: 'Suggestions',

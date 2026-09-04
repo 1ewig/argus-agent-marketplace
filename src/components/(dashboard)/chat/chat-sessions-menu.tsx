@@ -49,7 +49,7 @@ export function ChatSessionsMenu({
         onClick={onToggleMenu}
         title={APP_CONTENT.sessions.openMenuAria}
         aria-label={APP_CONTENT.sessions.openMenuAria}
-        className="h-7 flex items-center gap-spacing-xs text-2xs font-medium bg-theme-bg-surface hover:bg-theme-bg-base text-theme-text-primary border border-theme-border-subtle hover:border-theme-border-strong rounded px-spacing-sm cursor-pointer transition-colors shadow-2xs max-w-[150px] sm:max-w-[200px]"
+        className="h-8 flex items-center gap-spacing-xs text-2xs font-semibold bg-theme-bg-elevated/70 hover:bg-theme-bg-surface text-theme-text-primary border border-theme-border-subtle hover:border-theme-border-strong rounded-xl px-spacing-sm cursor-pointer transition-all shadow-2xs max-w-[160px] sm:max-w-[220px]"
       >
         <span className="truncate">{currentTitle}</span>
         <ChevronDown
@@ -60,7 +60,7 @@ export function ChatSessionsMenu({
       </button>
 
       {isMenuOpen && (
-        <div className="absolute right-0 mt-spacing-xs w-72 sm:w-80 bg-theme-bg-surface border border-theme-border-subtle rounded-lg shadow-lg z-50 overflow-hidden">
+        <div className="absolute right-0 mt-spacing-xs w-72 sm:w-80 bg-theme-bg-surface border border-theme-border-subtle rounded-2xl shadow-xl z-50 overflow-hidden">
           <div className="flex items-center justify-between px-spacing-sm py-spacing-xs bg-theme-bg-elevated border-b border-theme-border-subtle text-2xs font-semibold text-theme-text-secondary">
             <span>{APP_CONTENT.sessions.menuTitle}</span>
             <span className="px-spacing-xs py-0.5 rounded bg-theme-bg-surface text-theme-text-muted border border-theme-border-subtle text-2xs font-mono">

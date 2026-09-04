@@ -107,10 +107,10 @@ export function AgentProcessTimeline({
         <button
           type="button"
           onClick={toggleOpen}
-          className="flex items-center gap-1.5 text-2xs text-theme-text-muted hover:text-theme-text-primary py-0.5 select-none cursor-pointer transition-colors w-fit group"
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-theme-bg-elevated border border-theme-border-subtle hover:border-theme-border-strong text-2xs text-theme-text-secondary hover:text-theme-text-primary select-none cursor-pointer transition-all shadow-2xs group w-fit"
         >
           <CheckCircle2 className="size-3 text-theme-brand-binance shrink-0" />
-          <span className="font-medium text-theme-text-secondary group-hover:underline">
+          <span className="font-semibold text-theme-text-secondary group-hover:text-theme-text-primary">
             {headerLabel}
           </span>
           {isOpen ? (
@@ -123,7 +123,7 @@ export function AgentProcessTimeline({
 
       {/* Collapsible Inner Steps */}
       {isOpen && (
-        <div className="flex flex-col gap-spacing-xs pl-3 border-l border-theme-border-subtle mt-0.5 mb-1 transition-all">
+        <div className="flex flex-col gap-spacing-xs pl-3.5 border-l-2 border-theme-brand-binance/30 mt-1 mb-1.5 transition-all">
           {visibleSteps.map((step, idx) => {
             if (step.type === 'thinking') {
               return (

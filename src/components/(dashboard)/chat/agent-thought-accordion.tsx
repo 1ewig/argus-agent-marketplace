@@ -69,7 +69,7 @@ export function AgentThoughtAccordion({
       <button
         type="button"
         onClick={() => setIsExpanded((prev) => !prev)}
-        className="inline-flex items-center gap-spacing-xs w-fit text-theme-text-muted hover:text-theme-text-primary py-0.5 cursor-pointer transition-colors group select-none"
+        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-theme-bg-elevated/70 border border-theme-border-subtle hover:border-theme-border-strong text-2xs text-theme-text-secondary hover:text-theme-text-primary transition-all cursor-pointer group select-none shadow-2xs w-fit"
       >
         {isActive ? (
           <Loader2 className="size-3 text-theme-brand-binance animate-spin shrink-0" />
@@ -79,24 +79,22 @@ export function AgentThoughtAccordion({
           <Brain className="size-3 text-theme-brand-binance shrink-0" />
         )}
 
-        <span className="text-2xs font-medium group-hover:underline text-theme-text-secondary">
+        <span className="text-2xs font-semibold text-theme-text-secondary group-hover:text-theme-text-primary">
           {headerLabel}
         </span>
 
         {isExpanded ? (
-          <ChevronUp className="size-3 text-theme-text-muted shrink-0" />
+          <ChevronUp className="size-2.5 text-theme-text-muted group-hover:text-theme-text-primary transition-colors shrink-0" />
         ) : (
-          <ChevronDown className="size-3 text-theme-text-muted shrink-0" />
+          <ChevronDown className="size-2.5 text-theme-text-muted group-hover:text-theme-text-primary transition-colors shrink-0" />
         )}
       </button>
 
-      {/* Expanded Markdown Content (Indented slightly to the right without the line) */}
+      {/* Expanded Markdown Content */}
       {isExpanded && (
-        <div className="pl-5 py-1 max-h-72 overflow-y-auto transition-all">
+        <div className="pl-3.5 pr-2 py-2 my-1 max-h-72 overflow-y-auto rounded-xl bg-theme-bg-elevated/40 border border-theme-border-subtle text-xs text-theme-text-secondary leading-relaxed transition-all shadow-2xs">
           {reasoningText ? (
-            <div className="text-xs text-theme-text-secondary leading-relaxed">
-              <MarkdownView content={reasoningText} />
-            </div>
+            <MarkdownView content={reasoningText} />
           ) : isActive ? (
             <div className="flex items-center gap-1.5 text-2xs text-theme-text-muted italic py-1">
               <Loader2 className="size-2.5 animate-spin text-theme-brand-binance" />

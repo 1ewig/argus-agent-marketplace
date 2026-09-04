@@ -28,17 +28,17 @@ function CodeBlock({ language, code, children }: CodeBlockProps) {
   };
 
   return (
-    <div className="relative my-2.5 rounded-lg border border-theme-border-subtle bg-theme-bg-elevated/40 overflow-hidden font-mono text-2xs group">
+    <div className="relative my-3 rounded-xl border border-theme-border-subtle bg-theme-bg-elevated/50 overflow-hidden font-mono text-2xs group shadow-2xs">
       {/* Code Header Bar */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-theme-bg-elevated/80 border-b border-theme-border-subtle text-theme-text-muted select-none">
-        <span className="font-semibold text-2xs uppercase tracking-wider text-theme-text-secondary/80">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-theme-bg-elevated border-b border-theme-border-subtle text-theme-text-muted select-none">
+        <span className="font-extrabold text-2xs uppercase tracking-widest text-theme-text-secondary">
           {language || 'code'}
         </span>
         <button
           type="button"
           onClick={handleCopy}
           aria-label="Copy code"
-          className="inline-flex items-center gap-1 text-2xs text-theme-text-muted hover:text-theme-text-primary py-0.5 px-1.5 rounded transition-colors cursor-pointer hover:bg-theme-bg-elevated"
+          className="inline-flex items-center gap-1 text-2xs text-theme-text-muted hover:text-theme-text-primary py-0.5 px-1.5 rounded-md transition-colors cursor-pointer hover:bg-theme-bg-surface border border-transparent hover:border-theme-border-subtle"
         >
           {copied ? (
             <>
@@ -73,17 +73,17 @@ export function MarkdownView({ content }: MarkdownViewProps) {
         remarkPlugins={[remarkGfm]}
         components={{
           h1: ({ children }) => (
-            <h1 className="text-sm font-bold text-theme-text-primary mt-4 mb-2 first:mt-0 tracking-tight">
+            <h1 className="text-base sm:text-lg font-extrabold text-theme-text-primary mt-4 mb-2 first:mt-0 tracking-tight font-sans">
               {children}
             </h1>
           ),
           h2: ({ children }) => (
-            <h2 className="text-xs font-bold text-theme-text-primary mt-3.5 mb-1.5 first:mt-0 border-b border-theme-border-subtle/70 pb-1 tracking-tight uppercase">
+            <h2 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-theme-text-primary mt-3.5 mb-1.5 first:mt-0 border-b border-theme-border-subtle pb-1">
               {children}
             </h2>
           ),
           h3: ({ children }) => (
-            <h3 className="text-xs font-semibold text-theme-text-primary mt-3 mb-1 first:mt-0 tracking-tight">
+            <h3 className="text-xs font-bold text-theme-text-primary mt-3 mb-1 first:mt-0">
               {children}
             </h3>
           ),
@@ -98,7 +98,7 @@ export function MarkdownView({ content }: MarkdownViewProps) {
             </p>
           ),
           strong: ({ children }) => (
-            <strong className="font-semibold text-theme-text-primary">
+            <strong className="font-bold text-theme-text-primary">
               {children}
             </strong>
           ),
@@ -113,12 +113,12 @@ export function MarkdownView({ content }: MarkdownViewProps) {
             </del>
           ),
           ul: ({ children }) => (
-            <ul className="list-disc list-outside pl-4 my-2 space-y-1 text-xs text-theme-text-secondary marker:text-theme-text-muted">
+            <ul className="list-disc list-outside pl-4 my-2 space-y-1 text-xs text-theme-text-secondary marker:text-theme-brand-binance">
               {children}
             </ul>
           ),
           ol: ({ children }) => (
-            <ol className="list-decimal list-outside pl-4 my-2 space-y-1 text-xs text-theme-text-secondary marker:text-theme-text-muted">
+            <ol className="list-decimal list-outside pl-4 my-2 space-y-1 text-xs text-theme-text-secondary marker:text-theme-brand-binance">
               {children}
             </ol>
           ),
@@ -142,7 +142,7 @@ export function MarkdownView({ content }: MarkdownViewProps) {
             return <input type={type} {...props} />;
           },
           blockquote: ({ children }) => (
-            <blockquote className="border-l-2 border-theme-brand-binance bg-theme-bg-elevated/30 rounded-r px-3 py-1.5 my-2.5 italic text-theme-text-secondary text-xs">
+            <blockquote className="border-l-2 border-theme-brand-binance bg-theme-bg-elevated/50 rounded-r-xl px-4 py-2.5 my-3 italic text-theme-text-secondary text-xs shadow-2xs">
               {children}
             </blockquote>
           ),
@@ -185,7 +185,7 @@ export function MarkdownView({ content }: MarkdownViewProps) {
 
             return (
               <code
-                className="bg-theme-bg-elevated text-theme-brand-binance px-1.5 py-0.5 rounded font-mono text-2xs border border-theme-border-subtle/80 font-medium select-all"
+                className="bg-theme-bg-elevated text-theme-brand-binance px-1.5 py-0.5 rounded font-mono text-2xs border border-theme-border-subtle font-semibold select-all"
                 {...props}
               >
                 {children}
@@ -193,19 +193,19 @@ export function MarkdownView({ content }: MarkdownViewProps) {
             );
           },
           table: ({ children }) => (
-            <div className="overflow-x-auto my-3 rounded-lg border border-theme-border-subtle shadow-xs">
+            <div className="overflow-x-auto my-3 rounded-xl border border-theme-border-subtle shadow-2xs bg-theme-bg-surface">
               <table className="w-full border-collapse text-2xs font-mono text-left">
                 {children}
               </table>
             </div>
           ),
           thead: ({ children }) => (
-            <thead className="bg-theme-bg-elevated text-theme-text-primary border-b border-theme-border-subtle">
+            <thead className="bg-theme-bg-elevated text-theme-text-secondary border-b border-theme-border-subtle select-none">
               {children}
             </thead>
           ),
           tbody: ({ children }) => (
-            <tbody className="divide-y divide-theme-border-subtle/60">
+            <tbody className="divide-y divide-theme-border-subtle/50 text-theme-text-primary">
               {children}
             </tbody>
           ),
@@ -215,12 +215,12 @@ export function MarkdownView({ content }: MarkdownViewProps) {
             </tr>
           ),
           th: ({ children }) => (
-            <th className="py-2 px-3 text-left font-semibold text-theme-text-primary text-2xs tracking-wider">
+            <th className="py-2 px-3 font-bold text-2xs uppercase tracking-wider text-theme-text-secondary">
               {children}
             </th>
           ),
           td: ({ children }) => (
-            <td className="py-2 px-3 text-theme-text-secondary align-top leading-normal">
+            <td className="py-2 px-3 align-middle text-2xs text-theme-text-primary">
               {children}
             </td>
           ),
@@ -229,10 +229,10 @@ export function MarkdownView({ content }: MarkdownViewProps) {
               href={href}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-baseline gap-0.5 text-theme-brand-binance hover:underline underline-offset-2 font-medium transition-colors group cursor-pointer"
+              className="inline-flex items-center gap-0.5 text-theme-brand-binance hover:underline font-medium hover:text-theme-brand-accent transition-colors"
             >
               <span>{children}</span>
-              <ExternalLink className="size-2.5 shrink-0 opacity-70 group-hover:opacity-100 transition-opacity translate-y-px" />
+              <ExternalLink className="size-2.5 shrink-0 opacity-70" />
             </a>
           ),
         }}

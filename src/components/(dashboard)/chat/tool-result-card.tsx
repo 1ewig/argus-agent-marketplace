@@ -195,18 +195,23 @@ export function ToolResultCard({
         const symbol = typeof data?.symbol === 'string' ? data.symbol : undefined;
 
         return (
-          <div className="flex flex-wrap items-center gap-spacing-sm p-spacing-xs rounded-md bg-theme-bg-elevated border border-theme-border-subtle">
+          <div className="flex items-center justify-between p-3 rounded-xl bg-theme-bg-elevated/70 border border-theme-border-subtle shadow-2xs">
+            <div className="flex flex-col">
+              <span className="text-2xs font-extrabold uppercase tracking-widest text-theme-text-muted">
+                {res.livePrice}
+              </span>
+              <div className="flex items-baseline gap-spacing-xs mt-0.5">
+                <span className="text-xl sm:text-2xl font-extrabold font-mono text-theme-text-primary tracking-tight">
+                  {formatUsd(price)}
+                </span>
+                <span className="text-2xs font-mono text-theme-text-muted">USD</span>
+              </div>
+            </div>
             {symbol && (
-              <span className="px-spacing-xs py-0.5 rounded text-2xs font-semibold bg-theme-bg-overlay text-white">
+              <span className="px-spacing-sm py-1 rounded-lg text-xs font-bold bg-theme-bg-overlay text-theme-brand-binance border border-theme-border-strong shadow-2xs">
                 {symbol}
               </span>
             )}
-            <div className="flex items-baseline gap-spacing-xs">
-              <span className="text-2xs text-theme-text-muted">{res.livePrice}:</span>
-              <span className="text-xs font-bold text-theme-text-primary">
-                {formatUsd(price)}
-              </span>
-            </div>
           </div>
         );
       }
@@ -220,60 +225,80 @@ export function ToolResultCard({
         const maxAskQty = Math.max(...asks.map(([, q]) => Number(q) || 0), 0.0001);
 
         return (
-          <div className="flex flex-col gap-spacing-xs p-spacing-xs rounded-md bg-theme-bg-elevated border border-theme-border-subtle">
+          <div className="flex flex-col gap-2.5 p-3 rounded-xl bg-theme-bg-elevated/70 border border-theme-border-subtle shadow-2xs">
             {/* Quick Metrics Bar */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-spacing-xs p-spacing-xs rounded bg-theme-bg-surface border border-theme-border-subtle/70 text-2xs">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-spacing-xs p-2.5 rounded-lg bg-theme-bg-surface border border-theme-border-subtle text-2xs shadow-2xs">
               <div className="flex flex-col">
-                <span className="text-theme-text-muted">{res.bestBid}</span>
-                <span className="font-semibold text-theme-status-success">{formatUsd(summary.bestBid)}</span>
+                <span className="text-2xs font-bold uppercase tracking-wider text-theme-text-muted">{res.bestBid}</span>
+                <span className="text-sm font-extrabold font-mono text-theme-status-success">{formatUsd(summary.bestBid)}</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-theme-text-muted">{res.bestAsk}</span>
-                <span className="font-semibold text-theme-status-danger">{formatUsd(summary.bestAsk)}</span>
+                <span className="text-2xs font-bold uppercase tracking-wider text-theme-text-muted">{res.bestAsk}</span>
+                <span className="text-sm font-extrabold font-mono text-theme-status-danger">{formatUsd(summary.bestAsk)}</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-theme-text-muted">{res.spread}</span>
-                <span className="font-semibold text-theme-text-primary">
-                  {formatUsd(summary.spread)} <span className="text-theme-text-muted font-normal">({String(summary.spreadPercent ?? 0)}%)</span>
+                <span className="text-2xs font-bold uppercase tracking-wider text-theme-text-muted">{res.spread}</span>
+                <span className="text-sm font-extrabold font-mono text-theme-text-primary">
+                  {formatUsd(summary.spread)} <span className="text-2xs font-normal text-theme-brand-binance">({String(summary.spreadPercent ?? 0)}%)</span>
                 </span>
               </div>
               <div className="flex flex-col">
-                <span className="text-theme-text-muted">{res.depthImbalance}</span>
-                <span className="font-semibold text-theme-text-secondary">{String(summary.depthImbalanceRatio ?? '1.0')}</span>
+                <span className="text-2xs font-bold uppercase tracking-wider text-theme-text-muted">{res.depthImbalance}</span>
+                <span className="text-sm font-extrabold font-mono text-theme-text-secondary">{String(summary.depthImbalanceRatio ?? '1.0')}</span>
               </div>
+            </div>
+
+            {/* Segmented Depth Indicator Meter */}
+            <div className="flex items-center gap-0.5 h-3 bg-theme-bg-surface p-0.5 rounded-md border border-theme-border-subtle">
+              {Array.from({ length: 24 }).map((_, i) => {
+                const isSpreadZone = i >= 10 && i <= 14;
+                const isBidHeavy = i < 10;
+                return (
+                  <div
+                    key={i}
+                    className={`flex-1 h-full rounded-xs transition-all ${
+                      isSpreadZone
+                        ? 'bg-theme-brand-binance'
+                        : isBidHeavy
+                        ? 'bg-theme-status-success/40'
+                        : 'bg-theme-status-danger/40'
+                    }`}
+                  />
+                );
+              })}
             </div>
 
             {/* Split Order Book Depth Panels */}
             {(bids.length > 0 || asks.length > 0) && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-spacing-xs pt-0.5 text-2xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-2xs">
                 {/* Bids Panel (Buy Side) */}
-                <div className="flex flex-col rounded bg-theme-bg-surface border border-theme-border-subtle/70 overflow-hidden">
-                  <div className="flex items-center justify-between px-spacing-xs py-1 bg-theme-bg-elevated/60 border-b border-theme-border-subtle/60">
-                    <span className="font-bold text-theme-status-success uppercase tracking-wider">
+                <div className="flex flex-col rounded-lg bg-theme-bg-surface border border-theme-border-subtle overflow-hidden shadow-2xs">
+                  <div className="flex items-center justify-between px-2.5 py-1 bg-theme-bg-elevated border-b border-theme-border-subtle">
+                    <span className="font-extrabold text-theme-status-success uppercase tracking-wider text-2xs">
                       {res.topBids}
                     </span>
-                    <span className="text-theme-text-muted font-mono">
+                    <span className="text-theme-text-muted font-mono text-2xs">
                       {res.priceHeader} / {res.sizeHeader}
                     </span>
                   </div>
 
-                  <div className="flex flex-col p-0.5 font-mono">
+                  <div className="flex flex-col p-1 font-mono">
                     {bids.map(([p, q], i) => {
                       const qty = Number(q) || 0;
                       const fillPercent = Math.min(100, Math.round((qty / maxBidQty) * 100));
                       return (
                         <div
                           key={`bid_${i}`}
-                          className="relative flex justify-between items-center px-1.5 py-0.5 rounded-xs overflow-hidden hover:bg-theme-bg-elevated/40 transition-colors"
+                          className="relative flex justify-between items-center px-2 py-0.5 rounded-xs overflow-hidden hover:bg-theme-bg-elevated/40 transition-colors"
                         >
                           <div
-                            className="absolute inset-y-0 left-0 bg-theme-status-success/10 rounded-xs pointer-events-none"
+                            className="absolute inset-y-0 left-0 bg-theme-status-success/15 rounded-xs pointer-events-none"
                             style={{ width: `${fillPercent}%` }}
                           />
-                          <span className="relative z-10 font-semibold text-theme-status-success">
+                          <span className="relative z-10 font-bold text-theme-status-success">
                             {formatUsd(p)}
                           </span>
-                          <span className="relative z-10 text-theme-text-secondary">
+                          <span className="relative z-10 text-theme-text-secondary font-medium">
                             {formatOrderQty(q)}
                           </span>
                         </div>
@@ -283,33 +308,33 @@ export function ToolResultCard({
                 </div>
 
                 {/* Asks Panel (Sell Side) */}
-                <div className="flex flex-col rounded bg-theme-bg-surface border border-theme-border-subtle/70 overflow-hidden">
-                  <div className="flex items-center justify-between px-spacing-xs py-1 bg-theme-bg-elevated/60 border-b border-theme-border-subtle/60">
-                    <span className="font-bold text-theme-status-danger uppercase tracking-wider">
+                <div className="flex flex-col rounded-lg bg-theme-bg-surface border border-theme-border-subtle overflow-hidden shadow-2xs">
+                  <div className="flex items-center justify-between px-2.5 py-1 bg-theme-bg-elevated border-b border-theme-border-subtle">
+                    <span className="font-extrabold text-theme-status-danger uppercase tracking-wider text-2xs">
                       {res.topAsks}
                     </span>
-                    <span className="text-theme-text-muted font-mono">
+                    <span className="text-theme-text-muted font-mono text-2xs">
                       {res.priceHeader} / {res.sizeHeader}
                     </span>
                   </div>
 
-                  <div className="flex flex-col p-0.5 font-mono">
+                  <div className="flex flex-col p-1 font-mono">
                     {asks.map(([p, q], i) => {
                       const qty = Number(q) || 0;
                       const fillPercent = Math.min(100, Math.round((qty / maxAskQty) * 100));
                       return (
                         <div
                           key={`ask_${i}`}
-                          className="relative flex justify-between items-center px-1.5 py-0.5 rounded-xs overflow-hidden hover:bg-theme-bg-elevated/40 transition-colors"
+                          className="relative flex justify-between items-center px-2 py-0.5 rounded-xs overflow-hidden hover:bg-theme-bg-elevated/40 transition-colors"
                         >
                           <div
-                            className="absolute inset-y-0 right-0 bg-theme-status-danger/10 rounded-xs pointer-events-none"
+                            className="absolute inset-y-0 right-0 bg-theme-status-danger/15 rounded-xs pointer-events-none"
                             style={{ width: `${fillPercent}%` }}
                           />
-                          <span className="relative z-10 font-semibold text-theme-status-danger">
+                          <span className="relative z-10 font-bold text-theme-status-danger">
                             {formatUsd(p)}
                           </span>
-                          <span className="relative z-10 text-theme-text-secondary">
+                          <span className="relative z-10 text-theme-text-secondary font-medium">
                             {formatOrderQty(q)}
                           </span>
                         </div>
@@ -328,11 +353,11 @@ export function ToolResultCard({
         const change = formatPercent(data?.priceChangePercent);
 
         return (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-spacing-xs p-spacing-xs rounded-md bg-theme-bg-elevated border border-theme-border-subtle text-2xs">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-3 rounded-xl bg-theme-bg-elevated/70 border border-theme-border-subtle text-2xs shadow-2xs">
             <div className="flex flex-col">
-              <span className="text-theme-text-muted">{res.change24h}</span>
+              <span className="text-2xs font-bold uppercase tracking-wider text-theme-text-muted">{res.change24h}</span>
               <span
-                className={`font-bold ${
+                className={`text-base font-extrabold font-mono ${
                   change.isPositive
                     ? 'text-theme-status-success'
                     : change.isNegative
@@ -344,16 +369,16 @@ export function ToolResultCard({
               </span>
             </div>
             <div className="flex flex-col">
-              <span className="text-theme-text-muted">{res.high24h}</span>
-              <span className="font-semibold text-theme-text-primary">{formatUsd(data?.highPrice)}</span>
+              <span className="text-2xs font-bold uppercase tracking-wider text-theme-text-muted">{res.high24h}</span>
+              <span className="text-xs font-bold font-mono text-theme-text-primary mt-0.5">{formatUsd(data?.highPrice)}</span>
             </div>
             <div className="flex flex-col">
-              <span className="text-theme-text-muted">{res.low24h}</span>
-              <span className="font-semibold text-theme-text-primary">{formatUsd(data?.lowPrice)}</span>
+              <span className="text-2xs font-bold uppercase tracking-wider text-theme-text-muted">{res.low24h}</span>
+              <span className="text-xs font-bold font-mono text-theme-text-primary mt-0.5">{formatUsd(data?.lowPrice)}</span>
             </div>
             <div className="flex flex-col">
-              <span className="text-theme-text-muted">{res.volume24h}</span>
-              <span className="font-semibold text-theme-text-secondary">{formatUsd(data?.volumeQuote)}</span>
+              <span className="text-2xs font-bold uppercase tracking-wider text-theme-text-muted">{res.volume24h}</span>
+              <span className="text-xs font-bold font-mono text-theme-text-secondary mt-0.5">{formatUsd(data?.volumeQuote)}</span>
             </div>
           </div>
         );
