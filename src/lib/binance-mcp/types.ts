@@ -10,8 +10,8 @@ export const PlaceSpotOrderParamsSchema = z.object({
   timeInForce: z.enum(['GTC', 'IOC', 'FOK']).optional(),
   quantity: z.number().positive().describe('Order quantity in base asset'),
   price: z.number().positive().optional().describe('Limit price (required for LIMIT orders)'),
-  stopPrice: z.number().positive().optional().describe('Trigger price for stop loss'),
-  newClientOrderId: z.string().optional().describe('Idempotency client identifier'),
+  clientOrderId: z.string().optional().describe('Idempotency client identifier'),
+  newClientOrderId: z.string().optional().describe('Idempotency client identifier (Binance alias)'),
 });
 
 export type PlaceSpotOrderParams = z.infer<typeof PlaceSpotOrderParamsSchema>;

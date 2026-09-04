@@ -193,6 +193,8 @@ export function buildAgentTools(customAdapter?: IBinanceAgentAdapter) {
           quantity: z.number().positive().describe('Order size in base currency'),
           orderType: z.enum(['LIMIT', 'MARKET']).default('MARKET'),
           price: z.number().positive().optional().describe('Limit price (required for LIMIT orders)'),
+          clientOrderId: z.string().optional().describe('Unique client idempotency identifier to prevent double-fills on retry'),
+          newClientOrderId: z.string().optional().describe('Binance alias for clientOrderId'),
         })
         .refine(
           (data) => data.orderType !== 'LIMIT' || (typeof data.price === 'number' && data.price > 0),
@@ -201,7 +203,8 @@ export function buildAgentTools(customAdapter?: IBinanceAgentAdapter) {
             path: ['price'],
           }
         ),
-      execute: async ({ symbol, side, quantity, orderType, price }) => {
+      execute: async ({ symbol, side, quantity, orderType, price, clientOrderId, newClientOrderId }) => {
+        const effectiveClientId = clientOrderId ?? newClientOrderId;
         try {
           const result = await adapter.placeSpotOrder({
             symbol,
@@ -209,6 +212,8 @@ export function buildAgentTools(customAdapter?: IBinanceAgentAdapter) {
             type: orderType,
             quantity,
             price,
+            clientOrderId: effectiveClientId,
+            newClientOrderId: effectiveClientId,
           });
           return {
             success: true,

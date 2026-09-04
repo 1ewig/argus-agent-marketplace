@@ -8,7 +8,8 @@ interface InternalOrderRecord extends OrderExecutionResult {
 
 /**
  * Isolated in-memory Agentic Wallet sandbox for paper trading and simulation.
- * Manages balances, fee deductions, order state machines, and deterministic order identifiers.
+ * Manages balances, fee deductions, order state machines, deterministic order identifiers,
+ * and strict server-side idempotency/replay protection.
  */
 export class SimulatedAgentWallet {
   private balances: Map<string, { free: number; locked: number }> = new Map([
@@ -22,6 +23,7 @@ export class SimulatedAgentWallet {
   private orderCounter = 100000;
   private orders: Map<string, InternalOrderRecord> = new Map();
   private clientOrderMap: Map<string, string> = new Map(); // clientOrderId -> orderId
+  private recentOrderFingerprints: Map<string, { orderId: string; timestamp: number }> = new Map();
 
   /**
    * Returns current balances across all tracked assets.
@@ -38,54 +40,75 @@ export class SimulatedAgentWallet {
     return result;
   }
 
+  private formatOrderResult(record: InternalOrderRecord): OrderExecutionResult {
+    return {
+      orderId: record.orderId,
+      clientOrderId: record.clientOrderId,
+      symbol: record.symbol,
+      side: record.side,
+      status: record.status,
+      executedQty: record.executedQty,
+      cummulativeQuoteQty: record.cummulativeQuoteQty,
+      price: record.price,
+      commissionUsd: record.commissionUsd,
+      commissionAsset: record.commissionAsset,
+      timestamp: record.timestamp,
+    };
+  }
+
   /**
    * Executes or places a spot order in the sandbox wallet.
    * 
    * Enforces:
-   * 1. Idempotency on clientOrderId
-   * 2. Symbol sanitization
-   * 3. Required positive limit price for LIMIT orders
-   * 4. PERCENT_PRICE price filter sanity check (+/- bounds against real market price)
-   * 5. State machine: LIMIT orders placed below/above market are marked NEW and lock funds
+   * 1. Strict server-side idempotency on clientOrderId/newClientOrderId (replays return original fill receipt)
+   * 2. Replay protection on identical payloads within 5s window
+   * 3. Symbol sanitization
+   * 4. Required positive limit price for LIMIT orders
+   * 5. PERCENT_PRICE price filter sanity check (+/- bounds against real market price)
+   * 6. State machine: LIMIT orders placed below/above market are marked NEW and lock funds
    */
   public executeOrder(params: PlaceSpotOrderParams, currentMarketPrice: number): OrderExecutionResult {
     const cleanSymbol = normalizeSymbol(params.symbol);
+    const effectiveClientId = params.newClientOrderId ?? params.clientOrderId;
 
     // 1. Idempotency Check: Return existing order if clientOrderId is re-submitted
-    if (params.newClientOrderId && this.clientOrderMap.has(params.newClientOrderId)) {
-      const existingOrderId = this.clientOrderMap.get(params.newClientOrderId)!;
+    if (effectiveClientId && this.clientOrderMap.has(effectiveClientId)) {
+      const existingOrderId = this.clientOrderMap.get(effectiveClientId)!;
       const existing = this.orders.get(existingOrderId);
       if (existing) {
-        return {
-          orderId: existing.orderId,
-          clientOrderId: existing.clientOrderId,
-          symbol: existing.symbol,
-          side: existing.side,
-          status: existing.status,
-          executedQty: existing.executedQty,
-          cummulativeQuoteQty: existing.cummulativeQuoteQty,
-          price: existing.price,
-          commissionUsd: existing.commissionUsd,
-          commissionAsset: existing.commissionAsset,
-          timestamp: existing.timestamp,
-        };
+        return this.formatOrderResult(existing);
       }
     }
 
-    // 2. Resolve Quote and Base Assets
+    // 2. Replay Protection: Dedup identical orders submitted within 5 seconds
+    const isLimit = params.type === 'LIMIT';
+    const fingerprint = `${cleanSymbol}:${params.side}:${params.quantity}:${params.type ?? 'MARKET'}:${isLimit ? params.price : ''}`;
+    const now = Date.now();
+    const recent = this.recentOrderFingerprints.get(fingerprint);
+
+    if (recent && now - recent.timestamp < 5000) {
+      const existing = this.orders.get(recent.orderId);
+      if (existing) {
+        // Associate this clientOrderId if provided on the replay
+        if (effectiveClientId) {
+          this.clientOrderMap.set(effectiveClientId, existing.orderId);
+        }
+        return this.formatOrderResult(existing);
+      }
+    }
+
+    // 3. Resolve Quote and Base Assets
     const quoteAssets = ['USDT', 'USDC', 'FDUSD', 'EUR', 'TRY', 'BTC', 'ETH', 'BNB'];
     const quoteAsset = quoteAssets.find((q) => cleanSymbol.endsWith(q) && cleanSymbol.length > q.length) ?? 'USDT';
     const baseAsset = cleanSymbol.slice(0, cleanSymbol.length - quoteAsset.length);
 
-    // 3. LIMIT order specific validations
-    const isLimit = params.type === 'LIMIT';
+    // 4. LIMIT order specific validations
     if (isLimit) {
       if (typeof params.price !== 'number' || params.price <= 0 || isNaN(params.price)) {
         throw new Error('A positive limit price is required for LIMIT orders');
       }
 
-      // 4. Binance PERCENT_PRICE filter check
-      // Exchanges reject limit prices that deviate unrealistically far from current order book mark
+      // 5. Binance PERCENT_PRICE filter check
       const minAllowedPrice = currentMarketPrice * 0.2;
       const maxAllowedPrice = currentMarketPrice * 5.0;
 
@@ -105,11 +128,9 @@ export class SimulatedAgentWallet {
 
     this.orderCounter += 1;
     const orderId = `SIM-${this.orderCounter}`;
-    const clientOrderId = params.newClientOrderId ?? `cli_${Date.now()}`;
+    const clientOrderId = effectiveClientId ?? `cli_${now}_${Math.random().toString(36).slice(2, 7)}`;
 
-    // 5. Determine whether order fills immediately or rests on the book as NEW
-    // A LIMIT BUY below market price does not execute immediately; it waits on the book.
-    // A LIMIT SELL above market price also waits on the book.
+    // 6. Determine whether order fills immediately or rests on the book as NEW
     const doesImmediatelyFill =
       !isLimit ||
       (params.side === 'BUY' && executionPrice >= currentMarketPrice) ||
@@ -149,29 +170,19 @@ export class SimulatedAgentWallet {
         price: executionPrice,
         commissionUsd,
         commissionAsset: quoteAsset,
-        timestamp: Date.now(),
+        timestamp: now,
         lockedAmount: 0,
         lockedAsset: '',
       };
 
       this.orders.set(orderId, record);
-      if (params.newClientOrderId) {
-        this.clientOrderMap.set(params.newClientOrderId, orderId);
+      this.clientOrderMap.set(clientOrderId, orderId);
+      if (effectiveClientId) {
+        this.clientOrderMap.set(effectiveClientId, orderId);
       }
+      this.recentOrderFingerprints.set(fingerprint, { orderId, timestamp: now });
 
-      return {
-        orderId: record.orderId,
-        clientOrderId: record.clientOrderId,
-        symbol: record.symbol,
-        side: record.side,
-        status: record.status,
-        executedQty: record.executedQty,
-        cummulativeQuoteQty: record.cummulativeQuoteQty,
-        price: record.price,
-        commissionUsd: record.commissionUsd,
-        commissionAsset: record.commissionAsset,
-        timestamp: record.timestamp,
-      };
+      return this.formatOrderResult(record);
     } else {
       // Resting LIMIT order: place on book as NEW and lock required collateral
       if (params.side === 'BUY') {
@@ -196,29 +207,19 @@ export class SimulatedAgentWallet {
           price: executionPrice,
           commissionUsd: 0,
           commissionAsset: quoteAsset,
-          timestamp: Date.now(),
+          timestamp: now,
           lockedAmount: requiredCollateral,
           lockedAsset: quoteAsset,
         };
 
         this.orders.set(orderId, record);
-        if (params.newClientOrderId) {
-          this.clientOrderMap.set(params.newClientOrderId, orderId);
+        this.clientOrderMap.set(clientOrderId, orderId);
+        if (effectiveClientId) {
+          this.clientOrderMap.set(effectiveClientId, orderId);
         }
+        this.recentOrderFingerprints.set(fingerprint, { orderId, timestamp: now });
 
-        return {
-          orderId: record.orderId,
-          clientOrderId: record.clientOrderId,
-          symbol: record.symbol,
-          side: record.side,
-          status: record.status,
-          executedQty: record.executedQty,
-          cummulativeQuoteQty: record.cummulativeQuoteQty,
-          price: record.price,
-          commissionUsd: record.commissionUsd,
-          commissionAsset: record.commissionAsset,
-          timestamp: record.timestamp,
-        };
+        return this.formatOrderResult(record);
       } else {
         if (baseBal.free < params.quantity) {
           throw new Error(
@@ -240,29 +241,19 @@ export class SimulatedAgentWallet {
           price: executionPrice,
           commissionUsd: 0,
           commissionAsset: quoteAsset,
-          timestamp: Date.now(),
+          timestamp: now,
           lockedAmount: params.quantity,
           lockedAsset: baseAsset,
         };
 
         this.orders.set(orderId, record);
-        if (params.newClientOrderId) {
-          this.clientOrderMap.set(params.newClientOrderId, orderId);
+        this.clientOrderMap.set(clientOrderId, orderId);
+        if (effectiveClientId) {
+          this.clientOrderMap.set(effectiveClientId, orderId);
         }
+        this.recentOrderFingerprints.set(fingerprint, { orderId, timestamp: now });
 
-        return {
-          orderId: record.orderId,
-          clientOrderId: record.clientOrderId,
-          symbol: record.symbol,
-          side: record.side,
-          status: record.status,
-          executedQty: record.executedQty,
-          cummulativeQuoteQty: record.cummulativeQuoteQty,
-          price: record.price,
-          commissionUsd: record.commissionUsd,
-          commissionAsset: record.commissionAsset,
-          timestamp: record.timestamp,
-        };
+        return this.formatOrderResult(record);
       }
     }
   }
