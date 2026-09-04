@@ -7,7 +7,7 @@
 
 ## Overview
 
-**Argus** is an approachable, high-performance trading assistant powered by **Binance Agent OS**. Unlike generic chatbots that hallucinate market prices or execute trades blindly, Argus operates directly against real-time Binance spot and perpetual market feeds, order books, and trade tapes with built-in mathematical risk checks and automatic model failover.
+**Argus** is an approachable, high-performance trading assistant powered by **Binance Agent OS**. Unlike generic chatbots that hallucinate market prices or execute trades blindly, Argus operates directly against real-time Binance spot and perpetual market feeds, live order books, and trade tapes with built-in mathematical risk checks, server-side idempotency, and automatic model failover.
 
 Argus pairs ultra-fast inference with a clean, local-first interactive interface—giving traders clear, actionable insights without unnecessary complexity or robotic theatrics.
 
@@ -27,36 +27,47 @@ Argus pairs ultra-fast inference with a clean, local-first interactive interface
 * **TPM Protection & Conciseness:** Capped to 6,000 max output tokens per turn (`GROQ_MAX_TOKENS`) with concise system prompts to prevent rate-limit exhaustion.
 * **Fluid Word-by-Word Streaming:** Powered by `smoothStream` (15ms delay, word-level chunking) to deliver a smooth, natural reading experience rather than erratic burst streaming.
 
-### 2. Comprehensive Suite of Public Market Tools
-Argus provides immediate, unauthenticated access to the full suite of public Binance Spot and Perpetual Futures market data endpoints (`api.binance.com` and `fapi.binance.com`):
-* **`get_ticker_price`:** Real-time spot price tick for any symbol.
+### 2. Comprehensive Suite of Live Market Tools (Zero Fake Data)
+Argus provides immediate, unauthenticated access to the full suite of public Binance Spot and Perpetual Futures market data endpoints (`api.binance.com` and `fapi.binance.com`). **Zero synthetic fallback prices or mock tickers** — if an invalid symbol is entered, Argus surfaces authentic Binance exchange errors:
+* **`get_ticker_price`:** Real-time spot price tick for any valid pair.
 * **`get_order_book`:** Live bid/ask depth with custom levels (up to 100), computing best bids, best asks, spreads, spread percentages, and depth imbalance ratios.
 * **`get_klines`:** Historical OHLCV candlestick data across standard intervals (`1m`, `5m`, `15m`, `1h`, `4h`, `1d`) with period percentage change calculation.
 * **`get_24h_stats`:** Rolling 24-hour price change percentage, 24h high, low, base volume, quote volume, and weighted average price.
 * **`get_funding_rate`:** Binance Perpetual Futures funding rates, mark price, index price, next funding settlement countdown, and annualized APR.
 * **`get_average_price`:** 5-minute rolling Volume Weighted Average Price (VWAP) fair value benchmark.
 * **`get_recent_trades`:** Public trade tape prints with timestamps, quantities, and taker buyer vs. seller volume ratio.
+* **`get_account_balance`:** Queries real-time paper wallet balances ($500 test funds) in sandbox mode or live sub-account in MCP mode.
+* **`place_spot_order`:** Executes market or limit spot orders with strict price filter validation and idempotency keys.
+* **`cancel_order`:** Cancels open limit orders and safely releases locked collateral back to available balance.
 
-### 3. Single-Turn Parallel Tool Execution
+### 3. Execution Guardrails & Server-Side Idempotency
+To prevent catastrophic trading errors and simulate production exchange safeguards, Argus incorporates enterprise-grade execution rules:
+* **Strict Server-Side Idempotency:** Duplicate order submissions carrying the same `clientOrderId` (or `newClientOrderId`) return the original fill receipt instead of creating a new order, preventing double-fills on network retries or agent self-correction loops.
+* **Binance `PERCENT_PRICE` Filter:** Limit orders deviating unrealistically far from current mark price (e.g., $0.0000001 for BTC) are rejected off-hand, matching real exchange mechanics.
+* **Resting Limit Orders (`status: 'NEW'`):** Limit buy orders below market and limit sell orders above market do not unrealistically fill immediately; they rest as open orders and lock collateral until crossed or canceled.
+* **Order Cancellation Validation:** Non-existent order IDs (`SIM-999999999`), symbol mismatches, or already-filled orders cannot be canceled; canceling active limit orders instantly unlocks reserved collateral.
+* **Symbol Sanitization (`normalizeSymbol`):** Automatically cleans quotes (`"BTCUSDT"`), internal separators (`BTC/USDT`, `BTC-USDT`), and lowercase casing (`btcusdt`), enforcing standard alphanumeric quote asset formats (`USDT`, `USDC`, etc.).
+
+### 4. Single-Turn Parallel Tool Execution
 * Dispatches independent market queries concurrently in a single LLM round-trip.
 * When asking for a coin's status, Argus simultaneously fetches ticker price, 24h market statistics, recent trades, and order book depth—reducing multi-step latency by up to 70%.
 
-### 4. Dual-Adapter Architecture & Sandbox Transparency
+### 5. Dual-Adapter Architecture & Sandbox Transparency
 Argus implements a unified `IBinanceAgentAdapter` interface supporting two execution environments:
-* **Sandbox Mode (`simulation`):** Queries production Binance REST APIs for **100% real, live market data** across all 7 public market tools. Account balances ($500 test funds) and order executions operate in an isolated in-memory paper trading sandbox. Hackathon judges and traders can evaluate real-time analytics, risk checks, and trade executions with zero deposit or API key requirements.
+* **Sandbox Mode (`simulation`):** Queries production Binance REST APIs for **100% real, live market data** across all market tools. Account balances ($500 test funds) and order executions operate in an isolated in-memory paper trading sandbox (`SimulatedAgentWallet`). Hackathon judges and traders can evaluate real-time analytics, risk checks, and trade executions with zero deposit or API key requirements.
 * **Live MCP Mode (`live_mcp`):** Connects directly over Model Context Protocol (MCP) to the official Binance Agent OS endpoint (`https://agent.binance.com/mcp/agentic`) for authenticated production environments.
 
-### 5. Dynamic Environment Awareness
+### 6. Dynamic Environment Awareness
 * During prompt assembly, the agent dynamically injects its active environment status into its system directives.
 * In Sandbox mode, Argus explicitly knows it is querying real live production market feeds while placing simulated paper trades, allowing it to communicate with full transparency without confusing test funds with real assets.
 
-### 6. Unified "Worked for # seconds" Process Timeline
+### 7. Unified "Worked for # seconds" Process Timeline
 * **Single Collapsible Group:** All agent execution steps (reasoning blocks, tool invocations, and formatted tool results) are cleanly bundled inside an overarching accordion.
 * **Live Elapsed Timer:** Real-time counter updates dynamically during execution (`Working (4s)`) before finalizing to elapsed duration (`Worked for 4 seconds`).
 * **Smart Auto-Collapse:** Automatically collapses once the final answer arrives, preserving a clean reading flow while keeping the entire execution history one click away.
-* **Intermediate Response Isolation:** Preliminary thoughts or intermediate text emitted prior to tool calls are safely isolated inside the process group, keeping the final assistant answer pristine.
+* **Smooth Framer Motion Transitions:** Jitter-free accordion mechanics, smooth empty chat state transitions, and unified dropdown menu animations defined in `src/constants/animation.ts`.
 
-### 7. Inspectable Visual Cards (Zero Raw JSON Dumps)
+### 8. Inspectable Visual Cards (Zero Raw JSON Dumps)
 Sub-accordions in the process timeline render purpose-built visual cards for each tool with zero technical clutter or raw JSON:
 * **Order Book Depth Card:** Split side-by-side Buy (Bids) and Sell (Asks) panels with volume depth fill bars, mid-market price, spread percentage, and crypto quantity formatting that avoids truncating fractional amounts.
 * **Recent Trades Card:** Public tape stream displaying fill price, quantity, execution timestamp, and a calculated taker buyer vs. seller volume ratio bar.
@@ -65,16 +76,9 @@ Sub-accordions in the process timeline render purpose-built visual cards for eac
 * **Candlestick Chart Card:** Visual candlestick chart rendering for historical kline intervals.
 * **24h Market Stats Card:** 24h high/low range, price change percentage, and trading volume metrics.
 
-### 8. Local-First Session Management
+### 9. Local-First Session Management
 * Powered by **Dexie IndexedDB** for private, client-side conversation persistence.
 * Supports creating new chats, switching between saved conversations, and inline chat renaming without page reloads.
-
-### 9. Signature Executive Markdown Formatting
-Argus outputs clean, easily scannable answers designed for fast decision-making:
-* **Direct Lead:** 1–2 sentence immediate summary answering the user's intent.
-* **Snapshot Tables:** Compact markdown tables comparing price, 24h range, volume, and spread.
-* **Structured Breakdowns:** Grouped bullet points with bold descriptive lead anchors.
-* **Grounded Takeaways:** A concise blockquote summary highlighting the bottom line.
 
 ---
 
@@ -83,7 +87,7 @@ Argus outputs clean, easily scannable answers designed for fast decision-making:
 * **Framework:** Next.js 16 (Turbopack, App Router, React 19)
 * **Runtime & Package Manager:** Bun (`bun@1.4.0+`) exclusively
 * **Language & Tooling:** TypeScript 7 (native Go compiler), Oxlint (`oxlint@1.81.0+`)
-* **Styling:** Tailwind CSS v4 with Neo-Minimalist Architectural design tokens configured in `globals.css`
+* **Styling & Motion:** Tailwind CSS v4 with Neo-Minimalist Architectural design tokens configured in `globals.css` and Framer Motion animations
 * **Agent Engine:** Vercel AI SDK (`ai@7`, `@ai-sdk/groq`, `@ai-sdk/fireworks`, `@ai-sdk/mcp`)
 * **Client Database:** Dexie IndexedDB (`dexie`, `dexie-react-hooks`)
 * **Icons:** Lucide React
@@ -107,21 +111,29 @@ src/
 │       ├── stage-view-switcher.tsx # Agent Chat vs Trading Chart toggle
 │       ├── top-nav-bar.tsx # Architectural top bar with search and status
 │       └── markdown-view.tsx # Custom GFM renderer with styled tables & code blocks
-├── constants/            # Centralized UI copy, tool labels, and quick prompts
+├── constants/            # Centralized UI copy, tool labels, and animation variants
+│   ├── animation.ts      # Unified Framer Motion accordion, dropdown, and entrance variants
+│   └── content.ts        # Centralized UI dictionary text, tool badges, and placeholders
 ├── hooks/                # Custom React hooks (useAgentChat, useExecutionMode)
 ├── lib/
 │   ├── agents/           # Client-side SSE stream transport and chat history helpers
-│   ├── binance-mcp/      # Simulation adapter (real Binance REST data) and live MCP client
+│   ├── binance-mcp/      # Production REST client, paper wallet sandbox, and live MCP adapter
+│   │   ├── index.ts      # Adapter provider & singleton exports
+│   │   ├── public-api-client.ts # Live Binance REST caller with unified error extraction
+│   │   ├── simulated-wallet.ts  # In-memory paper wallet with idempotency & PERCENT_PRICE rules
+│   │   ├── simulated-adapter.ts # Adapter orchestrating live REST data & paper wallet
+│   │   ├── live-mcp-adapter.ts  # Remote MCP client (@ai-sdk/mcp) for Binance Agent OS
+│   │   └── types.ts      # Binance MCP types & Zod schemas
 │   ├── db/               # Dexie IndexedDB schema, queries, and step normalizers
 │   ├── risk-engine/      # Deterministic mathematical risk evaluation functions
 │   ├── types/            # Shared domain types and Zod runtime schemas
 │   └── utils.ts          # Pure utility helpers
 └── agent/                # Core AI agent engine
-    ├── engine.ts         # Multi-step streaming loop with rate-limit failover
+    ├── engine.ts         # Multi-step streaming loop with rate-limit failover & tool error handling
     ├── prepare-invocation.ts # Model binding, tool configuration, and dynamic prompt assembly
     ├── providers.ts      # Multi-provider model factories (Groq & Fireworks AI) with failover
     ├── title-stream-filter.ts # Stream interceptor preventing raw XML tag leakage
-    ├── tools.ts          # Binance MCP tool definitions with Zod schemas
+    ├── tools.ts          # Binance MCP tool definitions with Zod schemas & sanitization
     ├── prompts.ts        # System prompts, tool descriptions, and formatting guidelines
     └── types.ts          # Agent result, step, and stream event interfaces
 ```
@@ -132,7 +144,7 @@ src/
 
 Argus follows strict engineering rules defined in [`AGENTS.md`](./AGENTS.md):
 1. **Zero Hardcoded Design Tokens:** All colors, font sizes, weights, and spacing use strict CSS variables (`--theme-*`, `--text-*`, `--spacing-*`).
-2. **Zero Hardcoded UI Text:** User-facing strings and error messages reside in `src/constants/content.ts`.
+2. **Zero Hardcoded UI Text:** User-facing strings and error messages reside in centralized constants.
 3. **Bun Only:** All scripts, dependencies, and tools are run via `bun` (`bun add`, `bun run dev`, `bun x tsc`).
 4. **TS7 & Oxlint:** Clean type checking (`bun x tsc --noEmit`) and linting (`bun run lint`) with 0 errors and 0 warnings.
 5. **Human Language:** Conversational, approachable tone with zero military or robotic fluff.

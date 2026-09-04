@@ -104,3 +104,22 @@ src/
 * **Parallel File Modifications:** When an update or refactor spans multiple files, dispatch edits and file writes in parallel in the same turn wherever changes are independent.
 * **Token & Latency Efficiency:** Minimizing roundtrips preserves LLM context window health, conserves API rate limits, and dramatically accelerates task completion.
 
+---
+
+## 8. Market Data, Tool Safety & Execution Integrity
+
+* **Zero Fake / Synthetic Market Data:** NEVER generate, hardcode, or fall back to synthetic ticker prices, mock order books, or fabricated klines. Binance public REST endpoints (`api.binance.com` and `fapi.binance.com`) are 100% free, live, and unauthenticated. If an invalid pair is passed (e.g. `FAKECOIN`) or an API request fails, ALWAYS surface or re-throw the authentic Binance error (HTTP 400 `Invalid symbol.`). Never silently mask failures with fake numbers.
+* **Universal Symbol Normalization (`normalizeSymbol`):** All symbol inputs across agent tools, REST callers, and wallet executions MUST be sanitized through `normalizeSymbol()`. Always strip outer quotes (`"BTCUSDT"`, `'BTCUSDT'`), strip delimiters (`BTC/USDT`, `BTC-USDT`), enforce uppercase, and validate standard quote assets (`USDT`, `USDC`, `BTC`, etc.).
+* **Mandatory Server-Side Idempotency:** The trading tool `place_spot_order` MUST accept and forward `clientOrderId` and `newClientOrderId`. The execution engine must deduplicate server-side on `clientOrderId` (and payload fingerprint within a 5-second window) to return the existing fill receipt on retries, permanently preventing account double-fills.
+* **Exchange Price Filter (`PERCENT_PRICE`):** Any LIMIT order must require a positive `price` and enforce sanity check bounds against current market price. Off-book limit prices must be rejected.
+* **Resting Orders vs Immediate Fills:** LIMIT orders placed below market for BUY (or above market for SELL) MUST be placed on the book as open orders (`status: 'NEW'`) and lock collateral—never fill them instantly.
+* **Order Cancellation Integrity:** `cancelOrder` must check that the order exists, matches the symbol, and is currently open (`status: 'NEW'`). Reject attempts to cancel already-`FILLED` or non-existent orders, and unlock collateral upon cancellation.
+
+---
+
+## 9. AI Stream Lifecycle & Animation Best Practices
+
+* **Full Stream Event Handling:** In Vercel AI SDK `streamText`, the `fullStream` emits `tool-error` and `tool-output-denied` parts in addition to `tool-result`. Agents must handle `tool-error` to transition timeline steps from `active` to `error`, rather than leaving steps hanging on infinite loading spinners. Ensure any active steps are finalized at the end of the stream or upon failover.
+* **Framer Motion Accordion Jitter Prevention:** NEVER place `gap-*` on a flex parent container of an animated collapsible `<motion.div variants={accordionVariants}>`. Flexbox gap remains rendered during height collapse and snaps upon unmount, causing visible jitter. Spacing must live inside the `overflow-hidden` container. Always use centralized animation tokens in `src/constants/animation.ts`.
+
+
