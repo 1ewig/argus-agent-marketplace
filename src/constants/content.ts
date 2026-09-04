@@ -19,6 +19,8 @@ export const APP_CONTENT = {
     statusOnline: 'Live Binance Feeds',
     themeLight: 'Light Mode',
     themeDark: 'Dark Mode',
+    themeLightBadge: 'LIGHT',
+    themeDarkBadge: 'DARK',
     collapseSidebar: 'Collapse sidebar',
     expandSidebar: 'Expand sidebar',
     deleteChat: 'Delete Chat',
