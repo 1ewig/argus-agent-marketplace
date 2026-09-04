@@ -461,4 +461,3 @@ export function LeftSidebar() {
     </>
   );
 }
-
