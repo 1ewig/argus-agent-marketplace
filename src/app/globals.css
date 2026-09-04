@@ -192,6 +192,13 @@ html.light {
   background: var(--theme-text-muted);
 }
 
+/* Touch responsiveness and mobile tap highlight elimination */
+button,
+[role="button"] {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
 body {
   background: var(--theme-bg-base);
   color: var(--theme-text-primary);

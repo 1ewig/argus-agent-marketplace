@@ -4,7 +4,12 @@ import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Pencil, Trash2, Check, X } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
-import { dropdownMenuVariants } from '@/constants/animation';
+import {
+  dropdownMenuVariants,
+  tapScaleButton,
+  tapScaleIcon,
+  tapScaleAccordion,
+} from '@/constants/animation';
 import { formatRelativeTime } from '@/lib/utils';
 import { ConfirmDialog } from '@/components/common';
 import type { ConversationRecord } from '@/lib/db';
@@ -60,12 +65,13 @@ export const ChatSessionsMenu = React.memo(function ChatSessionsMenu({
 
   return (
     <div className="relative" ref={menuRef}>
-      <button
+      <motion.button
         type="button"
+        whileTap={tapScaleButton}
         onClick={onToggleMenu}
         title={APP_CONTENT.sessions.openMenuAria}
         aria-label={APP_CONTENT.sessions.openMenuAria}
-        className="h-8 flex items-center gap-spacing-xs text-2xs font-semibold bg-theme-bg-elevated/70 hover:bg-theme-bg-surface text-theme-text-primary border border-theme-border-subtle hover:border-theme-border-strong rounded-xl px-spacing-sm cursor-pointer transition-all shadow-2xs max-w-[160px] sm:max-w-[220px]"
+        className="h-8 flex items-center gap-spacing-xs text-2xs font-semibold bg-theme-bg-elevated/70 hover:bg-theme-bg-surface active:bg-theme-bg-surface text-theme-text-primary border border-theme-border-subtle hover:border-theme-border-strong rounded-xl px-spacing-sm cursor-pointer transition-all shadow-2xs max-w-[160px] sm:max-w-[220px] select-none"
       >
         <span className="truncate">{currentTitle}</span>
         <ChevronDown
@@ -73,7 +79,7 @@ export const ChatSessionsMenu = React.memo(function ChatSessionsMenu({
             isMenuOpen ? 'rotate-180' : ''
           }`}
         />
-      </button>
+      </motion.button>
 
       <AnimatePresence>
         {isMenuOpen && (
@@ -128,31 +134,34 @@ export const ChatSessionsMenu = React.memo(function ChatSessionsMenu({
                             placeholder={APP_CONTENT.sessions.renamePlaceholder}
                             className="flex-1 bg-theme-bg-surface text-2xs text-theme-text-primary px-spacing-xs py-1 rounded border border-theme-border-strong focus:outline-hidden"
                           />
-                          <button
+                          <motion.button
                             type="button"
+                            whileTap={tapScaleIcon}
                             onClick={(e) => void onSaveRename(conv.id, e)}
                             title={APP_CONTENT.sessions.saveLabel}
                             aria-label={APP_CONTENT.sessions.saveLabel}
-                            className="p-1 rounded hover:bg-theme-bg-surface text-theme-status-success cursor-pointer"
+                            className="p-1 rounded hover:bg-theme-bg-surface active:bg-theme-bg-elevated text-theme-status-success cursor-pointer"
                           >
                             <Check className="size-3.5" />
-                          </button>
-                          <button
+                          </motion.button>
+                          <motion.button
                             type="button"
+                            whileTap={tapScaleIcon}
                             onClick={onCancelRename}
                             title={APP_CONTENT.sessions.cancelLabel}
                             aria-label={APP_CONTENT.sessions.cancelLabel}
-                            className="p-1 rounded hover:bg-theme-bg-surface text-theme-text-muted hover:text-theme-text-primary cursor-pointer"
+                            className="p-1 rounded hover:bg-theme-bg-surface active:bg-theme-bg-elevated text-theme-text-muted hover:text-theme-text-primary cursor-pointer"
                           >
                             <X className="size-3.5" />
-                          </button>
+                          </motion.button>
                         </div>
                       ) : (
                         <>
-                          <button
+                          <motion.button
                             type="button"
+                            whileTap={tapScaleAccordion}
                             onClick={() => onSelectSession(conv.id)}
-                            className="flex items-center gap-spacing-xs flex-1 text-left min-w-0 cursor-pointer py-1"
+                            className="flex items-center gap-spacing-xs flex-1 text-left min-w-0 cursor-pointer py-1 select-none"
                           >
                             {isActive && (
                               <span className="size-1.5 rounded-full bg-theme-brand-binance shrink-0" />
@@ -173,30 +182,34 @@ export const ChatSessionsMenu = React.memo(function ChatSessionsMenu({
                                 </span>
                               ) : null}
                             </div>
-                          </button>
+                          </motion.button>
 
                           <div className="flex items-center gap-1 shrink-0">
-                            <button
+                            <motion.button
                               type="button"
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={tapScaleIcon}
                               onClick={(e) => onStartRename(conv.id, conv.title, e)}
                               title={APP_CONTENT.sessions.renameLabel}
                               aria-label={APP_CONTENT.sessions.renameLabel}
-                              className="p-1 rounded text-theme-text-muted hover:text-theme-text-primary hover:bg-theme-bg-surface cursor-pointer transition-colors"
+                              className="p-1 rounded text-theme-text-muted hover:text-theme-text-primary hover:bg-theme-bg-surface active:bg-theme-bg-elevated cursor-pointer transition-colors"
                             >
                               <Pencil className="size-3" />
-                            </button>
-                            <button
+                            </motion.button>
+                            <motion.button
                               type="button"
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={tapScaleIcon}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setSessionToDelete(conv);
                               }}
                               title={APP_CONTENT.sessions.deleteLabel}
                               aria-label={APP_CONTENT.sessions.deleteLabel}
-                              className="p-1 rounded text-theme-text-muted hover:text-theme-status-danger hover:bg-theme-bg-surface cursor-pointer transition-colors"
+                              className="p-1 rounded text-theme-text-muted hover:text-theme-status-danger hover:bg-theme-bg-surface active:bg-theme-bg-elevated cursor-pointer transition-colors"
                             >
                               <Trash2 className="size-3" />
-                            </button>
+                            </motion.button>
                           </div>
                         </>
                       )}

@@ -4,6 +4,8 @@ import React, { useState, createContext, useContext, memo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Copy, Check, ExternalLink } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { tapScaleIcon } from '@/constants/animation';
 
 const InsidePreContext = createContext<boolean>(false);
 
@@ -36,11 +38,13 @@ const CodeBlock = memo(function CodeBlock({ language, code, children }: CodeBloc
         <span className="font-extrabold text-2xs uppercase tracking-widest text-theme-text-secondary">
           {language || 'code'}
         </span>
-        <button
+        <motion.button
           type="button"
+          whileHover={{ scale: 1.05 }}
+          whileTap={tapScaleIcon}
           onClick={handleCopy}
           aria-label="Copy code"
-          className="inline-flex items-center gap-1 text-2xs text-theme-text-muted hover:text-theme-text-primary py-0.5 px-1.5 rounded-md transition-colors cursor-pointer hover:bg-theme-bg-surface border border-transparent hover:border-theme-border-subtle"
+          className="inline-flex items-center gap-1 text-2xs text-theme-text-muted hover:text-theme-text-primary py-0.5 px-1.5 rounded-md transition-colors cursor-pointer hover:bg-theme-bg-surface active:bg-theme-bg-surface border border-transparent hover:border-theme-border-subtle select-none"
         >
           {copied ? (
             <>
@@ -53,7 +57,7 @@ const CodeBlock = memo(function CodeBlock({ language, code, children }: CodeBloc
               <span>Copy</span>
             </>
           )}
-        </button>
+        </motion.button>
       </div>
 
       {/* Code Content */}

@@ -4,6 +4,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Send } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
+import { tapScaleButton } from '@/constants/animation';
 
 export interface ChatInputProps {
   isLoading: boolean;
@@ -69,11 +70,11 @@ export const ChatInput = React.memo(function ChatInput({
         <motion.button
           type="button"
           whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.94 }}
+          whileTap={tapScaleButton}
           onClick={handleSubmit}
           disabled={!text.trim() || isLoading}
           aria-label={APP_CONTENT.chat.sendButton}
-          className="flex items-center justify-center size-8 rounded-lg bg-theme-bg-overlay text-theme-brand-binance hover:bg-black disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors shadow-2xs shrink-0"
+          className="flex items-center justify-center size-8 rounded-lg bg-theme-bg-overlay text-theme-brand-binance hover:bg-black active:brightness-95 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-all shadow-2xs shrink-0 select-none"
         >
           <Send className="size-3.5" />
         </motion.button>

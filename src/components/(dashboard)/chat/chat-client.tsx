@@ -8,6 +8,7 @@ import { APP_CONTENT } from '@/constants/content';
 import {
   emptyStateContainerVariants,
   emptyStateItemVariants,
+  tapScalePill,
 } from '@/constants/animation';
 import { useAgentChat } from '@/hooks';
 import { ChatMessage } from './chat-message';
@@ -117,9 +118,9 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
                         variants={emptyStateItemVariants}
                         type="button"
                         whileHover={{ y: -2 }}
-                        whileTap={{ scale: 0.98 }}
+                        whileTap={tapScalePill}
                         onClick={() => void handleSend(prompt)}
-                        className="text-left text-xs sm:text-sm p-4 rounded-xl bg-theme-bg-elevated/80 hover:bg-theme-bg-surface border border-theme-border-subtle hover:border-theme-border-strong text-theme-text-primary cursor-pointer transition-colors shadow-2xs hover:shadow-xs group flex items-start justify-between gap-spacing-sm"
+                        className="text-left text-xs sm:text-sm p-4 rounded-xl bg-theme-bg-elevated/80 hover:bg-theme-bg-surface active:bg-theme-bg-elevated border border-theme-border-subtle hover:border-theme-border-strong active:border-theme-border-strong text-theme-text-primary cursor-pointer transition-colors shadow-2xs hover:shadow-xs group flex items-start justify-between gap-spacing-sm select-none"
                       >
                         <span className="leading-snug text-theme-text-primary group-hover:text-theme-text-primary font-medium">
                           {prompt}

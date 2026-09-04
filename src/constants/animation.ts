@@ -153,3 +153,27 @@ export const modalContentVariants: Variants = {
   },
 };
 
+/**
+ * Tactile touch and press feedback configurations for interactive buttons, icons, and accordions.
+ * Provides immediate physical responsiveness across mouse clicks and mobile touch interactions.
+ */
+export const tapScaleButton = {
+  scale: 0.94,
+  transition: { duration: 0.1, ease: 'easeOut' },
+} as const;
+
+export const tapScaleIcon = {
+  scale: 0.88,
+  transition: { duration: 0.08, ease: 'easeOut' },
+} as const;
+
+export const tapScaleAccordion = {
+  scale: 0.98,
+  transition: { duration: 0.1, ease: 'easeOut' },
+} as const;
+
+export const tapScalePill = {
+  scale: 0.96,
+  transition: { duration: 0.1, ease: 'easeOut' },
+} as const;
+

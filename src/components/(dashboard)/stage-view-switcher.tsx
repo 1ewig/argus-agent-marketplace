@@ -4,6 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Bot, LineChart } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
+import { tapScalePill } from '@/constants/animation';
 import { useAppStore } from '@/stores/app-store';
 
 export type StageViewMode = 'agent' | 'chart';
@@ -36,11 +37,11 @@ export function StageViewSwitcher({ viewMode: propMode, onViewModeChange: propOn
       {/* Agent Option */}
       <motion.button
         type="button"
-        whileTap={{ scale: 0.96 }}
+        whileTap={tapScalePill}
         onClick={() => onViewModeChange('agent')}
-        className={`relative z-10 flex items-center justify-center gap-spacing-xs px-spacing-md py-1.5 rounded-lg text-xs font-bold transition-colors duration-150 cursor-pointer ${viewMode === 'agent'
+        className={`relative z-10 flex items-center justify-center gap-spacing-xs px-spacing-md py-1.5 rounded-lg text-xs font-bold transition-colors duration-150 cursor-pointer select-none ${viewMode === 'agent'
             ? 'text-theme-text-primary'
-            : 'text-theme-text-secondary hover:text-theme-text-primary'
+            : 'text-theme-text-secondary hover:text-theme-text-primary active:text-theme-text-primary'
           }`}
       >
         <Bot className="size-3.5 text-theme-brand-binance shrink-0" />
@@ -50,11 +51,11 @@ export function StageViewSwitcher({ viewMode: propMode, onViewModeChange: propOn
       {/* Chart Option */}
       <motion.button
         type="button"
-        whileTap={{ scale: 0.96 }}
+        whileTap={tapScalePill}
         onClick={() => onViewModeChange('chart')}
-        className={`relative z-10 flex items-center justify-center gap-spacing-xs px-spacing-md py-1.5 rounded-lg text-xs font-bold transition-colors duration-150 cursor-pointer ${viewMode === 'chart'
+        className={`relative z-10 flex items-center justify-center gap-spacing-xs px-spacing-md py-1.5 rounded-lg text-xs font-bold transition-colors duration-150 cursor-pointer select-none ${viewMode === 'chart'
             ? 'text-theme-text-primary'
-            : 'text-theme-text-secondary hover:text-theme-text-primary'
+            : 'text-theme-text-secondary hover:text-theme-text-primary active:text-theme-text-primary'
           }`}
       >
         <LineChart className="size-3.5 text-theme-brand-binance shrink-0" />

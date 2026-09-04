@@ -13,7 +13,7 @@ import { getToolDisplayInfo, ToolResultCard } from './tool-result-card';
 import { AgentThoughtAccordion } from './agent-thought-accordion';
 import { MarkdownView } from '../markdown-view';
 import { APP_CONTENT } from '@/constants/content';
-import { accordionVariants } from '@/constants/animation';
+import { accordionVariants, tapScaleAccordion } from '@/constants/animation';
 import { useActiveTimer } from '@/hooks';
 import type { AgentExecutionStep } from '@/agent';
 
@@ -89,10 +89,11 @@ export const AgentProcessTimeline = memo(function AgentProcessTimeline({
     <div className="flex flex-col text-2xs mb-spacing-xs">
       {/* Overarching Worked Group Header (Shown at top only when completed) */}
       {!isActiveWork && (
-        <button
+        <motion.button
           type="button"
+          whileTap={tapScaleAccordion}
           onClick={toggleOpen}
-          className="inline-flex items-center gap-1.5 py-0.5 px-1 -ml-1 rounded-md hover:bg-theme-bg-elevated/40 text-2xs text-theme-text-secondary hover:text-theme-text-primary select-none cursor-pointer transition-colors group w-fit"
+          className="inline-flex items-center gap-1.5 py-0.5 px-1 -ml-1 rounded-md hover:bg-theme-bg-elevated/40 active:bg-theme-bg-elevated/70 text-2xs text-theme-text-secondary hover:text-theme-text-primary select-none cursor-pointer transition-colors group w-fit"
         >
           <CheckCircle2 className="size-3 text-theme-brand-binance shrink-0" />
           <span className="font-medium text-theme-text-secondary group-hover:text-theme-text-primary">
@@ -102,7 +103,7 @@ export const AgentProcessTimeline = memo(function AgentProcessTimeline({
             className={`size-2.5 text-theme-text-muted group-hover:text-theme-text-primary transition-transform duration-200 ease-out shrink-0 ${isOpen ? 'rotate-180' : 'rotate-0'
               }`}
           />
-        </button>
+        </motion.button>
       )}
 
       {/* Main Collapsible Inner Steps */}
@@ -162,11 +163,12 @@ export const AgentProcessTimeline = memo(function AgentProcessTimeline({
                   <div key={step.id ?? `tool_${idx}`} className="flex flex-col gap-0.5">
                     <div className="flex flex-col py-0.5">
                       <div className="flex flex-wrap items-center gap-spacing-xs py-0.5">
-                        <button
+                        <motion.button
                           type="button"
+                          whileTap={hasToolData ? tapScaleAccordion : undefined}
                           onClick={() => hasToolData && toggleDetails(step.id)}
-                          className={`flex items-center gap-1.5 text-left transition-colors select-none w-fit ${hasToolData
-                              ? 'cursor-pointer group text-theme-text-secondary hover:text-theme-text-primary'
+                          className={`flex items-center gap-1.5 text-left transition-colors select-none w-fit py-0.5 px-1 -ml-1 rounded-md ${hasToolData
+                              ? 'cursor-pointer group text-theme-text-secondary hover:text-theme-text-primary active:bg-theme-bg-elevated/60'
                               : 'cursor-default text-theme-text-muted'
                             }`}
                         >
@@ -195,7 +197,7 @@ export const AgentProcessTimeline = memo(function AgentProcessTimeline({
                                 }`}
                             />
                           )}
-                        </button>
+                        </motion.button>
                       </div>
 
                       {/* Tool Arguments/Results Drawer — Now with AnimatePresence & pure height-collapse */}
@@ -229,10 +231,11 @@ export const AgentProcessTimeline = memo(function AgentProcessTimeline({
 
       {/* Active Running State Button */}
       {isActiveWork && (
-        <button
+        <motion.button
           type="button"
+          whileTap={tapScaleAccordion}
           onClick={toggleOpen}
-          className="flex items-center gap-1.5 text-2xs text-theme-text-muted hover:text-theme-text-primary py-0.5 select-none cursor-pointer transition-colors w-fit group mt-0.5"
+          className="flex items-center gap-1.5 text-2xs text-theme-text-muted hover:text-theme-text-primary active:bg-theme-bg-elevated/40 py-0.5 px-1 -ml-1 rounded-md select-none cursor-pointer transition-colors w-fit group mt-0.5"
         >
           <Loader2 className="size-3 text-theme-brand-binance animate-spin shrink-0" />
           <span className="font-medium text-theme-text-secondary group-hover:underline">
@@ -242,7 +245,7 @@ export const AgentProcessTimeline = memo(function AgentProcessTimeline({
             className={`size-2.5 text-theme-text-muted group-hover:text-theme-text-primary transition-transform duration-200 ease-out shrink-0 ${isOpen ? 'rotate-180' : 'rotate-0'
               }`}
           />
-        </button>
+        </motion.button>
       )}
     </div>
   );

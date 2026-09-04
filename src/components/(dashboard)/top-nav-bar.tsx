@@ -2,7 +2,9 @@
 
 import React from 'react';
 import { Search, Bell, Sun, Moon } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { APP_CONTENT } from '@/constants/content';
+import { tapScaleIcon } from '@/constants/animation';
 import { useTheme } from '@/hooks';
 import { ArgusIcon } from './argus-icon';
 import { StageViewSwitcher } from './stage-view-switcher';
@@ -20,19 +22,21 @@ export function TopNavBar() {
         </h1>
 
         {/* Theme Toggle Button placed at the end of Argus title */}
-        <button
+        <motion.button
           type="button"
+          whileHover={{ scale: 1.08 }}
+          whileTap={tapScaleIcon}
           onClick={toggleTheme}
           title={isDark ? APP_CONTENT.nav.themeToggleDark : APP_CONTENT.nav.themeToggleLight}
           aria-label={isDark ? APP_CONTENT.nav.themeToggleDark : APP_CONTENT.nav.themeToggleLight}
-          className="size-7 rounded-lg flex items-center justify-center bg-theme-bg-elevated hover:bg-theme-bg-surface border border-theme-border-subtle text-theme-text-secondary hover:text-theme-text-primary cursor-pointer transition-colors ml-0.5"
+          className="size-7 rounded-lg flex items-center justify-center bg-theme-bg-elevated hover:bg-theme-bg-surface active:bg-theme-bg-surface border border-theme-border-subtle hover:border-theme-border-strong text-theme-text-secondary hover:text-theme-text-primary cursor-pointer transition-colors ml-0.5 select-none shadow-2xs"
         >
           {isDark ? (
-            <Sun className="size-3.5 text-theme-brand-accent" />
+            <Sun className="size-3.5 text-theme-brand-accent transition-transform duration-200" />
           ) : (
-            <Moon className="size-3.5 text-theme-text-secondary" />
+            <Moon className="size-3.5 text-theme-text-secondary transition-transform duration-200" />
           )}
-        </button>
+        </motion.button>
       </div>
 
       {/* Right Area: Stage Switcher, Search, Notifications, Paper Sandbox Pill */}
@@ -50,17 +54,19 @@ export function TopNavBar() {
         </div>
 
         {/* Notifications Button with Counter Badge */}
-        <button
+        <motion.button
           type="button"
+          whileHover={{ scale: 1.06 }}
+          whileTap={tapScaleIcon}
           title={APP_CONTENT.nav.notificationsTitle}
           aria-label={APP_CONTENT.nav.notificationsTitle}
-          className="relative size-8 rounded-lg flex items-center justify-center bg-theme-bg-elevated hover:bg-theme-bg-surface border border-theme-border-subtle text-theme-text-secondary cursor-pointer transition-colors"
+          className="relative size-8 rounded-lg flex items-center justify-center bg-theme-bg-elevated hover:bg-theme-bg-surface active:bg-theme-bg-surface border border-theme-border-subtle hover:border-theme-border-strong text-theme-text-secondary cursor-pointer transition-colors select-none shadow-2xs"
         >
           <Bell className="size-4" />
           <span className="absolute -top-1 -right-1 size-4 rounded-full bg-theme-brand-binance text-theme-bg-overlay text-2xs font-extrabold flex items-center justify-center shadow-2xs">
             {APP_CONTENT.nav.notificationsCount}
           </span>
-        </button>
+        </motion.button>
 
         {/* Paper Sandbox Status Pill */}
         <div className="flex items-center gap-spacing-xs text-2xs font-bold text-theme-brand-binance bg-theme-bg-elevated px-spacing-sm py-1.5 rounded-lg border border-theme-border-subtle shadow-2xs">

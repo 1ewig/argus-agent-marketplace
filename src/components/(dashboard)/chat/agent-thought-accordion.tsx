@@ -4,7 +4,7 @@ import React, { useState, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Brain, ChevronDown, Loader2, Sparkles } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
-import { accordionVariants } from '@/constants/animation';
+import { accordionVariants, tapScaleAccordion } from '@/constants/animation';
 import { useActiveTimer } from '@/hooks';
 import { MarkdownView } from '../markdown-view';
 import type { AgentExecutionStep } from '@/agent';
@@ -52,11 +52,12 @@ export const AgentThoughtAccordion = memo(function AgentThoughtAccordion({
 
   return (
     <div className="flex flex-col text-2xs py-0.5">
-      {/* Clean Accordion Trigger (Box container removed) */}
-      <button
+      {/* Clean Accordion Trigger with Tactile Press/Touch Feedback */}
+      <motion.button
         type="button"
+        whileTap={tapScaleAccordion}
         onClick={() => setUserToggled(!isExpanded)}
-        className="inline-flex items-center gap-1.5 py-0.5 text-2xs text-theme-text-secondary hover:text-theme-text-primary transition-colors cursor-pointer group select-none w-fit"
+        className="inline-flex items-center gap-1.5 py-0.5 px-1 -ml-1 rounded-md text-2xs text-theme-text-secondary hover:text-theme-text-primary active:bg-theme-bg-elevated/60 transition-colors cursor-pointer group select-none w-fit"
       >
         {isActive ? (
           <Loader2 className="size-3 text-theme-brand-binance animate-spin shrink-0" />
@@ -74,7 +75,7 @@ export const AgentThoughtAccordion = memo(function AgentThoughtAccordion({
           className={`size-2.5 text-theme-text-muted group-hover:text-theme-text-primary transition-transform duration-200 ease-out shrink-0 ${isExpanded ? 'rotate-180' : 'rotate-0'
             }`}
         />
-      </button>
+      </motion.button>
 
       {/* Expanded Markdown Content (Card container removed, indented naturally) */}
       <AnimatePresence initial={false}>

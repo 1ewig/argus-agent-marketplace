@@ -3,7 +3,12 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertTriangle, Trash2, Info, X, Loader2 } from 'lucide-react';
-import { modalBackdropVariants, modalContentVariants } from '@/constants/animation';
+import {
+  modalBackdropVariants,
+  modalContentVariants,
+  tapScaleButton,
+  tapScaleIcon,
+} from '@/constants/animation';
 import { APP_CONTENT } from '@/constants/content';
 
 export interface ConfirmDialogProps {
@@ -110,16 +115,18 @@ export function ConfirmDialog({
                 {icon ?? variantStyles.defaultIcon}
               </div>
 
-              <button
+              <motion.button
                 type="button"
+                whileHover={{ scale: 1.05 }}
+                whileTap={tapScaleIcon}
                 onClick={onCancel}
                 disabled={isLoading}
                 title={APP_CONTENT.dialog.closeAria}
                 aria-label={APP_CONTENT.dialog.closeAria}
-                className="p-1 rounded-lg text-theme-text-muted hover:text-theme-text-primary hover:bg-theme-bg-elevated transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-1 rounded-lg text-theme-text-muted hover:text-theme-text-primary hover:bg-theme-bg-elevated transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed select-none"
               >
                 <X className="size-4" />
-              </button>
+              </motion.button>
             </div>
 
             {/* Title & Description */}
@@ -140,20 +147,22 @@ export function ConfirmDialog({
 
             {/* Action Buttons (Divider removed) */}
             <div className="flex items-center justify-end gap-spacing-xs">
-              <button
+              <motion.button
                 type="button"
+                whileTap={tapScaleButton}
                 onClick={onCancel}
                 disabled={isLoading}
-                className="h-9 px-spacing-md flex items-center justify-center rounded-xl bg-theme-bg-elevated hover:bg-theme-bg-surface text-theme-text-secondary hover:text-theme-text-primary border border-theme-border-subtle text-xs font-semibold cursor-pointer transition-colors shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed"
+                className="h-9 px-spacing-md flex items-center justify-center rounded-xl bg-theme-bg-elevated hover:bg-theme-bg-surface text-theme-text-secondary hover:text-theme-text-primary border border-theme-border-subtle text-xs font-semibold cursor-pointer transition-colors shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed select-none"
               >
                 {effectiveCancelLabel}
-              </button>
+              </motion.button>
 
-              <button
+              <motion.button
                 type="button"
+                whileTap={tapScaleButton}
                 onClick={() => void onConfirm()}
                 disabled={isLoading}
-                className={`h-9 px-spacing-md flex items-center justify-center gap-spacing-xs rounded-xl text-xs font-semibold cursor-pointer transition-colors shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed ${variantStyles.confirmBtn}`}
+                className={`h-9 px-spacing-md flex items-center justify-center gap-spacing-xs rounded-xl text-xs font-semibold cursor-pointer transition-colors shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed select-none ${variantStyles.confirmBtn}`}
               >
                 {isLoading ? (
                   <>
@@ -163,7 +172,7 @@ export function ConfirmDialog({
                 ) : (
                   <span>{effectiveConfirmLabel}</span>
                 )}
-              </button>
+              </motion.button>
             </div>
           </motion.div>
         </div>
