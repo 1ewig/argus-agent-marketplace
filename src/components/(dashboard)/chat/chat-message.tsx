@@ -64,7 +64,7 @@ export const ChatMessage = memo(function ChatMessage({
     minute: '2-digit',
   });
 
-  // 1. User Message (Right-aligned jet-black capsule bubble mirroring the black card in the reference design)
+  // 1. User Message (Right-aligned elevated capsule blending smoothly with architectural theme)
   if (isUser) {
     return (
       <motion.div
@@ -74,7 +74,7 @@ export const ChatMessage = memo(function ChatMessage({
         className="flex justify-end items-start gap-spacing-xs w-full py-1 [content-visibility:auto] [contain-intrinsic-size:0_60px]"
       >
         <div className="flex flex-col items-end gap-1 max-w-[85%] sm:max-w-[75%]">
-          <div className="bg-theme-bg-overlay text-white px-4 py-3 rounded-2xl rounded-tr-xs shadow-sm border border-theme-border-strong text-xs font-normal leading-relaxed break-words select-text">
+          <div className="bg-theme-bg-elevated text-theme-text-primary px-4 py-3 rounded-2xl rounded-tr-xs shadow-2xs border border-theme-border-subtle text-xs font-medium leading-relaxed break-words select-text">
             {message.content}
           </div>
           <span className="text-2xs font-mono text-theme-text-muted px-1">
