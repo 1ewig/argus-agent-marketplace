@@ -92,10 +92,10 @@ export const AgentProcessTimeline = memo(function AgentProcessTimeline({
         <button
           type="button"
           onClick={toggleOpen}
-          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-theme-bg-elevated border border-theme-border-subtle hover:border-theme-border-strong text-2xs text-theme-text-secondary hover:text-theme-text-primary select-none cursor-pointer transition-all shadow-2xs group w-fit"
+          className="inline-flex items-center gap-1.5 py-0.5 px-1 -ml-1 rounded-md hover:bg-theme-bg-elevated/40 text-2xs text-theme-text-secondary hover:text-theme-text-primary select-none cursor-pointer transition-colors group w-fit"
         >
           <CheckCircle2 className="size-3 text-theme-brand-binance shrink-0" />
-          <span className="font-semibold text-theme-text-secondary group-hover:text-theme-text-primary">
+          <span className="font-medium text-theme-text-secondary group-hover:text-theme-text-primary">
             {headerLabel}
           </span>
           <ChevronDown
