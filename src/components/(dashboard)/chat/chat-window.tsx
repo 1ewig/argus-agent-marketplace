@@ -66,7 +66,7 @@ export function ChatWindow({ mode = 'simulation' }: ChatWindowProps) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-theme-bg-surface border border-theme-border-subtle rounded-lg overflow-hidden shadow-sm">
+    <div className="flex flex-col h-full bg-theme-bg-surface border border-theme-border-subtle rounded-2xl overflow-hidden shadow-xs">
       {/* Header bar */}
       <div className="flex flex-wrap items-center justify-between gap-spacing-xs p-spacing-sm px-spacing-md bg-theme-bg-elevated border-b border-theme-border-subtle shrink-0">
         <div className="flex items-center gap-spacing-xs">
