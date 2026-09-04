@@ -1,28 +1,27 @@
 @import "tailwindcss";
 
-:root {
-  /* ==========================================================================
-     1. THEME VARIABLES (15)
-     Calibrated to the Modernist Architectural aesthetic from reference:
-     Studio neutral slate backdrop, warm architectural stone/bone deck canvas,
-     high-contrast pitch-black focus panels, crisp hairline borders,
-     and signature Binance canary gold highlights.
-     ========================================================================== */
-  --theme-bg-base: #f0f2f5;             /* Clean, refined architectural gallery stone backdrop */
-  --theme-bg-surface: #ffffff;          /* Crisp card containers & deck surfaces */
-  --theme-bg-elevated: #e8ecf1;         /* Soft secondary controls, chips, tabs & hover */
-  --theme-bg-overlay: #09090b;          /* Pitch-black high-contrast focus cards & docks */
-  --theme-border-subtle: #dbe0e8;       /* Subtle hairline micro-dividers & borders */
-  --theme-border-strong: #09090b;       /* Pitch black active borders & focused indicators */
-  --theme-text-primary: #09090b;        /* Pitch black for display headings & colossal stats */
-  --theme-text-secondary: #475569;      /* Refined neutral slate for subtitles & labels */
-  --theme-text-muted: #8290a2;          /* Legible slate for timestamps & micro-details */
-  --theme-brand-binance: #f0b90b;       /* Primary Binance yellow accent */
-  --theme-brand-accent: #fcd535;        /* Canary gold for active meters & hover highlights */
-  --theme-status-success: #10b981;      /* Emerald mint for positive PnL & confirmed fills */
-  --theme-status-danger: #ef4444;       /* Crimson for risk violations & emergency triggers */
-  --theme-status-warning: #f59e0b;      /* Warm amber for risk checks & caution alerts */
-  --theme-status-info: #0284c7;         /* Clean technical cyan for analyst stream */
+/* ==========================================================================
+   1. THEME VARIABLES (15)
+   Default: Obsidian Architectural Dark Theme
+   Deep carbon basework, slate surfaces, high-clarity platinum typography,
+   and signature Binance canary gold highlights.
+   ========================================================================== */
+:root, html.dark {
+  --theme-bg-base: #080b11;             /* Deep obsidian carbon studio canvas */
+  --theme-bg-surface: #0e131d;          /* High-contrast architectural deck & card surfaces */
+  --theme-bg-elevated: #171e2c;         /* Interactive input surfaces, active tabs, and hover layers */
+  --theme-bg-overlay: #030508;          /* Deep pitch-black focus panels and badge containers */
+  --theme-border-subtle: #1c2433;       /* Hairline micro-dividers and card outlines */
+  --theme-border-strong: #2d3a50;       /* Focused structural borders and active indicators */
+  --theme-text-primary: #f1f5f9;        /* Pure platinum white for display stats and headings */
+  --theme-text-secondary: #94a3b8;      /* Cool neutral slate for sub-stats and labels */
+  --theme-text-muted: #576882;          /* Calm micro-annotations, timestamps, and tooltips */
+  --theme-brand-binance: #f0b90b;       /* Luminous Binance brand gold */
+  --theme-brand-accent: #fcd535;        /* Canary gold highlights */
+  --theme-status-success: #10b981;      /* Vibrant emerald mint PnL */
+  --theme-status-danger: #f43f5e;       /* Laser crimson danger and risk alerts */
+  --theme-status-warning: #f59e0b;      /* Warm amber risk notices */
+  --theme-status-info: #38bdf8;         /* High-clarity cyan for analyst feeds */
 
   /* ==========================================================================
      2. TEXT SIZE VARIABLES (8)
@@ -68,6 +67,25 @@
      6. LAYOUT DIMENSIONS
      ========================================================================== */
   --navbar-height: 3.5rem; /* 56px - Architectural top navigation bar height */
+}
+
+/* Light Theme Overrides */
+html.light {
+  --theme-bg-base: #f0f2f5;             /* Clean, refined architectural gallery stone backdrop */
+  --theme-bg-surface: #ffffff;          /* Crisp card containers & deck surfaces */
+  --theme-bg-elevated: #e8ecf1;         /* Soft secondary controls, chips, tabs & hover */
+  --theme-bg-overlay: #09090b;          /* Pitch-black high-contrast focus cards & docks */
+  --theme-border-subtle: #dbe0e8;       /* Subtle hairline micro-dividers & borders */
+  --theme-border-strong: #09090b;       /* Pitch black active borders & focused indicators */
+  --theme-text-primary: #09090b;        /* Pitch black for display headings & colossal stats */
+  --theme-text-secondary: #475569;      /* Refined neutral slate for subtitles & labels */
+  --theme-text-muted: #8290a2;          /* Legible slate for timestamps & micro-details */
+  --theme-brand-binance: #f0b90b;       /* Primary Binance yellow accent */
+  --theme-brand-accent: #fcd535;        /* Canary gold for active meters & hover highlights */
+  --theme-status-success: #10b981;      /* Emerald mint for positive PnL & confirmed fills */
+  --theme-status-danger: #ef4444;       /* Crimson for risk violations & emergency triggers */
+  --theme-status-warning: #f59e0b;      /* Warm amber for risk checks & caution alerts */
+  --theme-status-info: #0284c7;         /* Clean technical cyan for analyst stream */
 }
 
 @theme inline {
@@ -167,11 +185,11 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: var(--theme-border-subtle);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: var(--theme-text-muted);
 }
 
 body {
