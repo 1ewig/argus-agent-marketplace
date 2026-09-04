@@ -1,39 +1,91 @@
 'use client';
 
-import React, { useState, useRef, useCallback, useImperativeHandle, forwardRef, memo } from 'react';
-import { motion } from 'framer-motion';
-import { Send } from 'lucide-react';
+import React, {
+  useState,
+  useRef,
+  useCallback,
+  useImperativeHandle,
+  forwardRef,
+  memo,
+  useLayoutEffect,
+  useEffect,
+} from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Send, Square, Loader2 } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
 import { tapScaleButton } from '@/constants/animation';
 
 export interface ChatInputHandle {
   setInputText: (text: string) => void;
+  getText: () => string;
   focus: () => void;
+  blur: () => void;
+  clear: () => void;
 }
 
 export interface ChatInputProps {
   isLoading: boolean;
   onSend: (text: string) => void | Promise<void>;
+  onStop?: () => void;
   placeholder?: string;
+  className?: string;
+  containerClassName?: string;
+  autoFocus?: boolean;
+  disabled?: boolean;
+  maxHeight?: number; // default 160px (~6-7 lines)
 }
 
 /**
- * Isolated ChatInput component decoupling keystroke state from the main chat viewport.
- * Exposes ChatInputHandle via ref to allow template suggestions to populate input without full-viewport re-renders.
+ * Robust, top-tier expanding single-row chat input area.
+ * Expands upward cleanly, supports keyboard shortcuts, IME safety, and animated states.
  */
 export const ChatInput = memo(
   forwardRef<ChatInputHandle, ChatInputProps>(function ChatInput(
     {
       isLoading,
       onSend,
+      onStop,
       placeholder = APP_CONTENT.chat.inputPlaceholder,
+      className,
+      containerClassName,
+      autoFocus = false,
+      disabled = false,
+      maxHeight = 160,
     },
     ref
   ) {
     const [text, setText] = useState('');
+    const [isComposing, setIsComposing] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-    // Imperative handle allowing parent to populate template text and focus cursor at end
+    // Auto-resize logic with zero-jank measurement
+    const resizeTextarea = useCallback(() => {
+      const el = textareaRef.current;
+      if (!el) return;
+
+      // Reset to calculate natural scrollHeight
+      el.style.height = 'auto';
+
+      const scrollHeight = el.scrollHeight;
+      const targetHeight = Math.min(scrollHeight, maxHeight);
+
+      el.style.height = `${targetHeight}px`;
+      // Only show scrollbars once the max height ceiling is exceeded
+      el.style.overflowY = scrollHeight > maxHeight ? 'auto' : 'hidden';
+    }, [maxHeight]);
+
+    useLayoutEffect(() => {
+      resizeTextarea();
+    }, [text, resizeTextarea]);
+
+    // Handle window resize (e.g., responsive orientation switch)
+    useEffect(() => {
+      const handleResize = () => resizeTextarea();
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }, [resizeTextarea]);
+
+    // Imperative handle for parent orchestration
     useImperativeHandle(
       ref,
       () => ({
@@ -43,74 +95,130 @@ export const ChatInput = memo(
           if (target) {
             target.value = newText;
             requestAnimationFrame(() => {
-              target.style.height = 'auto';
-              target.style.height = `${Math.min(target.scrollHeight, 128)}px`;
+              resizeTextarea();
               target.focus();
               target.setSelectionRange(newText.length, newText.length);
             });
           }
         },
-        focus: () => {
-          textareaRef.current?.focus();
+        getText: () => text,
+        focus: () => textareaRef.current?.focus(),
+        blur: () => textareaRef.current?.blur(),
+        clear: () => {
+          setText('');
+          if (textareaRef.current) {
+            textareaRef.current.style.height = 'auto';
+          }
         },
       }),
-      []
+      [text, resizeTextarea]
     );
-
-    // Smooth, non-blocking auto-resize via requestAnimationFrame
-    const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      setText(e.target.value);
-      const target = e.target;
-      requestAnimationFrame(() => {
-        target.style.height = 'auto';
-        target.style.height = `${Math.min(target.scrollHeight, 128)}px`;
-      });
-    };
-
-    const handleResetHeight = useCallback(() => {
-      if (textareaRef.current) {
-        textareaRef.current.style.height = 'auto';
-      }
-    }, []);
 
     const handleSubmit = useCallback(() => {
       const trimmed = text.trim();
-      if (!trimmed || isLoading) return;
+      if (!trimmed || isLoading || disabled) return;
+
       setText('');
-      handleResetHeight();
+      if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto';
+      }
       void onSend(trimmed);
-    }, [text, isLoading, onSend, handleResetHeight]);
+    }, [text, isLoading, disabled, onSend]);
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+      // Allow newline with Shift+Enter, submit on pure Enter (unless composing via IME)
+      if (e.key === 'Enter' && !e.shiftKey && !isComposing && !e.nativeEvent.isComposing) {
         e.preventDefault();
         handleSubmit();
       }
     };
 
+    const handlePaste = () => {
+      // Give React microtask queue a tick to digest pasted payload before recalculating
+      requestAnimationFrame(resizeTextarea);
+    };
+
+    const isButtonDisabled = (!text.trim() && !isLoading) || disabled;
+
     return (
-      <div className="p-spacing-md bg-theme-bg-surface border-t border-theme-border-subtle shrink-0">
-        <div className="flex items-end gap-spacing-xs bg-theme-bg-elevated/60 hover:bg-theme-bg-surface border border-theme-border-subtle rounded-xl p-spacing-xs focus-within:bg-theme-bg-surface focus-within:border-theme-border-strong focus-within:ring-1 focus-within:ring-theme-border-strong transition-all shadow-2xs">
+      <div className={containerClassName ?? 'p-spacing-md pt-0 bg-theme-bg-base shrink-0'}>
+        <div
+          className={`${className ?? 'max-w-3xl'} mx-auto w-full relative flex items-end gap-2 bg-theme-bg-surface hover:bg-theme-bg-surface/90 border border-theme-border-subtle rounded-2xl p-1.5 sm:p-2 focus-within:border-theme-border-strong focus-within:ring-1 focus-within:ring-theme-border-strong transition-all shadow-xs`}
+        >
+          {/* Text Area */}
           <textarea
             ref={textareaRef}
             value={text}
-            onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
-            placeholder={placeholder}
             rows={1}
-            className="flex-1 resize-none bg-transparent text-xs text-theme-text-primary placeholder:text-theme-text-muted focus:outline-hidden p-spacing-xs leading-relaxed max-h-32"
+            disabled={disabled}
+            autoFocus={autoFocus}
+            placeholder={placeholder}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onPaste={handlePaste}
+            onCompositionStart={() => setIsComposing(true)}
+            onCompositionEnd={() => setIsComposing(false)}
+            className="flex-1 resize-none bg-transparent text-sm leading-6 text-theme-text-primary placeholder:text-theme-text-muted focus:outline-hidden px-2.5 py-1.5 custom-scrollbar min-h-[38px]"
+            style={{ maxHeight: `${maxHeight}px` }}
           />
-          <motion.button
-            type="button"
-            whileHover={{ scale: 1.05 }}
-            whileTap={tapScaleButton}
-            onClick={handleSubmit}
-            disabled={!text.trim() || isLoading}
-            aria-label={APP_CONTENT.chat.sendButton}
-            className="flex items-center justify-center size-8 rounded-lg bg-theme-bg-overlay text-theme-brand-binance hover:bg-black active:brightness-95 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-all shadow-2xs shrink-0 select-none"
-          >
-            <Send className="size-3.5" />
-          </motion.button>
+
+          {/* Action Button (Send / Stop / Loading) */}
+          <div className="pb-0.5 pr-0.5 shrink-0">
+            <motion.button
+              type="button"
+              whileHover={!isButtonDisabled ? { scale: 1.05 } : undefined}
+              whileTap={!isButtonDisabled ? tapScaleButton : undefined}
+              onClick={isLoading && onStop ? onStop : handleSubmit}
+              disabled={isButtonDisabled}
+              aria-label={
+                isLoading
+                  ? onStop
+                    ? 'Stop generating'
+                    : 'Generating response...'
+                  : APP_CONTENT.chat.sendButton
+              }
+              className={`flex items-center justify-center size-8 rounded-xl transition-all shadow-2xs select-none ${isLoading
+                  ? 'bg-theme-bg-overlay text-theme-text-primary hover:bg-black/10 dark:hover:bg-white/10 cursor-pointer'
+                  : 'bg-theme-bg-overlay text-theme-brand-binance hover:bg-black active:brightness-95 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer'
+                }`}
+            >
+              <AnimatePresence mode="wait" initial={false}>
+                {isLoading ? (
+                  onStop ? (
+                    <motion.div
+                      key="stop"
+                      initial={{ scale: 0.5, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.5, opacity: 0 }}
+                      transition={{ duration: 0.15 }}
+                    >
+                      <Square className="size-3.5 fill-current" />
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="loading"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.15 }}
+                    >
+                      <Loader2 className="size-3.5 animate-spin" />
+                    </motion.div>
+                  )
+                ) : (
+                  <motion.div
+                    key="send"
+                    initial={{ scale: 0.7, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.7, opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    <Send className="size-3.5 translate-x-px" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.button>
+          </div>
         </div>
       </div>
     );

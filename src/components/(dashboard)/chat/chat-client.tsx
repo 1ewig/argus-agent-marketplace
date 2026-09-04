@@ -38,16 +38,18 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
     chatInputRef.current?.setInputText(template);
   }, []);
 
+  const isChatEmpty = messages.length === 0 && !activeStreamMessage;
+
   return (
-    <div className="flex flex-col h-full bg-theme-bg-surface border border-theme-border-subtle rounded-2xl overflow-hidden shadow-xs">
+    <div className="flex flex-col h-full w-full bg-theme-bg-base overflow-hidden">
       {/* Messages Scroll Area */}
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className="relative flex-1 overflow-y-auto overscroll-y-contain [will-change:scroll-position] [transform:translateZ(0)] p-spacing-md sm:p-spacing-lg flex flex-col gap-spacing-md min-h-0"
+        className="relative flex-1 overflow-y-auto overscroll-y-contain [will-change:scroll-position] [transform:translateZ(0)] px-spacing-md sm:px-spacing-lg py-spacing-md min-h-0"
       >
         <AnimatePresence>
-          {messages.length === 0 && (
+          {isChatEmpty && (
             <motion.div
               key={`empty-${activeConversationId}`}
               variants={emptyStateContainerVariants}
@@ -100,44 +102,64 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
                     ))}
                   </div>
                 </motion.div>
+
+                {/* Hero Input (directly below quick action chips) */}
+                <motion.div
+                  variants={emptyStateItemVariants}
+                  className="w-full max-w-2xl mt-spacing-md px-spacing-xs"
+                >
+                  <ChatInput
+                    ref={chatInputRef}
+                    key={`hero-input-${activeConversationId}`}
+                    isLoading={isLoading}
+                    onSend={handleSend}
+                    className="max-w-2xl"
+                    containerClassName="w-full p-0 bg-transparent shrink-0"
+                    autoFocus
+                  />
+                </motion.div>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {messages.map((msg) => (
-          <ChatMessage key={msg.id} message={msg} />
-        ))}
+        <div className="w-full max-w-3xl mx-auto flex flex-col gap-spacing-md">
+          {messages.map((msg) => (
+            <ChatMessage key={msg.id} message={msg} />
+          ))}
 
-        {activeStreamMessage && !messages.some((m) => m.id === activeStreamMessage.id) && (
-          <ChatMessage key={activeStreamMessage.id} message={activeStreamMessage} isStreaming={true} />
-        )}
+          {activeStreamMessage && !messages.some((m) => m.id === activeStreamMessage.id) && (
+            <ChatMessage key={activeStreamMessage.id} message={activeStreamMessage} isStreaming={true} />
+          )}
 
-        {isLoading && !activeStreamMessage && (
-          <div className="flex items-center gap-spacing-sm p-spacing-md bg-theme-bg-elevated rounded-xl border border-theme-border-subtle animate-pulse">
-            <AgentLoader className="size-4 text-theme-brand-binance shrink-0" />
-            <span className="text-xs text-theme-text-secondary font-medium">
-              {APP_CONTENT.chat.thinkingText}
-            </span>
-          </div>
-        )}
+          {isLoading && !activeStreamMessage && (
+            <div className="flex items-center gap-spacing-sm p-spacing-md bg-theme-bg-elevated rounded-xl border border-theme-border-subtle animate-pulse">
+              <AgentLoader className="size-4 text-theme-brand-binance shrink-0" />
+              <span className="text-xs text-theme-text-secondary font-medium">
+                {APP_CONTENT.chat.thinkingText}
+              </span>
+            </div>
+          )}
 
-        {errorNotice && (
-          <div className="p-spacing-sm px-spacing-md bg-theme-bg-elevated border border-theme-status-danger text-theme-status-danger rounded-xl text-xs">
-            {errorNotice}
-          </div>
-        )}
+          {errorNotice && (
+            <div className="p-spacing-sm px-spacing-md bg-theme-bg-elevated border border-theme-status-danger text-theme-status-danger rounded-xl text-xs">
+              {errorNotice}
+            </div>
+          )}
 
-        <div ref={messagesEndRef} />
+          <div ref={messagesEndRef} />
+        </div>
       </div>
 
-      {/* Isolated Input Dock */}
-      <ChatInput
-        ref={chatInputRef}
-        key={activeConversationId}
-        isLoading={isLoading}
-        onSend={handleSend}
-      />
+      {/* Isolated Input Dock (pinned to bottom when conversation has messages) */}
+      {!isChatEmpty && (
+        <ChatInput
+          ref={chatInputRef}
+          key={`dock-input-${activeConversationId}`}
+          isLoading={isLoading}
+          onSend={handleSend}
+        />
+      )}
     </div>
   );
 }
