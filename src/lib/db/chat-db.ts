@@ -153,11 +153,14 @@ export async function createConversation(title?: string): Promise<ConversationRe
 }
 
 /**
- * Lists all conversations ordered by latest update (pure read query for useLiveQuery)
+ * Lists all conversations ordered by creation time descending (newest created first)
  */
 export async function listConversations(): Promise<ConversationRecord[]> {
   if (typeof window === 'undefined') return [];
-  return db.conversations.orderBy('updatedAt').reverse().toArray();
+  const records = await db.conversations.toArray();
+  return records.sort(
+    (a, b) => (b.createdAt || b.updatedAt || 0) - (a.createdAt || a.updatedAt || 0)
+  );
 }
 
 /**

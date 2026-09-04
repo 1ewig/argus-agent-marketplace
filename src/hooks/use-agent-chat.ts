@@ -142,8 +142,8 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
   };
 
   // 10. Delete session
-  const handleDeleteSession = async (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleDeleteSession = async (id: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
     await deleteConversation(id);
     if (activeConversationId === id) {
       const remaining = conversations.filter((c) => c.id !== id);

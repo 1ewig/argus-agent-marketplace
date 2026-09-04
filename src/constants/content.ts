@@ -120,6 +120,18 @@ export const APP_CONTENT = {
     emptyState: 'No conversations yet',
     activeBadge: 'ACTIVE',
     openMenuAria: 'Manage conversations',
+    deleteDialogTitle: 'Delete Conversation',
+    deleteDialogDescription: (title?: string) =>
+      title
+        ? `Are you sure you want to delete "${title}"? All messages and market research from this chat will be permanently removed.`
+        : 'Are you sure you want to delete this conversation? All messages and market research will be permanently removed.',
+    deleteDialogConfirm: 'Delete Chat',
+    deleteDialogCancel: 'Cancel',
+  },
+  dialog: {
+    confirm: 'Confirm',
+    cancel: 'Cancel',
+    closeAria: 'Close dialog',
   },
   process: {
     title: 'Process',

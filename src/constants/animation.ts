@@ -112,3 +112,40 @@ export const emptyStateItemVariants: Variants = {
     },
   },
 };
+
+/**
+ * Smooth backdrop fade and modal scale variants for confirm dialogs.
+ */
+export const modalBackdropVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { duration: 0.18, ease: 'easeOut' },
+  },
+  exit: {
+    opacity: 0,
+    transition: { duration: 0.14, ease: 'easeIn' },
+  },
+};
+
+export const modalContentVariants: Variants = {
+  hidden: {
+    opacity: 0,
+    scale: 0.95,
+    y: 8,
+    transition: { duration: 0.16, ease: 'easeOut' },
+  },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: { duration: 0.22, ease: EASING_ARCHITECTURAL },
+  },
+  exit: {
+    opacity: 0,
+    scale: 0.96,
+    y: 6,
+    transition: { duration: 0.14, ease: 'easeIn' },
+  },
+};
+
