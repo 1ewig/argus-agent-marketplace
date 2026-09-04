@@ -48,22 +48,26 @@ export function SidebarSessionItem({
           autoFocus
           className="flex-1 min-w-0 bg-transparent text-xs text-theme-text-primary font-medium focus:outline-none px-1"
         />
-        <button
+        <motion.button
           type="button"
+          whileTap={tapScalePill}
           onClick={onSaveRename}
-          className="p-1 rounded hover:bg-theme-bg-surface text-theme-status-success cursor-pointer"
+          className="p-1 rounded hover:bg-theme-bg-surface text-theme-status-success cursor-pointer transition-colors select-none"
           title={APP_CONTENT.sessions.saveLabel}
+          aria-label={APP_CONTENT.sessions.saveLabel}
         >
           <Check className="size-3.5" />
-        </button>
-        <button
+        </motion.button>
+        <motion.button
           type="button"
+          whileTap={tapScalePill}
           onClick={onCancelRename}
-          className="p-1 rounded hover:bg-theme-bg-surface text-theme-text-muted hover:text-theme-text-primary cursor-pointer"
+          className="p-1 rounded hover:bg-theme-bg-surface text-theme-text-muted hover:text-theme-text-primary cursor-pointer transition-colors select-none"
           title={APP_CONTENT.sessions.cancelLabel}
+          aria-label={APP_CONTENT.sessions.cancelLabel}
         >
           <X className="size-3.5" />
-        </button>
+        </motion.button>
       </div>
     );
   }
@@ -81,22 +85,19 @@ export function SidebarSessionItem({
           onSelect();
         }
       }}
-      className={`group relative h-10 flex items-center rounded-xl text-xs font-medium cursor-pointer transition-colors overflow-hidden shrink-0 select-none ${
-        isCollapsed ? 'w-10 justify-center' : 'w-full'
-      } ${
-        isActive
+      className={`group relative h-10 flex items-center rounded-xl text-xs font-medium cursor-pointer transition-colors overflow-hidden shrink-0 select-none ${isCollapsed ? 'w-10 justify-center' : 'w-full'
+        } ${isActive
           ? 'bg-theme-bg-elevated text-theme-text-primary border border-theme-border-subtle shadow-2xs font-semibold'
           : 'text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-elevated/40 border border-transparent'
-      }`}
+        }`}
     >
       {/* Anchored Icon Slot */}
       <div className="size-10 flex items-center justify-center shrink-0">
         <MessageSquare
-          className={`size-3.5 transition-colors ${
-            isActive
+          className={`size-3.5 transition-colors ${isActive
               ? 'text-theme-brand-binance'
               : 'text-theme-text-muted group-hover:text-theme-text-secondary'
-          }`}
+            }`}
         />
       </div>
 
@@ -108,9 +109,8 @@ export function SidebarSessionItem({
           width: isCollapsed ? 0 : 'auto',
         }}
         transition={sidebarSpringTransition}
-        className={`flex-1 flex items-center justify-between min-w-0 overflow-hidden ${
-          isCollapsed ? 'w-0 opacity-0 p-0 gap-0 pointer-events-none' : 'pr-2.5 gap-1.5'
-        }`}
+        className={`flex-1 flex items-center justify-between min-w-0 overflow-hidden ${isCollapsed ? 'w-0 opacity-0 p-0 gap-0 pointer-events-none' : 'pr-2.5 gap-1.5'
+          }`}
       >
         <span className="truncate whitespace-nowrap text-left flex-1">
           {conversation.title || APP_CONTENT.chat.defaultSessionTitle}
