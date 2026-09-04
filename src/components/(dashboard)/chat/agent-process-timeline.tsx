@@ -7,7 +7,6 @@ import {
   Loader2,
   AlertCircle,
   CheckCircle2,
-  Bot,
 } from 'lucide-react';
 import { getToolDisplayInfo, ToolResultCard } from './tool-result-card';
 import { AgentThoughtAccordion } from './agent-thought-accordion';
@@ -128,15 +127,9 @@ export const AgentProcessTimeline = memo(function AgentProcessTimeline({
                   return (
                     <div
                       key={step.id ?? `interm_${idx}`}
-                      className="flex flex-col gap-0.5 py-1 text-2xs text-theme-text-secondary"
+                      className="py-1 text-xs text-theme-text-secondary leading-relaxed select-text"
                     >
-                      <div className="flex items-center gap-1 text-theme-text-muted font-medium">
-                        <Bot className="size-3 text-theme-brand-binance shrink-0" />
-                        <span>{step.label || APP_CONTENT.process.intermediateUpdateLabel}</span>
-                      </div>
-                      <div className="pl-4 text-xs text-theme-text-secondary leading-relaxed select-text">
-                        <MarkdownView content={step.intermediateText || ''} />
-                      </div>
+                      <MarkdownView content={step.intermediateText || ''} />
                     </div>
                   );
                 }
