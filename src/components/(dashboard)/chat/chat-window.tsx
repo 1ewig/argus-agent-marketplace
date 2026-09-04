@@ -35,6 +35,8 @@ export function ChatWindow({ mode = 'simulation' }: ChatWindowProps) {
     editTitle,
     setEditTitle,
     messagesEndRef,
+    scrollContainerRef,
+    handleScroll,
     menuRef,
     handleNewSession,
     handleSelectSession,
@@ -120,7 +122,11 @@ export function ChatWindow({ mode = 'simulation' }: ChatWindowProps) {
       </div>
 
       {/* Messages Scroll Area */}
-      <div className="flex-1 overflow-y-auto p-spacing-md sm:p-spacing-lg flex flex-col gap-spacing-md min-h-0">
+      <div
+        ref={scrollContainerRef}
+        onScroll={handleScroll}
+        className="flex-1 overflow-y-auto p-spacing-md sm:p-spacing-lg flex flex-col gap-spacing-md min-h-0"
+      >
         <AnimatePresence mode="wait">
           {messages.length === 0 && (
             <motion.div

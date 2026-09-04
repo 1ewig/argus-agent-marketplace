@@ -50,7 +50,10 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
   const [editTitle, setEditTitle] = useState('');
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const isAutoScrollEnabledRef = useRef<boolean>(true);
+  const rafIdRef = useRef<number | null>(null);
 
   // 1. Initialize default conversation record safely on client mount
   useEffect(() => {
@@ -72,10 +75,61 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
   const streamStepCount = activeStreamMessage?.steps?.length ?? 0;
   const streamContentLength = activeStreamMessage?.content?.length ?? 0;
 
-  // 3. Auto-scroll whenever messages, loading state, or active stream updates
+  // Scroll listener detecting if the user manually scrolled up (locking auto-scroll)
+  const handleScroll = () => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+    // Keep auto-scroll active if within 80px of bottom; lock if scrolled up
+    isAutoScrollEnabledRef.current = distanceFromBottom <= 80;
+  };
+
+  // Instant scroll to bottom when switching conversations
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messagesCount, isLoading, streamStepCount, streamContentLength]);
+    isAutoScrollEnabledRef.current = true;
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+    } else {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
+    }
+  }, [activeConversationId]);
+
+  // Instant scroll on message count changes if auto-scroll is active
+  useEffect(() => {
+    if (!isAutoScrollEnabledRef.current) return;
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+    } else {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
+    }
+  }, [messagesCount]);
+
+  // RAF-throttled scroll during active streaming — eliminates forced smooth reflow thrashing
+  useEffect(() => {
+    if (!isAutoScrollEnabledRef.current) return;
+
+    if (rafIdRef.current !== null) {
+      cancelAnimationFrame(rafIdRef.current);
+    }
+
+    rafIdRef.current = requestAnimationFrame(() => {
+      rafIdRef.current = null;
+      if (!isAutoScrollEnabledRef.current) return;
+
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+      } else {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
+      }
+    });
+
+    return () => {
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current);
+        rafIdRef.current = null;
+      }
+    };
+  }, [streamStepCount, streamContentLength, isLoading]);
 
   // 4. Click-outside listener for sessions overflow menu
   useEffect(() => {
@@ -175,6 +229,15 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
 
     // Optimistically persist user prompt to Dexie
     await saveStoredMessage(userMessage);
+
+    // Re-enable auto-scroll when user submits a new prompt
+    isAutoScrollEnabledRef.current = true;
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({
+        top: scrollContainerRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
 
     const streamMessageId = generateMessageId('agt');
     const initialStreamRecord: ChatMessageRecord = {
@@ -330,9 +393,11 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
 
     // Element Refs
     messagesEndRef,
+    scrollContainerRef,
     menuRef,
 
     // Action Handlers
+    handleScroll,
     handleToggleMenu,
     handleNewSession,
     handleSelectSession,
