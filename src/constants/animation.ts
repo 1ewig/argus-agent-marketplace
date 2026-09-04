@@ -177,3 +177,24 @@ export const tapScalePill = {
   transition: { duration: 0.1, ease: 'easeOut' },
 } as const;
 
+/**
+ * 60fps Spring and Easing parameters for Left Sidebar width collapse and expansion.
+ */
+export const sidebarSpringTransition = {
+  type: 'spring',
+  stiffness: 380,
+  damping: 32,
+  mass: 0.8,
+} as const;
+
+export const sidebarContentVariants: Variants = {
+  collapsed: {
+    opacity: 0,
+    transition: { duration: 0.12, ease: 'easeOut' },
+  },
+  expanded: {
+    opacity: 1,
+    transition: { duration: 0.22, delay: 0.06, ease: EASING_ARCHITECTURAL },
+  },
+};
+

@@ -29,6 +29,11 @@ export interface AppState {
   ) => void;
   errorNotice: string | null;
   setErrorNotice: (error: string | null) => void;
+
+  // Sidebar Collapsed State
+  isSidebarCollapsed: boolean;
+  setIsSidebarCollapsed: (collapsed: boolean) => void;
+  toggleSidebar: () => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -57,4 +62,9 @@ export const useAppStore = create<AppState>((set) => ({
     })),
   errorNotice: null,
   setErrorNotice: (errorNotice) => set({ errorNotice }),
+
+  // Sidebar Collapsed State
+  isSidebarCollapsed: false,
+  setIsSidebarCollapsed: (isSidebarCollapsed) => set({ isSidebarCollapsed }),
+  toggleSidebar: () => set((state) => ({ isSidebarCollapsed: !state.isSidebarCollapsed })),
 }));
