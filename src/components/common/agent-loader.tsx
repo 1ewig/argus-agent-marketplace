@@ -39,9 +39,9 @@ export function AgentLoader({
             100% { stroke-dasharray: 0.1 15; stroke-dashoffset: 0; }
           }
           .argus-loader-track {
-            stroke: currentColor;
-            stroke-width: 3;
-            opacity: 0.2;
+            stroke: var(--theme-border-strong);
+            stroke-width: 2.5;
+            opacity: 0.35;
           }
           .argus-loader-spinner {
             transform-origin: center;
@@ -49,7 +49,7 @@ export function AgentLoader({
           }
           .argus-loader-stroke {
             stroke: currentColor;
-            stroke-width: 4.5;
+            stroke-width: 4;
             stroke-linecap: round;
             animation: argus-morph 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
           }

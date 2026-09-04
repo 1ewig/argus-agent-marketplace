@@ -80,8 +80,8 @@ html.light {
   --theme-text-primary: #09090b;        /* Pitch black for display headings & colossal stats */
   --theme-text-secondary: #475569;      /* Refined neutral slate for subtitles & labels */
   --theme-text-muted: #8290a2;          /* Legible slate for timestamps & micro-details */
-  --theme-brand-binance: #c28400;       /* High-contrast Binance amber-gold for light mode readability */
-  --theme-brand-accent: #d97706;        /* Vivid amber highlights */
+  --theme-brand-binance: #f0b90b;       /* Primary Binance yellow accent */
+  --theme-brand-accent: #fcd535;        /* Canary gold for active meters & hover highlights */
   --theme-status-success: #10b981;      /* Emerald mint for positive PnL & confirmed fills */
   --theme-status-danger: #ef4444;       /* Crimson for risk violations & emergency triggers */
   --theme-status-warning: #f59e0b;      /* Warm amber for risk checks & caution alerts */
