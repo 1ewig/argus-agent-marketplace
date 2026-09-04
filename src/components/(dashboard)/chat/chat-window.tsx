@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { Send, RefreshCw, Plus, ArrowUpRight } from 'lucide-react';
 import { ArgusIcon } from '../argus-icon';
 import { APP_CONTENT } from '@/constants/content';
@@ -9,6 +9,38 @@ import { useAgentChat } from '@/hooks';
 import { ChatMessage } from './chat-message';
 import { ChatSessionsMenu } from './chat-sessions-menu';
 import type { ExecutionMode } from '@/lib/types';
+
+// Subtle, soft stagger animations for the empty conversation state
+const emptyStateContainerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+      delayChildren: 0.02,
+    },
+  },
+  exit: {
+    opacity: 0,
+    y: -6,
+    transition: {
+      duration: 0.16,
+      ease: 'easeOut',
+    },
+  },
+};
+
+const emptyStateItemVariants: Variants = {
+  hidden: { opacity: 0, y: 8 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.28,
+      ease: [0.16, 1, 0.3, 1],
+    },
+  },
+};
 
 interface ChatWindowProps {
   mode?: ExecutionMode;
@@ -103,6 +135,7 @@ export function ChatWindow({ mode = 'simulation' }: ChatWindowProps) {
 
           <motion.button
             type="button"
+            whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.94 }}
             onClick={() => void handleNewSession()}
             title={APP_CONTENT.chat.newSessionButton}
@@ -116,49 +149,64 @@ export function ChatWindow({ mode = 'simulation' }: ChatWindowProps) {
 
       {/* Messages Scroll Area */}
       <div className="flex-1 overflow-y-auto p-spacing-md sm:p-spacing-lg flex flex-col gap-spacing-md min-h-0">
-        {messages.length === 0 && (
-          <div className="flex flex-col items-center justify-center flex-1 text-center py-spacing-xl">
-            {/* Category Tag */}
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-theme-brand-binance/10 border border-theme-brand-binance/30 text-theme-brand-binance text-2xs font-extrabold uppercase tracking-widest mb-spacing-sm">
-              <ArgusIcon className="size-3.5 text-theme-brand-binance" />
-              <span>{APP_CONTENT.chat.emptyCategory}</span>
-            </div>
+        <AnimatePresence mode="wait">
+          {messages.length === 0 && (
+            <motion.div
+              key={`empty-${activeConversationId}`}
+              variants={emptyStateContainerVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="flex flex-col items-center justify-center flex-1 text-center py-spacing-xl"
+            >
+              {/* Category Tag */}
+              <motion.div
+                variants={emptyStateItemVariants}
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-theme-brand-binance/10 border border-theme-brand-binance/30 text-theme-brand-binance text-2xs font-extrabold uppercase tracking-widest mb-spacing-sm"
+              >
+                <ArgusIcon className="size-3.5 text-theme-brand-binance" />
+                <span>{APP_CONTENT.chat.emptyCategory}</span>
+              </motion.div>
 
-            {/* Dominant Swiss Headline */}
-            <h3 className="text-2xl sm:text-3xl font-extrabold text-theme-text-primary tracking-tight mb-spacing-xs max-w-lg">
-              {APP_CONTENT.chat.emptyTitle}
-            </h3>
-            <p className="text-xs text-theme-text-secondary max-w-md mb-spacing-xl leading-relaxed">
-              {APP_CONTENT.chat.emptySubtitle}
-            </p>
+              {/* Dominant Swiss Headline */}
+              <motion.div variants={emptyStateItemVariants} className="flex flex-col items-center">
+                <h3 className="text-2xl sm:text-3xl font-extrabold text-theme-text-primary tracking-tight mb-spacing-xs max-w-lg">
+                  {APP_CONTENT.chat.emptyTitle}
+                </h3>
+                <p className="text-xs text-theme-text-secondary max-w-md mb-spacing-xl leading-relaxed">
+                  {APP_CONTENT.chat.emptySubtitle}
+                </p>
+              </motion.div>
 
-            {/* Structured Architectural Suggestion Tiles */}
-            <div className="flex flex-col gap-spacing-xs w-full max-w-lg">
-              <div className="flex items-center justify-between mb-spacing-xs px-1">
-                <span className="text-2xs font-extrabold uppercase tracking-wider text-theme-text-muted">
-                  {APP_CONTENT.chat.quickPromptsTitle}
-                </span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-spacing-xs">
-                {APP_CONTENT.chat.quickPrompts.map((prompt) => (
-                  <motion.button
-                    key={prompt}
-                    type="button"
-                    whileHover={{ y: -2 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => void handleSend(prompt)}
-                    className="text-left text-xs p-3.5 rounded-xl bg-theme-bg-elevated/60 hover:bg-theme-bg-surface border border-theme-border-subtle hover:border-theme-border-strong text-theme-text-primary cursor-pointer transition-colors shadow-2xs hover:shadow-xs group flex items-start justify-between gap-spacing-sm"
-                  >
-                    <span className="leading-snug text-theme-text-primary group-hover:text-theme-text-primary font-medium">
-                      {prompt}
-                    </span>
-                    <ArrowUpRight className="size-3.5 text-theme-text-muted group-hover:text-theme-brand-binance group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0 mt-0.5" />
-                  </motion.button>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
+              {/* Structured Architectural Suggestion Tiles */}
+              <motion.div variants={emptyStateItemVariants} className="flex flex-col gap-spacing-xs w-full max-w-lg">
+                <div className="flex items-center justify-between mb-spacing-xs px-1">
+                  <span className="text-2xs font-extrabold uppercase tracking-wider text-theme-text-muted">
+                    {APP_CONTENT.chat.quickPromptsTitle}
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-spacing-xs">
+                  {APP_CONTENT.chat.quickPrompts.map((prompt) => (
+                    <motion.button
+                      key={prompt}
+                      variants={emptyStateItemVariants}
+                      type="button"
+                      whileHover={{ y: -2 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => void handleSend(prompt)}
+                      className="text-left text-xs p-3.5 rounded-xl bg-theme-bg-elevated/60 hover:bg-theme-bg-surface border border-theme-border-subtle hover:border-theme-border-strong text-theme-text-primary cursor-pointer transition-colors shadow-2xs hover:shadow-xs group flex items-start justify-between gap-spacing-sm"
+                    >
+                      <span className="leading-snug text-theme-text-primary group-hover:text-theme-text-primary font-medium">
+                        {prompt}
+                      </span>
+                      <ArrowUpRight className="size-3.5 text-theme-text-muted group-hover:text-theme-brand-binance group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0 mt-0.5" />
+                    </motion.button>
+                  ))}
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {messages.map((msg) => (
           <ChatMessage key={msg.id} message={msg} />

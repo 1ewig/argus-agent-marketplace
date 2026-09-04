@@ -151,9 +151,6 @@ export const ChatMessage = memo(function ChatMessage({
             }`}
           >
             <MarkdownView content={message.content} />
-            {isStreaming && (
-              <span className="inline-block size-2 rounded-full bg-theme-brand-binance animate-ping ml-1 align-middle" />
-            )}
           </div>
         ) : isStreaming && !hasSteps ? (
           /* Live Drafting Indicator while assistant generates response before steps attach */
