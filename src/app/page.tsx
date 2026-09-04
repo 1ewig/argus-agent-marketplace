@@ -5,7 +5,7 @@ import { MarketChartView } from '@/components/(dashboard)/market-chart-view';
 import { AccountPortfolioCard } from '@/components/(dashboard)/cards/account-portfolio-card';
 import { ActiveTradesCard } from '@/components/(dashboard)/cards/active-trades-card';
 import { DailyMarketCard } from '@/components/(dashboard)/cards/daily-market-card';
-import { ChatWindow } from '@/components/(dashboard)/chat/chat-window';
+import { ChatClient } from '@/components/(dashboard)/chat/chat-client';
 import { useAppStore } from '@/stores/app-store';
 
 export default function Home() {
@@ -21,7 +21,7 @@ export default function Home() {
           {/* Central Stage View (Zero-flash dual-render with CSS toggle) */}
           <div className="flex-1 min-h-[420px] lg:min-h-0 overflow-hidden relative">
             <div className={`h-full w-full ${stageView === 'agent' ? 'flex flex-col' : 'hidden'}`}>
-              <ChatWindow mode={executionMode} />
+              <ChatClient mode={executionMode} />
             </div>
             <div className={`h-full w-full ${stageView === 'chart' ? 'flex flex-col' : 'hidden'}`}>
               <MarketChartView />

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RefreshCw, Plus, ArrowUpRight } from 'lucide-react';
+import { RefreshCw, ArrowUpRight } from 'lucide-react';
 import { ArgusIcon } from '../argus-icon';
 import { APP_CONTENT } from '@/constants/content';
 import {
@@ -11,15 +11,15 @@ import {
 } from '@/constants/animation';
 import { useAgentChat } from '@/hooks';
 import { ChatMessage } from './chat-message';
-import { ChatSessionsMenu } from './chat-sessions-menu';
+import { ChatHeader } from './chat-header';
 import { ChatInput } from './chat-input';
 import type { ExecutionMode } from '@/lib/types';
 
-interface ChatWindowProps {
+interface ChatClientProps {
   mode?: ExecutionMode;
 }
 
-export function ChatWindow({ mode = 'simulation' }: ChatWindowProps) {
+export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
   const {
     activeConversationId,
     currentTitle,
@@ -48,52 +48,24 @@ export function ChatWindow({ mode = 'simulation' }: ChatWindowProps) {
 
   return (
     <div className="flex flex-col h-full bg-theme-bg-surface border border-theme-border-subtle rounded-2xl overflow-hidden shadow-xs">
-      {/* Architectural Header Bar */}
-      <div className="flex items-center justify-between gap-spacing-xs px-spacing-md py-spacing-sm bg-theme-bg-surface border-b border-theme-border-subtle shrink-0">
-        <div className="flex items-center gap-spacing-xs">
-          <ArgusIcon className="size-4 text-theme-brand-binance shrink-0" />
-          <div className="flex flex-col">
-            <span className="text-2xs font-extrabold uppercase tracking-widest text-theme-text-muted">
-              {APP_CONTENT.header.title}
-            </span>
-            <h2 className="text-xs font-bold text-theme-text-primary tracking-tight">
-              {APP_CONTENT.chat.subtitle}
-            </h2>
-          </div>
-        </div>
-
-        {/* Sessions Dropdown and New Session Controls */}
-        <div className="flex items-center gap-spacing-xs">
-          <ChatSessionsMenu
-            currentTitle={currentTitle}
-            conversations={conversations}
-            activeConversationId={activeConversationId}
-            isMenuOpen={isMenuOpen}
-            menuRef={menuRef}
-            editingId={editingId}
-            editTitle={editTitle}
-            setEditTitle={setEditTitle}
-            onToggleMenu={handleToggleMenu}
-            onSelectSession={handleSelectSession}
-            onStartRename={handleStartRename}
-            onSaveRename={handleSaveRename}
-            onCancelRename={handleCancelRename}
-            onDeleteSession={handleDeleteSession}
-          />
-
-          <motion.button
-            type="button"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.94 }}
-            onClick={() => void handleNewSession()}
-            title={APP_CONTENT.chat.newSessionButton}
-            aria-label={APP_CONTENT.chat.newSessionButton}
-            className="size-8 flex items-center justify-center rounded-xl bg-theme-bg-elevated hover:bg-theme-bg-surface border border-theme-border-subtle hover:border-theme-border-strong text-theme-brand-binance hover:text-theme-brand-accent cursor-pointer transition-all shadow-2xs shrink-0"
-          >
-            <Plus className="size-3.5" />
-          </motion.button>
-        </div>
-      </div>
+      {/* Dedicated Chat Header Bar */}
+      <ChatHeader
+        currentTitle={currentTitle}
+        conversations={conversations}
+        activeConversationId={activeConversationId}
+        isMenuOpen={isMenuOpen}
+        menuRef={menuRef}
+        editingId={editingId}
+        editTitle={editTitle}
+        setEditTitle={setEditTitle}
+        onToggleMenu={handleToggleMenu}
+        onSelectSession={handleSelectSession}
+        onStartRename={handleStartRename}
+        onSaveRename={handleSaveRename}
+        onCancelRename={handleCancelRename}
+        onDeleteSession={handleDeleteSession}
+        onNewSession={handleNewSession}
+      />
 
       {/* Messages Scroll Area */}
       <div

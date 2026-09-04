@@ -6,7 +6,7 @@
  * - Thought reasoning accordion (AgentThoughtAccordion)
  * - Tool invocation detail drawers (ToolResultCard drawer)
  * - Session dropdown popover menu (ChatSessionsMenu)
- * - Empty chat state staggered cascade (ChatWindow)
+ * - Empty chat state staggered cascade (ChatClient)
  */
 
 import type { Variants } from 'framer-motion';

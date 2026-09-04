@@ -13,7 +13,7 @@ export interface ChatInputProps {
 
 /**
  * Isolated ChatInput component decoupling keystroke state from the main chat viewport.
- * Prevents full ChatWindow re-renders on every keystroke and eliminates synchronous layout thrashing.
+ * Prevents full ChatClient re-renders on every keystroke and eliminates synchronous layout thrashing.
  */
 export const ChatInput = React.memo(function ChatInput({
   isLoading,
