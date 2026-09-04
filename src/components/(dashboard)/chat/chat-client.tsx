@@ -2,7 +2,8 @@
 
 import React, { useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RefreshCw, ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
+import { AgentLoader } from '@/components/common';
 import { ArgusIcon } from '../argus-icon';
 import { APP_CONTENT } from '@/constants/content';
 import {
@@ -149,7 +150,7 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
 
         {isLoading && !activeStreamMessage && (
           <div className="flex items-center gap-spacing-sm p-spacing-md bg-theme-bg-elevated rounded-xl border border-theme-border-subtle animate-pulse">
-            <RefreshCw className="size-4 text-theme-brand-binance animate-spin" />
+            <AgentLoader className="size-4 text-theme-brand-binance shrink-0" />
             <span className="text-xs text-theme-text-secondary font-medium">
               {APP_CONTENT.chat.thinkingText}
             </span>

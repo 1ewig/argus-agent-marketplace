@@ -2,7 +2,8 @@
 
 import React, { useState, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Brain, ChevronDown, Loader2, Sparkles } from 'lucide-react';
+import { Brain, ChevronDown, Sparkles } from 'lucide-react';
+import { AgentLoader } from '@/components/common';
 import { APP_CONTENT } from '@/constants/content';
 import { accordionVariants, tapScaleAccordion } from '@/constants/animation';
 import { useActiveTimer } from '@/hooks';
@@ -60,7 +61,7 @@ export const AgentThoughtAccordion = memo(function AgentThoughtAccordion({
         className="inline-flex items-center gap-1.5 py-0.5 px-1 -ml-1 rounded-md text-2xs text-theme-text-secondary hover:text-theme-text-primary active:bg-theme-bg-elevated/60 transition-colors cursor-pointer group select-none w-fit"
       >
         {isActive ? (
-          <Loader2 className="size-3 text-theme-brand-binance animate-spin shrink-0" />
+          <AgentLoader className="size-3 text-theme-brand-binance shrink-0" />
         ) : isCompleted ? (
           <Sparkles className="size-3 text-theme-brand-binance shrink-0" />
         ) : (
@@ -92,7 +93,7 @@ export const AgentThoughtAccordion = memo(function AgentThoughtAccordion({
                 <MarkdownView content={reasoningText} />
               ) : isActive ? (
                 <div className="flex items-center gap-1.5 text-2xs text-theme-text-muted italic py-0.5">
-                  <Loader2 className="size-2.5 animate-spin text-theme-brand-binance" />
+                  <AgentLoader className="size-2.5 text-theme-brand-binance shrink-0" />
                   <span>{APP_CONTENT.process.thinkingWithSeconds(elapsedSeconds)}</span>
                 </div>
               ) : null}

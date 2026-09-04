@@ -2,7 +2,8 @@
 
 import React, { memo } from 'react';
 import { motion } from 'framer-motion';
-import { User, AlertCircle, Loader2 } from 'lucide-react';
+import { User, AlertCircle } from 'lucide-react';
+import { AgentLoader } from '@/components/common';
 import { ArgusIcon } from '../argus-icon';
 import { APP_CONTENT } from '@/constants/content';
 import { EASING_ARCHITECTURAL } from '@/constants/animation';
@@ -42,7 +43,7 @@ function AgentWorkingDraftIndicator({ startedAt }: { startedAt: number }) {
       transition={{ duration: 0.2, ease: EASING_ARCHITECTURAL }}
       className="flex items-center gap-spacing-xs text-xs text-theme-text-muted py-1"
     >
-      <Loader2 className="size-3.5 text-theme-brand-binance animate-spin shrink-0" />
+      <AgentLoader className="size-3.5 text-theme-brand-binance shrink-0" />
       <span>{APP_CONTENT.process.agentWorking(elapsedSeconds)}</span>
     </motion.div>
   );
