@@ -6,7 +6,7 @@ import {
   ChevronUp,
   Loader2,
   AlertCircle,
-  Sparkles,
+  CheckCircle2,
   Bot,
 } from 'lucide-react';
 import { getToolDisplayInfo, ToolResultCard } from './tool-result-card';
@@ -111,7 +111,7 @@ export function AgentProcessTimeline({
           onClick={toggleOpen}
           className="flex items-center gap-1.5 text-2xs text-theme-text-muted hover:text-theme-text-primary py-0.5 select-none cursor-pointer transition-colors w-fit group"
         >
-          <Sparkles className="size-3 text-theme-brand-binance shrink-0" />
+          <CheckCircle2 className="size-3 text-theme-brand-binance shrink-0" />
           <span className="font-medium text-theme-text-secondary group-hover:underline">
             {headerLabel}
           </span>
