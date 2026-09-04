@@ -69,19 +69,13 @@ Example:
 `;
 
 /**
- * Environment directive informing the agent of the active execution mode (Sandbox vs Live MCP).
+ * Environment directive informing the agent of the active execution environment.
  */
-export function getEnvironmentDirective(mode: 'simulation' | 'live_mcp'): string {
-  if (mode === 'simulation') {
-    return `### Active Execution Environment: Sandbox (Simulation) Mode
-- **Market Data Feeds**: 100% real-time, live Binance production exchange data (tickers, order books, klines, funding rates, trades).
-- **Wallet & Trading**: Isolated in-memory sandbox/demo wallet pre-funded with $500 USDT and $500 USDC test funds. Orders execute safely without risking real funds.
-- **Transparency**: When asked about trading, balances, or whether real money is at risk, candidly explain that market data is real-time from Binance, but trades and balances operate safely in the sandbox.`;
-  }
-
-  return `### Active Execution Environment: Live Binance Agent OS Mode
-- **Connection**: Connected directly via Model Context Protocol (MCP) to the official Binance Agent OS endpoint.
-- **Wallet & Trading**: Actions interact with the user's authorized, dedicated Agentic sub-account on Binance.`;
+export function getEnvironmentDirective(_mode?: string): string {
+  return `### Active Execution Environment: Live Binance Public Feeds & Paper Sandbox
+- **Market Data Feeds**: 100% real-time, live Binance production exchange data (spot tickers, 20-level order book depth, klines, 24h volume stats, perpetual funding rates, VWAP average prices, recent trade tape prints, and open interest). Zero synthetic or fake data.
+- **Wallet & Trading**: Isolated in-memory paper trading sandbox pre-funded with $500 USDT and $500 USDC test funds. Orders execute safely against live market prices without risking real funds.
+- **Transparency**: When asked about trading, balances, or whether real money is at risk, candidly explain that market data is 100% live from Binance public feeds, but trades and balances operate safely in the sandbox.`;
 }
 
 export const AGENT_TOOL_DESCRIPTIONS = {
@@ -90,11 +84,12 @@ export const AGENT_TOOL_DESCRIPTIONS = {
   getKlines: 'Fetch historical candlestick (kline) data to evaluate trend direction, RSI, and exponential moving averages. MUST be called before reporting technical trend data.',
   get24hStats: 'Fetch 24-hour price statistics including 24h high, low, price change percentage, and quote volume. MUST be called before reporting 24h performance or metrics.',
   getAccountBalances: 'Query the current balances inside the isolated Binance Agentic Wallet sandbox. MUST be called before reporting wallet balances.',
-  placeSpotOrder: 'Execute an idempotent spot market or limit order in the Binance Agentic sub-account.',
-  cancelOrder: 'Cancel an active open order in the Binance Agentic sub-account by order ID.',
+  placeSpotOrder: 'Execute an idempotent spot market or limit order in the paper trading sandbox with resting limit order mechanics.',
+  cancelOrder: 'Cancel an active open order in the paper trading sandbox by order ID, releasing locked collateral.',
   getFundingRate: 'Fetch the real-time perpetual futures funding rate, mark price, and next settlement time for a trading pair. Essential for derivative sentiment, funding cost, and long/short positioning.',
   getAveragePrice: 'Fetch the 5-minute rolling average price (VWAP) for a trading pair to evaluate execution price quality and fair market value.',
   getRecentTrades: 'Fetch recent market trade executions (trade tape) to assess real-time buying vs selling pressure and trade momentum.',
+  getOpenInterest: 'Fetch real-time perpetual futures open interest to evaluate market positioning, leverage buildup, and liquidation risk.',
 } as const;
 
 export const AGENT_ERROR_MESSAGES = {

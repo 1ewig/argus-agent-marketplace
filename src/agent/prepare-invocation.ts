@@ -37,7 +37,7 @@ export function prepareAgentInvocation(options: AgentOptions): PreparedAgentInvo
     systemDirective,
   } = options;
 
-  const adapter = getBinanceAdapter(mode);
+  const adapter = getBinanceAdapter();
   const tools = buildAgentTools(adapter);
   const model = getAgentModel(modelName, apiKey, provider);
   const backupModel = getBackupAgentModel(backupModelName, apiKey);

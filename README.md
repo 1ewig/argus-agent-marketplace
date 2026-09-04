@@ -34,9 +34,10 @@ Argus provides immediate, unauthenticated access to the full suite of public Bin
 * **`get_klines`:** Historical OHLCV candlestick data across standard intervals (`1m`, `5m`, `15m`, `1h`, `4h`, `1d`) with period percentage change calculation.
 * **`get_24h_stats`:** Rolling 24-hour price change percentage, 24h high, low, base volume, quote volume, and weighted average price.
 * **`get_funding_rate`:** Binance Perpetual Futures funding rates, mark price, index price, next funding settlement countdown, and annualized APR.
+* **`get_open_interest`:** Real-time Binance Perpetual Futures open interest contracts and latest settlement timestamp.
 * **`get_average_price`:** 5-minute rolling Volume Weighted Average Price (VWAP) fair value benchmark.
 * **`get_recent_trades`:** Public trade tape prints with timestamps, quantities, and taker buyer vs. seller volume ratio.
-* **`get_account_balance`:** Queries real-time paper wallet balances ($500 test funds) in sandbox mode or live sub-account in MCP mode.
+* **`get_account_balance`:** Queries real-time paper wallet balances ($500 test funds) in sandbox mode.
 * **`place_spot_order`:** Executes market or limit spot orders with strict price filter validation and idempotency keys.
 * **`cancel_order`:** Cancels open limit orders and safely releases locked collateral back to available balance.
 
@@ -52,10 +53,8 @@ To prevent catastrophic trading errors and simulate production exchange safeguar
 * Dispatches independent market queries concurrently in a single LLM round-trip.
 * When asking for a coin's status, Argus simultaneously fetches ticker price, 24h market statistics, recent trades, and order book depth—reducing multi-step latency by up to 70%.
 
-### 5. Dual-Adapter Architecture & Sandbox Transparency
-Argus implements a unified `IBinanceAgentAdapter` interface supporting two execution environments:
-* **Sandbox Mode (`simulation`):** Queries production Binance REST APIs for **100% real, live market data** across all market tools. Account balances ($500 test funds) and order executions operate in an isolated in-memory paper trading sandbox (`SimulatedAgentWallet`). Hackathon judges and traders can evaluate real-time analytics, risk checks, and trade executions with zero deposit or API key requirements.
-* **Live MCP Mode (`live_mcp`):** Connects directly over Model Context Protocol (MCP) to the official Binance Agent OS endpoint (`https://agent.binance.com/mcp/agentic`) for authenticated production environments.
+### 5. Live Public Feeds & Local Paper Sandbox
+Argus implements a unified architecture querying production Binance REST APIs (`api.binance.com` and `fapi.binance.com`) for **100% real, live market data** across all market tools. Account balances ($500 test funds) and order executions operate in an isolated in-memory paper trading sandbox (`SimulatedAgentWallet`) with server-side idempotency, resting limit orders, and collateral locking. Hackathon judges and traders can evaluate real-time analytics, risk checks, and trade executions immediately out of the box with zero deposit, API keys, or KYC requirements.
 
 ### 6. Dynamic Environment Awareness
 * During prompt assembly, the agent dynamically injects its active environment status into its system directives.
@@ -88,7 +87,7 @@ Sub-accordions in the process timeline render purpose-built visual cards for eac
 * **Runtime & Package Manager:** Bun (`bun@1.4.0+`) exclusively
 * **Language & Tooling:** TypeScript 7 (native Go compiler), Oxlint (`oxlint@1.81.0+`)
 * **Styling & Motion:** Tailwind CSS v4 with Neo-Minimalist Architectural design tokens configured in `globals.css` and Framer Motion animations
-* **Agent Engine:** Vercel AI SDK (`ai@7`, `@ai-sdk/groq`, `@ai-sdk/fireworks`, `@ai-sdk/mcp`)
+* **Agent Engine:** Vercel AI SDK (`ai@7`, `@ai-sdk/groq`, `@ai-sdk/fireworks`)
 * **Client Database:** Dexie IndexedDB (`dexie`, `dexie-react-hooks`)
 * **Icons:** Lucide React
 
@@ -117,13 +116,12 @@ src/
 ├── hooks/                # Custom React hooks (useAgentChat, useExecutionMode)
 ├── lib/
 │   ├── agents/           # Client-side SSE stream transport and chat history helpers
-│   ├── binance-mcp/      # Production REST client, paper wallet sandbox, and live MCP adapter
+│   ├── binance-mcp/      # Production REST client and paper wallet sandbox
 │   │   ├── index.ts      # Adapter provider & singleton exports
 │   │   ├── public-api-client.ts # Live Binance REST caller with unified error extraction
 │   │   ├── simulated-wallet.ts  # In-memory paper wallet with idempotency & PERCENT_PRICE rules
 │   │   ├── simulated-adapter.ts # Adapter orchestrating live REST data & paper wallet
-│   │   ├── live-mcp-adapter.ts  # Remote MCP client (@ai-sdk/mcp) for Binance Agent OS
-│   │   └── types.ts      # Binance MCP types & Zod schemas
+│   │   └── types.ts      # Binance tool interfaces & Zod schemas
 │   ├── db/               # Dexie IndexedDB schema, queries, and step normalizers
 │   ├── risk-engine/      # Deterministic mathematical risk evaluation functions
 │   ├── types/            # Shared domain types and Zod runtime schemas
@@ -195,11 +193,10 @@ FIREWORKS_REASONING_EFFORT=low
 BACKUP_INFERENCE_PROVIDER=fireworks
 
 # ------------------------------------------------------------------------------
-# 2. Binance Agent OS MCP Configuration
+# 2. Binance Execution Mode
 # ------------------------------------------------------------------------------
-# Mode: 'simulation' (real live market data + paper wallet) | 'live_mcp' (official Agent OS)
+# Mode: 'simulation' (100% real live Binance market feeds + paper wallet sandbox)
 NEXT_PUBLIC_BINANCE_MODE=simulation
-BINANCE_MCP_ENDPOINT=https://agent.binance.com/mcp/agentic
 ```
 
 ### 3. Start Development Server

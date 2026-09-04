@@ -8,7 +8,7 @@ export type AgentRole = 'orchestrator' | 'analyst' | 'risk_arbiter' | 'executor'
 /**
  * Execution Mode for Binance operations
  */
-export type ExecutionMode = 'simulation' | 'live_mcp';
+export type ExecutionMode = 'simulation';
 
 /**
  * Argus Operation Mode: Copilot (human approves) vs Autonomous (pure M2M loop)
@@ -145,7 +145,7 @@ export const ExecutionReceiptSchema = z.object({
   commissionAsset: z.string(),
   status: z.enum(['FILLED', 'PARTIALLY_FILLED', 'REJECTED']),
   timestamp: z.number(),
-  executionMode: z.enum(['simulation', 'live_mcp']),
+  executionMode: z.enum(['simulation']),
   riskCertificateId: z.string(),
 });
 

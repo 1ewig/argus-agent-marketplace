@@ -12,7 +12,7 @@ export const APP_CONTENT = {
     subtitle: 'Trading assistant powered by Binance Agent OS',
     badge: 'Binance Agent OS',
     hackathonTrack: 'Track A',
-    mcpActive: 'MCP Connected',
+    publicFeedsActive: 'Live Binance Feeds',
     inferenceActive: 'AI Online',
   },
   nav: {
@@ -74,10 +74,6 @@ export const APP_CONTENT = {
       label: 'Paper Sandbox',
       description: 'Practice with live Binance market data and a simulated balance.',
     },
-    liveMcp: {
-      label: 'Live Binance MCP',
-      description: 'Connect directly to agent.binance.com/mcp/agentic via MCP.',
-    },
   },
   chat: {
     title: 'Chat',
@@ -92,8 +88,8 @@ export const APP_CONTENT = {
     quickActions: [
       { id: 'depth', label: 'SOL/USDT Depth', template: 'Check SOLUSDT live price, spread, and order book depth' },
       { id: 'stats', label: 'BTC 24h Stats', template: 'Show 24h market stats and volume for BTCUSDT' },
+      { id: 'oi', label: 'BTC Open Interest', template: 'Check BTCUSDT live open interest and funding rate' },
       { id: 'chart', label: 'ETH 15m Chart', template: 'Analyze ETHUSDT on the 15m candlestick chart' },
-      { id: 'funding', label: 'Funding Rates', template: 'Check current funding rate and countdown for BTCUSDT' },
       { id: 'wallet', label: 'Wallet Balance', template: 'Check my paper wallet balances and available margin' },
       { id: 'trades', label: 'Recent Trades', template: 'Show recent trades and taker buyer/seller ratio for SOLUSDT' },
     ],
@@ -101,8 +97,8 @@ export const APP_CONTENT = {
     quickPrompts: [
       'Check SOLUSDT live price, spread, and order book depth',
       'Show 24h market stats and volume for BTCUSDT',
+      'Check BTCUSDT live open interest and funding rate',
       'Analyze ETHUSDT on the 15m candlestick chart',
-      'Check current funding rate and countdown for BTCUSDT',
       'Check my paper wallet balances and available margin',
       'Show recent trades and taker buyer/seller ratio for SOLUSDT',
     ],
@@ -198,6 +194,8 @@ export const APP_CONTENT = {
         symbol ? `Calculating ${symbol} 5m average price` : 'Calculating average price',
       get_recent_trades: (symbol?: string) =>
         symbol ? `Reading ${symbol} recent trade tape` : 'Reading recent trades',
+      get_open_interest: (symbol?: string) =>
+        symbol ? `Checking ${symbol} open interest` : 'Checking open interest',
       default: (name: string) => name.replace(/_/g, ' '),
     },
     results: {
@@ -215,6 +213,10 @@ export const APP_CONTENT = {
       takerBuy: 'BUY',
       takerSell: 'SELL',
       buyPressure: 'Taker Buy Ratio',
+      openInterest: 'Open Interest',
+      openInterestContracts: 'Contracts',
+      openInterestValue: 'Notional Value',
+      openInterestTime: 'Updated',
       spread: 'Spread',
       spreadPercent: 'Spread %',
       bestBid: 'Best Bid',
@@ -251,6 +253,7 @@ export const APP_CONTENT = {
       get_funding_rate: 'get_funding_rate',
       get_average_price: 'get_average_price',
       get_recent_trades: 'get_recent_trades',
+      get_open_interest: 'get_open_interest',
       get_account_balance: 'get_account_balance',
       place_spot_order: 'place_spot_order',
       cancel_order: 'cancel_order',

@@ -39,7 +39,7 @@ export function TopNavBar() {
         </motion.button>
       </div>
 
-      {/* Right Area: Stage Switcher, Search, Notifications, Paper Sandbox Pill */}
+      {/* Right Area: Stage Switcher, Search, Notifications, Live Feeds Pill, Paper Sandbox Pill */}
       <div className="flex items-center gap-spacing-sm sm:gap-spacing-md">
         {/* Stage View Switcher (Agent vs Chart) */}
         <StageViewSwitcher />
@@ -67,6 +67,12 @@ export function TopNavBar() {
             {APP_CONTENT.nav.notificationsCount}
           </span>
         </motion.button>
+
+        {/* Live Public Feeds Indicator Pill */}
+        <div className="hidden sm:flex items-center gap-spacing-xs text-2xs font-bold text-theme-status-success bg-theme-status-success/10 px-spacing-sm py-1.5 rounded-lg border border-theme-status-success/30 shadow-2xs">
+          <span className="size-1.5 rounded-full bg-theme-status-success animate-pulse" />
+          <span>{APP_CONTENT.header.publicFeedsActive}</span>
+        </div>
 
         {/* Paper Sandbox Status Pill */}
         <div className="flex items-center gap-spacing-xs text-2xs font-bold text-theme-brand-binance bg-theme-bg-elevated px-spacing-sm py-1.5 rounded-lg border border-theme-border-subtle shadow-2xs">

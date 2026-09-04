@@ -11,7 +11,6 @@
   "dependencies": {
     "@ai-sdk/fireworks": "^3.0.46",
     "@ai-sdk/groq": "^4.0.37",
-    "@ai-sdk/mcp": "^2.0.43",
     "ai": "^7.0.90",
     "clsx": "^2.1.1",
     "dexie": "^4.4.5",

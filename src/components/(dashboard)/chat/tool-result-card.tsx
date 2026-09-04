@@ -82,6 +82,12 @@ export function getToolDisplayInfo(
         icon: History,
         symbol,
       };
+    case 'get_open_interest':
+      return {
+        title: labels.get_open_interest(symbol),
+        icon: Layers,
+        symbol,
+      };
     case 'get_account_balance':
       return {
         title: labels.get_account_balance(),
@@ -516,6 +522,36 @@ export const ToolResultCard = React.memo(function ToolResultCard({
                 })}
               </div>
             )}
+          </div>
+        );
+      }
+
+      case 'get_open_interest': {
+        const data = (resultObj?.data as Record<string, unknown>) ?? resultObj;
+        const openInterest = typeof data?.openInterest === 'number' ? data.openInterest : parseFloat(String(data?.openInterest ?? 0));
+        const symbol = typeof data?.symbol === 'string' ? (data.symbol as string) : undefined;
+        const time = typeof data?.time === 'number' ? new Date(data.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—';
+
+        return (
+          <div className="flex flex-wrap items-center justify-between gap-spacing-sm p-spacing-xs rounded-md bg-theme-bg-elevated border border-theme-border-subtle text-2xs">
+            <div className="flex items-center gap-spacing-xs">
+              <span className="px-spacing-xs py-0.5 rounded font-bold uppercase bg-theme-brand-accent/15 text-theme-brand-accent">
+                {res.openInterest}
+              </span>
+              {symbol && <span className="font-bold text-theme-text-primary">{symbol}</span>}
+            </div>
+            <div className="flex items-center gap-spacing-md">
+              <div className="flex items-baseline gap-1">
+                <span className="text-theme-text-muted">{res.openInterestContracts}:</span>
+                <span className="font-mono font-bold text-theme-text-primary">
+                  {formatOrderQty(openInterest)}
+                </span>
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-theme-text-muted">{res.openInterestTime}:</span>
+                <span className="font-mono text-theme-text-secondary">{time}</span>
+              </div>
+            </div>
           </div>
         );
       }

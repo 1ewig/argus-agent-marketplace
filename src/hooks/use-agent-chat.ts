@@ -31,7 +31,7 @@ export interface UseAgentChatOptions {
  * Composes specialized `useChatSessions`, `useChatScroll`, and `useMessages`
  * to maintain strict separation of concerns.
  * 
- * @param options - Execution mode ('simulation' | 'live_mcp')
+ * @param options - Execution mode ('simulation')
  * @returns State, refs, and action handlers for the chat console
  */
 export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) {

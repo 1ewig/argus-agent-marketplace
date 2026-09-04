@@ -106,11 +106,20 @@ export interface RecentTradeData {
 }
 
 /**
- * Unified Binance Agent OS Adapter Interface
- * Implemented by both LiveBinanceMCPAdapter and SimulatedBinanceAdapter
+ * Perpetual Futures Open Interest
+ */
+export interface OpenInterestData {
+  symbol: string;
+  openInterest: number;
+  time: number;
+}
+
+/**
+ * Unified Binance Adapter Interface
+ * Implemented by SimulatedBinanceAdapter using live Binance public market feeds
  */
 export interface IBinanceAgentAdapter {
-  readonly mode: 'live_mcp' | 'simulation';
+  readonly mode: 'simulation';
 
   /**
    * Retrieves the current ticker price for a given symbol
@@ -153,6 +162,11 @@ export interface IBinanceAgentAdapter {
    * Retrieves recent public market trade prints
    */
   getRecentTrades(symbol: string, limit?: number): Promise<RecentTradeData[]>;
+
+  /**
+   * Retrieves perpetual futures open interest
+   */
+  getOpenInterest(symbol: string): Promise<OpenInterestData>;
 
   /**
    * Retrieves balances inside the isolated Agentic Wallet sandbox

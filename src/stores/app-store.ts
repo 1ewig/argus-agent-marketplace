@@ -5,7 +5,7 @@ import { DEFAULT_CONVERSATION_ID } from '@/lib/db';
 import type { StageViewMode } from '@/components/(dashboard)/stage-view-switcher';
 
 export interface AppState {
-  // Execution Mode (Simulation vs Live MCP)
+  // Execution Mode ('simulation')
   executionMode: ExecutionMode;
   setExecutionMode: (mode: ExecutionMode) => void;
 

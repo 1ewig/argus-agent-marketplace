@@ -331,5 +331,27 @@ export function buildAgentTools(customAdapter?: IBinanceAgentAdapter) {
         }
       },
     }),
+
+    get_open_interest: tool({
+      description: AGENT_TOOL_DESCRIPTIONS.getOpenInterest,
+      inputSchema: z.object({
+        symbol: symbolSchema.describe('Trading pair or perpetual contract symbol in uppercase (e.g. BTCUSDT, SOLUSDT)'),
+      }),
+      execute: async ({ symbol }) => {
+        try {
+          const result = await adapter.getOpenInterest(symbol.toUpperCase());
+          return {
+            success: true,
+            data: result,
+          };
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : 'Failed to retrieve open interest';
+          return {
+            success: false,
+            error: message,
+          };
+        }
+      },
+    }),
   };
 }

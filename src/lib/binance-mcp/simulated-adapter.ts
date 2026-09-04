@@ -8,6 +8,7 @@ import type {
   FundingRateData,
   AveragePriceData,
   RecentTradeData,
+  OpenInterestData,
 } from './types';
 import { fetchBinancePublic, formatAndValidateSymbol } from './public-api-client';
 import { SimulatedAgentWallet } from './simulated-wallet';
@@ -186,6 +187,30 @@ export class SimulatedBinanceAdapter implements IBinanceAgentAdapter {
           isBuyerMaker: Boolean(t.isBuyerMaker),
         })),
       { revalidateSeconds: 2 }
+    );
+  }
+
+  /**
+   * Fetches perpetual futures open interest.
+   */
+  public async getOpenInterest(symbol: string): Promise<OpenInterestData> {
+    const formatted = formatAndValidateSymbol(symbol);
+    return fetchBinancePublic<
+      {
+        symbol: string;
+        openInterest: string;
+        time: number;
+      },
+      OpenInterestData
+    >(
+      `/fapi/v1/openInterest?symbol=${formatted}`,
+      formatted,
+      (data) => ({
+        symbol: data.symbol,
+        openInterest: parseFloat(data.openInterest),
+        time: Number(data.time),
+      }),
+      { revalidateSeconds: 15, isFutures: true }
     );
   }
 
