@@ -41,6 +41,7 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
     handleScroll,
     menuRef,
     handleNewSession,
+    isNewChatDisabled,
     handleSelectSession,
     handleStartRename,
     handleSaveRename,
@@ -72,6 +73,7 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
         onCancelRename={handleCancelRename}
         onDeleteSession={handleDeleteSession}
         onNewSession={handleNewSession}
+        isNewSessionDisabled={isNewChatDisabled}
       />
 
       {/* Messages Scroll Area */}
@@ -117,7 +119,7 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
                       {APP_CONTENT.chat.quickActionsTitle}
                     </span>
                   </div>
-                  <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2">
+                  <div className="flex flex-wrap items-center justify-center gap-2 max-w-xl">
                     {APP_CONTENT.chat.quickActions.map((action) => (
                       <motion.button
                         key={action.id}

@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import type { ExecutionMode } from '@/lib/types';
 import type { ChatMessageRecord } from '@/lib/db';
 import { DEFAULT_CONVERSATION_ID } from '@/lib/db';
@@ -36,35 +37,48 @@ export interface AppState {
   toggleSidebar: () => void;
 }
 
-export const useAppStore = create<AppState>((set) => ({
-  // Execution Mode defaults to 'simulation'
-  executionMode: 'simulation',
-  setExecutionMode: (mode) => set({ executionMode: mode }),
+export const useAppStore = create<AppState>()(
+  persist(
+    (set) => ({
+      // Execution Mode defaults to 'simulation'
+      executionMode: 'simulation',
+      setExecutionMode: (mode) => set({ executionMode: mode }),
 
-  // Stage View defaults to 'agent'
-  stageView: 'agent',
-  setStageView: (view) => set({ stageView: view }),
+      // Stage View defaults to 'agent'
+      stageView: 'agent',
+      setStageView: (view) => set({ stageView: view }),
 
-  // Chat State
-  activeConversationId: DEFAULT_CONVERSATION_ID,
-  setActiveConversationId: (id) => set({ activeConversationId: id }),
-  input: '',
-  setInput: (input) => set({ input }),
-  isLoading: false,
-  setIsLoading: (loading) => set({ isLoading: loading }),
-  activeStreamMessage: null,
-  setActiveStreamMessage: (messageOrUpdater) =>
-    set((state) => ({
-      activeStreamMessage:
-        typeof messageOrUpdater === 'function'
-          ? messageOrUpdater(state.activeStreamMessage)
-          : messageOrUpdater,
-    })),
-  errorNotice: null,
-  setErrorNotice: (errorNotice) => set({ errorNotice }),
+      // Chat State
+      activeConversationId: DEFAULT_CONVERSATION_ID,
+      setActiveConversationId: (id) => set({ activeConversationId: id }),
+      input: '',
+      setInput: (input) => set({ input }),
+      isLoading: false,
+      setIsLoading: (loading) => set({ isLoading: loading }),
+      activeStreamMessage: null,
+      setActiveStreamMessage: (messageOrUpdater) =>
+        set((state) => ({
+          activeStreamMessage:
+            typeof messageOrUpdater === 'function'
+              ? messageOrUpdater(state.activeStreamMessage)
+              : messageOrUpdater,
+        })),
+      errorNotice: null,
+      setErrorNotice: (errorNotice) => set({ errorNotice }),
 
-  // Sidebar Collapsed State
-  isSidebarCollapsed: false,
-  setIsSidebarCollapsed: (isSidebarCollapsed) => set({ isSidebarCollapsed }),
-  toggleSidebar: () => set((state) => ({ isSidebarCollapsed: !state.isSidebarCollapsed })),
-}));
+      // Sidebar Collapsed State
+      isSidebarCollapsed: false,
+      setIsSidebarCollapsed: (isSidebarCollapsed) => set({ isSidebarCollapsed }),
+      toggleSidebar: () => set((state) => ({ isSidebarCollapsed: !state.isSidebarCollapsed })),
+    }),
+    {
+      name: 'argus-session-store',
+      partialize: (state) => ({
+        activeConversationId: state.activeConversationId,
+        stageView: state.stageView,
+        isSidebarCollapsed: state.isSidebarCollapsed,
+      }),
+    }
+  )
+);
+

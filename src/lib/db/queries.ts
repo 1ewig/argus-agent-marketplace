@@ -5,6 +5,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import {
   listConversations,
   getConversationMessages,
+  getConversationMessageCount,
   type ConversationRecord,
   type ChatMessageRecord,
 } from './chat-db';
@@ -26,4 +27,16 @@ export function useMessages(conversationId: string): ChatMessageRecord[] {
     [conversationId]
   );
   return useMemo(() => live ?? [], [live]);
+}
+
+/**
+ * Reactive query hook subscribing to the message count for a specific conversation.
+ */
+export function useConversationMessageCount(conversationId: string): number {
+  const live = useLiveQuery(
+    () => getConversationMessageCount(conversationId),
+    [conversationId],
+    0
+  );
+  return live ?? 0;
 }

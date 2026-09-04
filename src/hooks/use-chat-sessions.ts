@@ -5,10 +5,15 @@ import { APP_CONTENT } from '@/constants/content';
 import { useAppStore } from '@/stores/app-store';
 import {
   ensureDefaultConversation,
+  getConversation,
+  getConversationMessageCount,
+  listConversations,
+  DEFAULT_CONVERSATION_ID,
   createConversation,
   deleteConversation,
   renameConversation,
   useConversations,
+  useConversationMessageCount,
 } from '@/lib/db';
 
 /**
@@ -18,8 +23,12 @@ import {
 export function useChatSessions() {
   const activeConversationId = useAppStore((state) => state.activeConversationId);
   const setActiveConversationId = useAppStore((state) => state.setActiveConversationId);
+  const activeStreamMessage = useAppStore((state) => state.activeStreamMessage);
   const setActiveStreamMessage = useAppStore((state) => state.setActiveStreamMessage);
   const setErrorNotice = useAppStore((state) => state.setErrorNotice);
+
+  const activeMessageCount = useConversationMessageCount(activeConversationId);
+  const isNewChatDisabled = activeMessageCount === 0 && !activeStreamMessage;
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -27,10 +36,31 @@ export function useChatSessions() {
 
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Initialize default conversation record safely on client mount
+  // Initialize default conversation record and validate persisted session on client mount
   useEffect(() => {
-    void ensureDefaultConversation();
-  }, []);
+    let isCancelled = false;
+    async function initSession() {
+      await ensureDefaultConversation();
+      if (isCancelled) return;
+
+      const currentId = useAppStore.getState().activeConversationId;
+      const existing = await getConversation(currentId);
+      if (isCancelled) return;
+
+      if (!existing) {
+        const all = await listConversations();
+        if (isCancelled) return;
+        const fallbackId = all[0]?.id ?? DEFAULT_CONVERSATION_ID;
+        setActiveConversationId(fallbackId);
+      }
+    }
+
+    void initSession();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [setActiveConversationId]);
 
   // Reactive subscription to all conversations
   const conversations = useConversations();
@@ -63,15 +93,36 @@ export function useChatSessions() {
     setEditingId(null);
   }, []);
 
-  // Create a brand new session thread
+  // Create a brand new session thread (disabled if active session is already empty)
   const handleNewSession = useCallback(async () => {
+    if (isNewChatDisabled) return;
+
     setErrorNotice(null);
     setIsMenuOpen(false);
     setEditingId(null);
     setActiveStreamMessage(null);
+
+    // If an unused empty conversation already exists elsewhere, navigate to it instead of creating duplicates
+    const all = await listConversations();
+    for (const conv of all) {
+      if (conv.id !== activeConversationId) {
+        const count = await getConversationMessageCount(conv.id);
+        if (count === 0) {
+          setActiveConversationId(conv.id);
+          return;
+        }
+      }
+    }
+
     const newConv = await createConversation();
     setActiveConversationId(newConv.id);
-  }, [setErrorNotice, setActiveStreamMessage, setActiveConversationId]);
+  }, [
+    isNewChatDisabled,
+    activeConversationId,
+    setErrorNotice,
+    setActiveStreamMessage,
+    setActiveConversationId,
+  ]);
 
   // Switch session
   const handleSelectSession = useCallback((id: string) => {
@@ -141,5 +192,7 @@ export function useChatSessions() {
     handleSaveRename,
     handleCancelRename,
     handleDeleteSession,
+    isNewChatDisabled,
+    activeMessageCount,
   };
 }

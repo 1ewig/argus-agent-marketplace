@@ -6,8 +6,8 @@ import { AlertTriangle, Trash2, Info, X, Loader2 } from 'lucide-react';
 import {
   modalBackdropVariants,
   modalContentVariants,
-  tapScaleButton,
   tapScaleIcon,
+  tapScalePill,
 } from '@/constants/animation';
 import { APP_CONTENT } from '@/constants/content';
 
@@ -58,17 +58,17 @@ export function ConfirmDialog({
   const variantStyles = {
     danger: {
       iconBg: 'bg-theme-status-danger/10 text-theme-status-danger border-theme-status-danger/20',
-      confirmBtn: 'bg-theme-status-danger hover:bg-theme-status-danger/90 text-theme-text-primary',
+      confirmBtn: 'bg-theme-status-danger hover:brightness-105 active:brightness-95 text-theme-text-primary',
       defaultIcon: <Trash2 className="size-4" />,
     },
     warning: {
       iconBg: 'bg-theme-status-warning/10 text-theme-status-warning border-theme-status-warning/20',
-      confirmBtn: 'bg-theme-status-warning hover:bg-theme-status-warning/90 text-theme-bg-base',
+      confirmBtn: 'bg-theme-status-warning hover:brightness-105 active:brightness-95 text-theme-bg-base',
       defaultIcon: <AlertTriangle className="size-4" />,
     },
     info: {
       iconBg: 'bg-theme-brand-binance/10 text-theme-brand-binance border-theme-brand-binance/20',
-      confirmBtn: 'bg-theme-brand-binance hover:bg-theme-brand-accent text-theme-text-primary',
+      confirmBtn: 'bg-theme-brand-binance hover:brightness-105 active:brightness-95 text-theme-text-primary',
       defaultIcon: <Info className="size-4" />,
     },
   }[variant];
@@ -149,17 +149,17 @@ export function ConfirmDialog({
             <div className="flex items-center justify-end gap-spacing-xs">
               <motion.button
                 type="button"
-                whileTap={tapScaleButton}
+                whileTap={tapScalePill}
                 onClick={onCancel}
                 disabled={isLoading}
-                className="h-9 px-spacing-md flex items-center justify-center rounded-xl bg-theme-bg-elevated hover:bg-theme-bg-surface text-theme-text-secondary hover:text-theme-text-primary border border-theme-border-subtle text-xs font-semibold cursor-pointer transition-colors shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed select-none"
+                className="h-9 px-spacing-md flex items-center justify-center rounded-xl bg-theme-bg-elevated hover:bg-theme-bg-surface active:bg-theme-bg-elevated text-theme-text-secondary hover:text-theme-text-primary border border-theme-border-subtle hover:border-theme-border-strong text-xs font-semibold cursor-pointer transition-colors shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed select-none"
               >
                 {effectiveCancelLabel}
               </motion.button>
 
               <motion.button
                 type="button"
-                whileTap={tapScaleButton}
+                whileTap={tapScalePill}
                 onClick={() => void onConfirm()}
                 disabled={isLoading}
                 className={`h-9 px-spacing-md flex items-center justify-center gap-spacing-xs rounded-xl text-xs font-semibold cursor-pointer transition-colors shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed select-none ${variantStyles.confirmBtn}`}

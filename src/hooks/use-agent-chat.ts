@@ -240,6 +240,7 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
     handleScroll: scroll.handleScroll,
     handleToggleMenu: sessions.handleToggleMenu,
     handleNewSession: sessions.handleNewSession,
+    isNewChatDisabled: sessions.isNewChatDisabled,
     handleSelectSession: sessions.handleSelectSession,
     handleStartRename: sessions.handleStartRename,
     handleSaveRename: sessions.handleSaveRename,

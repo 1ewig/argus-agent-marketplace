@@ -25,6 +25,7 @@ export interface ChatHeaderProps {
   onCancelRename: () => void;
   onDeleteSession: (id: string, e?: React.MouseEvent) => Promise<void>;
   onNewSession: () => void | Promise<void>;
+  isNewSessionDisabled?: boolean;
 }
 
 /**
@@ -48,6 +49,7 @@ export const ChatHeader = memo(function ChatHeader({
   onCancelRename,
   onDeleteSession,
   onNewSession,
+  isNewSessionDisabled = false,
 }: ChatHeaderProps) {
   return (
     <div className="flex items-center justify-between gap-spacing-xs px-spacing-md py-spacing-sm bg-theme-bg-surface border-b border-theme-border-subtle shrink-0">
@@ -80,12 +82,21 @@ export const ChatHeader = memo(function ChatHeader({
 
         <motion.button
           type="button"
-          whileHover={{ scale: 1.08 }}
-          whileTap={tapScaleIcon}
-          onClick={() => void onNewSession()}
-          title={APP_CONTENT.chat.newSessionButton}
+          whileHover={isNewSessionDisabled ? undefined : { scale: 1.08 }}
+          whileTap={isNewSessionDisabled ? undefined : tapScaleIcon}
+          onClick={isNewSessionDisabled ? undefined : () => void onNewSession()}
+          disabled={isNewSessionDisabled}
+          title={
+            isNewSessionDisabled
+              ? APP_CONTENT.chat.newSessionDisabled
+              : APP_CONTENT.chat.newSessionButton
+          }
           aria-label={APP_CONTENT.chat.newSessionButton}
-          className="size-8 flex items-center justify-center rounded-xl bg-theme-bg-elevated hover:bg-theme-bg-surface active:bg-theme-bg-surface border border-theme-border-subtle hover:border-theme-border-strong text-theme-brand-binance hover:text-theme-brand-accent cursor-pointer transition-colors shadow-2xs shrink-0 select-none"
+          className={`size-8 flex items-center justify-center rounded-xl border border-theme-border-subtle shadow-2xs shrink-0 select-none transition-colors ${
+            isNewSessionDisabled
+              ? 'opacity-40 cursor-not-allowed bg-theme-bg-elevated/50 text-theme-text-muted shadow-none'
+              : 'bg-theme-bg-elevated hover:bg-theme-bg-surface active:bg-theme-bg-surface hover:border-theme-border-strong text-theme-brand-binance hover:text-theme-brand-accent cursor-pointer'
+          }`}
         >
           <Plus className="size-3.5 transition-transform duration-200" />
         </motion.button>

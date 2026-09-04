@@ -9,19 +9,25 @@ import { sidebarSpringTransition, tapScalePill } from '@/constants/animation';
 interface SidebarNewChatProps {
   isCollapsed: boolean;
   onNewChat: () => void;
+  disabled?: boolean;
 }
 
-export function SidebarNewChat({ isCollapsed, onNewChat }: SidebarNewChatProps) {
+export function SidebarNewChat({ isCollapsed, onNewChat, disabled = false }: SidebarNewChatProps) {
   return (
     <div className="py-spacing-sm px-3.5 border-b border-theme-border-subtle shrink-0 flex items-center justify-center">
       <motion.button
         type="button"
-        whileTap={tapScalePill}
-        onClick={onNewChat}
-        title={APP_CONTENT.sidebar.newChat}
+        whileTap={disabled ? undefined : tapScalePill}
+        onClick={disabled ? undefined : onNewChat}
+        disabled={disabled}
+        title={disabled ? APP_CONTENT.sidebar.newChatDisabled : APP_CONTENT.sidebar.newChat}
         aria-label={APP_CONTENT.sidebar.newChat}
-        className={`h-10 rounded-xl bg-theme-brand-binance text-theme-bg-overlay font-bold text-xs cursor-pointer shadow-2xs hover:brightness-105 active:brightness-95 transition-colors flex items-center overflow-hidden select-none ${
+        className={`h-10 rounded-xl font-bold text-xs flex items-center overflow-hidden select-none transition-colors ${
           isCollapsed ? 'w-10 justify-center' : 'w-full'
+        } ${
+          disabled
+            ? 'opacity-40 cursor-not-allowed bg-theme-brand-binance text-theme-bg-overlay shadow-none'
+            : 'bg-theme-brand-binance text-theme-bg-overlay cursor-pointer shadow-2xs hover:brightness-105 active:brightness-95'
         }`}
       >
         {/* Anchored Icon Slot: exactly 40px wide to guarantee mathematical center */}

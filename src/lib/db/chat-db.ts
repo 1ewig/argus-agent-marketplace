@@ -183,6 +183,14 @@ export async function getConversationMessages(conversationId: string): Promise<C
 }
 
 /**
+ * Counts messages for a specific conversation
+ */
+export async function getConversationMessageCount(conversationId: string): Promise<number> {
+  if (typeof window === 'undefined') return 0;
+  return db.messages.where('conversationId').equals(conversationId).count();
+}
+
+/**
  * Persists a new chat message into Dexie IndexedDB with auto-title and pruning
  */
 export async function saveStoredMessage(msg: ChatMessageRecord): Promise<string> {

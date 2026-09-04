@@ -41,6 +41,7 @@ export function LeftSidebar() {
     handleCancelRename,
     handleDeleteSession,
     handleNewSession,
+    isNewChatDisabled,
   } = useChatSessions();
 
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
@@ -71,9 +72,10 @@ export function LeftSidebar() {
   }, []);
 
   const handleNewChatClick = useCallback(async () => {
+    if (isNewChatDisabled) return;
     setStageView('agent');
     await handleNewSession();
-  }, [setStageView, handleNewSession]);
+  }, [isNewChatDisabled, setStageView, handleNewSession]);
 
   const handleSelectSessionClick = useCallback(
     (id: string) => {
@@ -101,6 +103,7 @@ export function LeftSidebar() {
         <SidebarNewChat
           isCollapsed={isSidebarCollapsed}
           onNewChat={handleNewChatClick}
+          disabled={isNewChatDisabled}
         />
 
         {/* 3. Workspace Views Navigation */}
