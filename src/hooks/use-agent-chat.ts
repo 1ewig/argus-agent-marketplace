@@ -55,6 +55,7 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
   const menuRef = useRef<HTMLDivElement>(null);
   const isAutoScrollEnabledRef = useRef<boolean>(true);
   const rafIdRef = useRef<number | null>(null);
+  const isScrollPendingRef = useRef<boolean>(false);
 
   // 1. Initialize default conversation record safely on client mount
   useEffect(() => {
@@ -79,13 +80,19 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
   const streamStepCount = activeStreamMessage?.steps?.length ?? 0;
   const streamContentLength = activeStreamMessage?.content?.length ?? 0;
 
-  // Scroll listener detecting if the user manually scrolled up (locking auto-scroll)
+  // RAF-throttled scroll listener detecting if user manually scrolled up without layout thrashing
   const handleScroll = useCallback(() => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-    const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
-    // Keep auto-scroll active if within 80px of bottom; lock if scrolled up
-    isAutoScrollEnabledRef.current = distanceFromBottom <= 80;
+    if (isScrollPendingRef.current) return;
+    isScrollPendingRef.current = true;
+
+    requestAnimationFrame(() => {
+      isScrollPendingRef.current = false;
+      const container = scrollContainerRef.current;
+      if (!container) return;
+      const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+      // Keep auto-scroll active if within 80px of bottom; lock if scrolled up
+      isAutoScrollEnabledRef.current = distanceFromBottom <= 80;
+    });
   }, []);
 
   // Instant scroll to bottom when switching conversations

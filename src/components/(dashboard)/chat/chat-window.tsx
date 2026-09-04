@@ -99,7 +99,7 @@ export function ChatWindow({ mode = 'simulation' }: ChatWindowProps) {
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto p-spacing-md sm:p-spacing-lg flex flex-col gap-spacing-md min-h-0"
+        className="flex-1 overflow-y-auto overscroll-y-contain [will-change:scroll-position] [transform:translateZ(0)] p-spacing-md sm:p-spacing-lg flex flex-col gap-spacing-md min-h-0"
       >
         <AnimatePresence mode="wait">
           {messages.length === 0 && (

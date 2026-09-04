@@ -65,7 +65,7 @@ export const ChatMessage = memo(function ChatMessage({
         initial={{ opacity: 0, y: 6 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.18, ease: 'easeOut' }}
-        className="flex justify-end items-start gap-spacing-xs w-full py-1"
+        className="flex justify-end items-start gap-spacing-xs w-full py-1 [content-visibility:auto] [contain-intrinsic-size:0_60px]"
       >
         <div className="flex flex-col items-end gap-1 max-w-[85%] sm:max-w-[75%]">
           <div className="bg-theme-bg-overlay text-white px-4 py-3 rounded-2xl rounded-tr-xs shadow-sm border border-theme-border-strong text-xs font-normal leading-relaxed break-words select-text">
@@ -99,7 +99,7 @@ export const ChatMessage = memo(function ChatMessage({
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.18, ease: 'easeOut' }}
-      className="flex items-start gap-spacing-sm w-full max-w-[95%] py-1"
+      className="flex items-start gap-spacing-sm w-full max-w-[95%] py-1 [content-visibility:auto] [contain-intrinsic-size:0_100px]"
     >
       {/* Brand Monogram Icon */}
       <div className="size-8 rounded-xl bg-theme-bg-elevated border border-theme-border-subtle flex items-center justify-center shrink-0 shadow-2xs">
@@ -136,7 +136,7 @@ export const ChatMessage = memo(function ChatMessage({
         {/* Main Response Markdown Container */}
         {message.content ? (
           <div
-            className={`p-4 sm:p-5 rounded-2xl rounded-tl-xs shadow-2xs border text-xs leading-relaxed transition-all ${
+            className={`p-4 sm:p-5 rounded-2xl rounded-tl-xs shadow-2xs border text-xs leading-relaxed transition-colors ${
               isError
                 ? 'bg-theme-bg-surface border-theme-status-danger text-theme-status-danger'
                 : 'bg-theme-bg-surface border-theme-border-subtle text-theme-text-primary'
