@@ -68,7 +68,13 @@ export async function executeAgentStream(
       chunking: 'word',
     }),
     providerOptions: {
-      groq: { reasoningEffort },
+      groq: { reasoningEffort: reasoningEffort === 'max' ? 'high' : reasoningEffort },
+      fireworks: {
+        thinking: { type: 'enabled' },
+        ...(reasoningEffort !== 'none' && reasoningEffort !== 'default'
+          ? { reasoningEffort }
+          : {}),
+      },
     },
   });
 
@@ -313,7 +319,13 @@ export async function executeAgent(options: AgentOptions): Promise<AgentResult> 
     maxTokens,
     stopWhen: isStepCount(maxSteps),
     providerOptions: {
-      groq: { reasoningEffort },
+      groq: { reasoningEffort: reasoningEffort === 'max' ? 'high' : reasoningEffort },
+      fireworks: {
+        thinking: { type: 'enabled' },
+        ...(reasoningEffort !== 'none' && reasoningEffort !== 'default'
+          ? { reasoningEffort }
+          : {}),
+      },
     },
   });
 

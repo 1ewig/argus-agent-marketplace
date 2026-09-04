@@ -1,5 +1,6 @@
 import { createGroq } from '@ai-sdk/groq';
 import { createFireworks } from '@ai-sdk/fireworks';
+import { wrapLanguageModel, extractReasoningMiddleware } from 'ai';
 import { AGENT_ERROR_MESSAGES } from './prompts';
 
 export type InferenceProviderType = 'groq' | 'fireworks';
@@ -10,8 +11,8 @@ export type InferenceProviderType = 'groq' | 'fireworks';
 export const DEFAULT_GROQ_MODEL = 'qwen/qwen3.8-27b';
 export const DEFAULT_GROQ_BACKUP_MODEL = 'openai/gpt-oss-120b';
 
-export const DEFAULT_FIREWORKS_MODEL = 'accounts/fireworks/models/qwen2p5-72b-instruct';
-export const DEFAULT_FIREWORKS_BACKUP_MODEL = 'accounts/fireworks/models/llama-v3p3-70b-instruct';
+export const DEFAULT_FIREWORKS_MODEL = 'accounts/fireworks/models/glm-5p3-flash';
+export const DEFAULT_FIREWORKS_BACKUP_MODEL = 'accounts/fireworks/models/deepseek-v4-flash-0731';
 
 // Backwards-compatible aliases
 export const DEFAULT_AGENT_MODEL = DEFAULT_GROQ_MODEL;
@@ -25,6 +26,16 @@ export function getActiveInferenceProvider(override?: InferenceProviderType): In
   const envProvider = process.env.INFERENCE_PROVIDER?.toLowerCase();
   if (envProvider === 'fireworks') return 'fireworks';
   return 'groq';
+}
+
+/**
+ * Wraps Fireworks models with reasoning extraction middleware to capture thinking deltas
+ */
+function wrapFireworksWithThinking(model: ReturnType<ReturnType<typeof createFireworks>>) {
+  return wrapLanguageModel({
+    model,
+    middleware: extractReasoningMiddleware({ tagName: 'think' }),
+  });
 }
 
 /**
@@ -48,7 +59,7 @@ export function getAgentModel(
     }
     const fireworks = createFireworks({ apiKey: resolvedApiKey });
     const selectedModel = modelName ?? process.env.FIREWORKS_MODEL ?? DEFAULT_FIREWORKS_MODEL;
-    return fireworks(selectedModel);
+    return wrapFireworksWithThinking(fireworks(selectedModel));
   }
 
   // Default to Groq
@@ -89,8 +100,8 @@ export function getBackupAgentModel(
       throw new Error(AGENT_ERROR_MESSAGES.missingFireworksApiKey);
     }
     const fireworks = createFireworks({ apiKey: resolvedApiKey });
-    const selectedModel = backupModelName ?? process.env.FIREWORKS_BACKUP_MODEL ?? DEFAULT_FIREWORKS_MODEL;
-    return fireworks(selectedModel);
+    const selectedModel = backupModelName ?? process.env.FIREWORKS_BACKUP_MODEL ?? DEFAULT_FIREWORKS_BACKUP_MODEL;
+    return wrapFireworksWithThinking(fireworks(selectedModel));
   }
 
   // Groq backup
