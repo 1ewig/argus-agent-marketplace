@@ -63,12 +63,10 @@ export function AgentProcessTimeline({
     return null;
   }
 
-  // Filter out completed thinking steps that have no reasoning text
+  // Only display thinking steps that contain actual reasoning content
   const visibleSteps = steps.filter((step) => {
     if (step.type === 'thinking') {
-      const hasText = Boolean(step.reasoningText?.trim());
-      const isActive = isStreaming && step.status === 'active';
-      return hasText || isActive;
+      return Boolean(step.reasoningText?.trim());
     }
     return true; // tool steps and intermediate text steps
   });

@@ -28,29 +28,22 @@ export interface ChatMessageRecord {
  */
 export function normalizeMessageSteps(
   message: Pick<ChatMessageRecord, 'id' | 'steps' | 'toolCalls' | 'timestamp'>,
-  fallbackThinkingLabel: string
+  _fallbackThinkingLabel: string
 ): AgentExecutionStep[] {
   if (message.steps && message.steps.length > 0) {
-    return message.steps;
+    return message.steps.filter(
+      (s) => s.type !== 'thinking' || Boolean(s.reasoningText?.trim())
+    );
   }
   if (message.toolCalls && message.toolCalls.length > 0) {
-    return [
-      {
-        id: `step_legacy_think_${message.id}`,
-        type: 'thinking',
-        label: fallbackThinkingLabel,
-        status: 'completed',
-        timestamp: message.timestamp,
-      },
-      ...message.toolCalls.map((t, idx) => ({
-        id: `step_legacy_tool_${message.id}_${idx}`,
-        type: 'tool' as const,
-        toolName: t.toolName,
-        label: t.toolName,
-        status: 'completed' as const,
-        timestamp: message.timestamp,
-      })),
-    ];
+    return message.toolCalls.map((t, idx) => ({
+      id: `step_legacy_tool_${message.id}_${idx}`,
+      type: 'tool' as const,
+      toolName: t.toolName,
+      label: t.toolName,
+      status: 'completed' as const,
+      timestamp: message.timestamp,
+    }));
   }
   return [];
 }

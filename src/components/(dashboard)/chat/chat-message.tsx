@@ -87,7 +87,12 @@ export const ChatMessage = memo(function ChatMessage({
   const effectiveSteps: AgentExecutionStep[] = normalizeMessageSteps(
     message,
     APP_CONTENT.process.thinking
-  );
+  ).filter((step) => {
+    if (step.type === 'thinking') {
+      return Boolean(step.reasoningText?.trim());
+    }
+    return true;
+  });
 
   const hasSteps = effectiveSteps.length > 0;
 

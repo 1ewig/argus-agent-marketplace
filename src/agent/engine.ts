@@ -37,20 +37,7 @@ export async function executeAgentStream(
   let activeThinkingStepId: string | null = null;
   let accumulatedText = '';
 
-  // 1. Initial Thinking step
-  const initialThinkingId = `step_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-  const initialThinkingStep: AgentExecutionStep = {
-    id: initialThinkingId,
-    type: 'thinking',
-    label: APP_CONTENT.process.thinking,
-    status: 'active',
-    timestamp: Date.now(),
-  };
-  steps.push(initialThinkingStep);
-  activeThinkingStepId = initialThinkingId;
-  onEvent({ type: 'step_start', step: initialThinkingStep });
-
-  // 2. Stream interceptor to prevent raw <session_title> XML leaking to the client
+  // Stream interceptor to prevent raw <session_title> XML leaking to the client
   const titleFilter = new SessionTitleStreamFilter(
     (title) => onEvent({ type: 'session_title', title }),
     (delta) => onEvent({ type: 'text_delta', delta })
@@ -113,23 +100,6 @@ export async function executeAgentStream(
         // Reset pre-tool text for new step
         currentStepPreToolText = '';
 
-        // Spawn a thinking step only if no other step is currently active
-        const hasActive = steps.some((s) => s.status === 'active');
-        if (!hasActive) {
-          const nextId = `step_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-          const nextStep: AgentExecutionStep = {
-            id: nextId,
-            type: 'thinking',
-            label: APP_CONTENT.process.thinking,
-            reasoningText: '',
-            status: 'active',
-            timestamp: Date.now(),
-          };
-          steps.push(nextStep);
-          activeThinkingStepId = nextId;
-          onEvent({ type: 'step_start', step: nextStep });
-        }
-
       } else if (part.type === 'tool-call') {
         // If text was generated prior to this tool call, convert it to an intermediate_text step
         if (currentStepPreToolText.trim().length > 0) {
@@ -154,14 +124,19 @@ export async function executeAgentStream(
         if (activeThinkingStepId) {
           const activeThinking = steps.find((s) => s.id === activeThinkingStepId);
           if (activeThinking && activeThinking.status === 'active') {
-            activeThinking.status = 'completed';
-            activeThinking.durationMs = Math.max(1000, Date.now() - activeThinking.timestamp);
-            onEvent({
-              type: 'step_update',
-              stepId: activeThinking.id,
-              status: 'completed',
-              durationMs: activeThinking.durationMs,
-            });
+            if (!activeThinking.reasoningText?.trim()) {
+              const idx = steps.findIndex((s) => s.id === activeThinkingStepId);
+              if (idx !== -1) steps.splice(idx, 1);
+            } else {
+              activeThinking.status = 'completed';
+              activeThinking.durationMs = Math.max(1000, Date.now() - activeThinking.timestamp);
+              onEvent({
+                type: 'step_update',
+                stepId: activeThinking.id,
+                status: 'completed',
+                durationMs: activeThinking.durationMs,
+              });
+            }
           }
           activeThinkingStepId = null;
         }
@@ -213,14 +188,19 @@ export async function executeAgentStream(
         if (activeThinkingStepId) {
           const activeThinking = steps.find((s) => s.id === activeThinkingStepId);
           if (activeThinking && activeThinking.status === 'active') {
-            activeThinking.status = 'completed';
-            activeThinking.durationMs = Math.max(1000, Date.now() - activeThinking.timestamp);
-            onEvent({
-              type: 'step_update',
-              stepId: activeThinking.id,
-              status: 'completed',
-              durationMs: activeThinking.durationMs,
-            });
+            if (!activeThinking.reasoningText?.trim()) {
+              const idx = steps.findIndex((s) => s.id === activeThinkingStepId);
+              if (idx !== -1) steps.splice(idx, 1);
+            } else {
+              activeThinking.status = 'completed';
+              activeThinking.durationMs = Math.max(1000, Date.now() - activeThinking.timestamp);
+              onEvent({
+                type: 'step_update',
+                stepId: activeThinking.id,
+                status: 'completed',
+                durationMs: activeThinking.durationMs,
+              });
+            }
           }
           activeThinkingStepId = null;
         }
@@ -279,13 +259,17 @@ export async function executeAgentStream(
 
   const workedDurationMs = Math.max(1000, Date.now() - startTime);
 
+  const prunedSteps = steps.filter(
+    (s) => s.type !== 'thinking' || Boolean(s.reasoningText?.trim())
+  );
+
   const finalResult: AgentResult = {
     symbol: symbol?.toUpperCase(),
     sessionTitle,
     analysis: cleanedText,
     toolCalls: executedToolCalls,
-    steps,
-    stepCount: steps.length,
+    steps: prunedSteps,
+    stepCount: prunedSteps.length,
     executionMode: mode,
     workedDurationMs,
     timestamp: Date.now(),
