@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronDown,
@@ -25,7 +25,7 @@ interface AgentProcessTimelineProps {
   startedAt?: number;
 }
 
-export function AgentProcessTimeline({
+export const AgentProcessTimeline = memo(function AgentProcessTimeline({
   steps,
   isStreaming = false,
   isCompleted = false,
@@ -41,48 +41,49 @@ export function AgentProcessTimeline({
   // Default is open while actively working, collapsed when completed, unless explicitly toggled
   const isOpen = userToggledOpen !== null ? userToggledOpen : !isCompleted;
 
-  const toggleOpen = () => {
-    setUserToggledOpen(!isOpen);
-  };
-
-  if (!steps || steps.length === 0) {
-    return null;
-  }
+  const toggleOpen = useCallback(() => {
+    setUserToggledOpen((prev) => (prev !== null ? !prev : isCompleted));
+  }, [isCompleted]);
 
   // Only display thinking steps that contain actual reasoning content
-  const visibleSteps = steps.filter((step) => {
-    if (step.type === 'thinking') {
-      return Boolean(step.reasoningText?.trim());
-    }
-    return true;
-  });
+  const visibleSteps = useMemo(() => {
+    if (!steps || steps.length === 0) return [];
+    return steps.filter((step) => {
+      if (step.type === 'thinking') {
+        return Boolean(step.reasoningText?.trim());
+      }
+      return true;
+    });
+  }, [steps]);
 
-  if (visibleSteps.length === 0) {
-    return null;
-  }
-
-  const toggleDetails = (id: string) => {
+  const toggleDetails = useCallback((id: string) => {
     setExpandedDetailsIds((prev) => ({
       ...prev,
       [id]: !prev[id],
     }));
-  };
+  }, []);
 
-  const finalWorkedSeconds = Math.max(
-    1,
-    Math.round(
-      (workedDurationMs ??
-        (steps.length > 0
-          ? steps[steps.length - 1].timestamp +
-          (steps[steps.length - 1].durationMs ?? 1000) -
-          steps[0].timestamp
-          : 1000)) / 1000
-    )
-  );
+  const finalWorkedSeconds = useMemo(() => {
+    return Math.max(
+      1,
+      Math.round(
+        (workedDurationMs ??
+          (steps.length > 0
+            ? steps[steps.length - 1].timestamp +
+            (steps[steps.length - 1].durationMs ?? 1000) -
+            steps[0].timestamp
+            : 1000)) / 1000
+      )
+    );
+  }, [workedDurationMs, steps]);
 
   const headerLabel = isActiveWork
     ? APP_CONTENT.process.workingWithSeconds(elapsedSeconds)
     : APP_CONTENT.process.workedForDuration(finalWorkedSeconds);
+
+  if (visibleSteps.length === 0) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col text-2xs mb-spacing-xs">
@@ -245,4 +246,4 @@ export function AgentProcessTimeline({
       )}
     </div>
   );
-}
+});

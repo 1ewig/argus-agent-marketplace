@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, RefreshCw, Plus, ArrowUpRight } from 'lucide-react';
+import { RefreshCw, Plus, ArrowUpRight } from 'lucide-react';
 import { ArgusIcon } from '../argus-icon';
 import { APP_CONTENT } from '@/constants/content';
 import {
@@ -12,6 +12,7 @@ import {
 import { useAgentChat } from '@/hooks';
 import { ChatMessage } from './chat-message';
 import { ChatSessionsMenu } from './chat-sessions-menu';
+import { ChatInput } from './chat-input';
 import type { ExecutionMode } from '@/lib/types';
 
 interface ChatWindowProps {
@@ -25,8 +26,6 @@ export function ChatWindow({ mode = 'simulation' }: ChatWindowProps) {
     conversations,
     messages,
     activeStreamMessage,
-    input,
-    setInput,
     isLoading,
     errorNotice,
     isMenuOpen,
@@ -45,32 +44,7 @@ export function ChatWindow({ mode = 'simulation' }: ChatWindowProps) {
     handleCancelRename,
     handleDeleteSession,
     handleSend,
-    handleKeyDown,
   } = useAgentChat({ mode });
-
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  // Clean auto-resize up to max height without layout shifts
-  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInput(e.target.value);
-    const target = e.target;
-    target.style.height = 'auto';
-    target.style.height = `${Math.min(target.scrollHeight, 120)}px`;
-  };
-
-  const handleCustomKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      if (input.trim() && !isLoading) {
-        void handleSend();
-        if (textareaRef.current) {
-          textareaRef.current.style.height = 'auto';
-        }
-      }
-    } else {
-      handleKeyDown(e);
-    }
-  };
 
   return (
     <div className="flex flex-col h-full bg-theme-bg-surface border border-theme-border-subtle rounded-2xl overflow-hidden shadow-xs">
@@ -212,36 +186,12 @@ export function ChatWindow({ mode = 'simulation' }: ChatWindowProps) {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Dock */}
-      <div className="p-spacing-md bg-theme-bg-surface border-t border-theme-border-subtle shrink-0">
-        <div className="flex items-end gap-spacing-xs bg-theme-bg-elevated/60 hover:bg-theme-bg-surface border border-theme-border-subtle rounded-xl p-spacing-xs focus-within:bg-theme-bg-surface focus-within:border-theme-border-strong focus-within:ring-1 focus-within:ring-theme-border-strong transition-all shadow-2xs">
-          <textarea
-            ref={textareaRef}
-            value={input}
-            onChange={handleInputChange}
-            onKeyDown={handleCustomKeyDown}
-            placeholder={APP_CONTENT.chat.inputPlaceholder}
-            rows={1}
-            className="flex-1 resize-none bg-transparent text-xs text-theme-text-primary placeholder:text-theme-text-muted focus:outline-hidden p-spacing-xs leading-relaxed max-h-32"
-          />
-          <motion.button
-            type="button"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.94 }}
-            onClick={() => {
-              void handleSend();
-              if (textareaRef.current) {
-                textareaRef.current.style.height = 'auto';
-              }
-            }}
-            disabled={!input.trim() || isLoading}
-            aria-label={APP_CONTENT.chat.sendButton}
-            className="flex items-center justify-center size-8 rounded-lg bg-theme-bg-overlay text-theme-brand-binance hover:bg-black disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors shadow-2xs shrink-0"
-          >
-            <Send className="size-3.5" />
-          </motion.button>
-        </div>
-      </div>
+      {/* Isolated Input Dock */}
+      <ChatInput
+        key={activeConversationId}
+        isLoading={isLoading}
+        onSend={handleSend}
+      />
     </div>
   );
 }

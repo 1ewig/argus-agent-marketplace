@@ -39,8 +39,6 @@ export interface UseAgentChatOptions {
 export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) {
   const activeConversationId = useAppStore((state) => state.activeConversationId);
   const setActiveConversationId = useAppStore((state) => state.setActiveConversationId);
-  const input = useAppStore((state) => state.input);
-  const setInput = useAppStore((state) => state.setInput);
   const isLoading = useAppStore((state) => state.isLoading);
   const setIsLoading = useAppStore((state) => state.setIsLoading);
   const activeStreamMessage = useAppStore((state) => state.activeStreamMessage);
@@ -221,11 +219,10 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
 
   // 11. Send message with real-time SSE streaming and persistent Dexie transactions
   const handleSend = useCallback(async (textToSend?: string) => {
-    const prompt = (textToSend ?? input).trim();
+    const prompt = (textToSend ?? '').trim();
     if (!prompt || isLoading) return;
 
     setErrorNotice(null);
-    setInput('');
 
     const userMessage: ChatMessageRecord = {
       id: generateMessageId('usr'),
@@ -368,14 +365,7 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
       setActiveStreamMessage(null);
       setIsLoading(false);
     }
-  }, [input, isLoading, activeConversationId, mode, messages, setActiveStreamMessage, setIsLoading, setErrorNotice, setInput]);
-
-  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      void handleSend();
-    }
-  }, [handleSend]);
+  }, [isLoading, activeConversationId, mode, messages, setActiveStreamMessage, setIsLoading, setErrorNotice]);
 
   const handleToggleMenu = () => {
     setIsMenuOpen((prev) => !prev);
@@ -389,8 +379,6 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
     conversations,
     messages,
     activeStreamMessage,
-    input,
-    setInput,
     isLoading,
     errorNotice,
     isMenuOpen,
@@ -415,6 +403,5 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
     handleCancelRename,
     handleDeleteSession,
     handleSend,
-    handleKeyDown,
   };
 }
