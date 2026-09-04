@@ -4,7 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Plus } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
-import { sidebarSpringTransition, tapScaleButton } from '@/constants/animation';
+import { sidebarSpringTransition, tapScalePill } from '@/constants/animation';
 
 interface SidebarNewChatProps {
   isCollapsed: boolean;
@@ -16,12 +16,11 @@ export function SidebarNewChat({ isCollapsed, onNewChat }: SidebarNewChatProps) 
     <div className="py-spacing-sm px-3.5 border-b border-theme-border-subtle shrink-0 flex items-center justify-center">
       <motion.button
         type="button"
-        whileHover={{ y: -1 }}
-        whileTap={tapScaleButton}
+        whileTap={tapScalePill}
         onClick={onNewChat}
         title={APP_CONTENT.sidebar.newChat}
         aria-label={APP_CONTENT.sidebar.newChat}
-        className={`h-10 rounded-xl bg-theme-brand-binance text-theme-bg-overlay font-bold text-xs cursor-pointer shadow-2xs hover:brightness-105 transition-all flex items-center overflow-hidden ${
+        className={`h-10 rounded-xl bg-theme-brand-binance text-theme-bg-overlay font-bold text-xs cursor-pointer shadow-2xs hover:brightness-105 active:brightness-95 transition-colors flex items-center overflow-hidden select-none ${
           isCollapsed ? 'w-10 justify-center' : 'w-full'
         }`}
       >

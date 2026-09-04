@@ -4,7 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { MessageSquare, Edit2, Trash2, Check, X } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
-import { sidebarSpringTransition } from '@/constants/animation';
+import { sidebarSpringTransition, tapScalePill } from '@/constants/animation';
 import type { ConversationRecord } from '@/lib/db';
 
 interface SidebarSessionItemProps {
@@ -69,10 +69,19 @@ export function SidebarSessionItem({
   }
 
   return (
-    <div
+    <motion.div
+      whileTap={tapScalePill}
+      role="button"
+      tabIndex={0}
       title={conversation.title || APP_CONTENT.chat.defaultSessionTitle}
       onClick={onSelect}
-      className={`group relative h-10 flex items-center rounded-xl text-xs font-medium cursor-pointer transition-colors overflow-hidden shrink-0 ${
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onSelect();
+        }
+      }}
+      className={`group relative h-10 flex items-center rounded-xl text-xs font-medium cursor-pointer transition-colors overflow-hidden shrink-0 select-none ${
         isCollapsed ? 'w-10 justify-center' : 'w-full'
       } ${
         isActive
@@ -109,24 +118,26 @@ export function SidebarSessionItem({
 
         {/* Hover Action Buttons */}
         <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-          <button
+          <motion.button
             type="button"
+            whileTap={tapScalePill}
             onClick={onStartRename}
             className="p-1 rounded hover:bg-theme-bg-surface text-theme-text-muted hover:text-theme-text-primary cursor-pointer transition-colors"
             title={APP_CONTENT.sidebar.renameChat}
           >
             <Edit2 className="size-3" />
-          </button>
-          <button
+          </motion.button>
+          <motion.button
             type="button"
+            whileTap={tapScalePill}
             onClick={onOpenDelete}
             className="p-1 rounded hover:bg-theme-bg-surface text-theme-text-muted hover:text-theme-status-danger cursor-pointer transition-colors"
             title={APP_CONTENT.sidebar.deleteChat}
           >
             <Trash2 className="size-3" />
-          </button>
+          </motion.button>
         </div>
       </motion.div>
-    </div>
+    </motion.div>
   );
 }

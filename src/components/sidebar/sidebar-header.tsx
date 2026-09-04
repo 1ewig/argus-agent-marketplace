@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { PanelLeftOpen, PanelLeftClose } from 'lucide-react';
 import { ArgusIcon } from '@/components/common';
 import { APP_CONTENT } from '@/constants/content';
-import { sidebarSpringTransition, tapScaleIcon } from '@/constants/animation';
+import { sidebarSpringTransition, tapScalePill } from '@/constants/animation';
 
 interface SidebarHeaderProps {
   isCollapsed: boolean;
@@ -21,16 +21,14 @@ export function SidebarHeader({ isCollapsed, onToggle }: SidebarHeaderProps) {
         {/* Logo / Collapsed Expand Trigger */}
         <motion.button
           type="button"
-          whileTap={tapScaleIcon}
+          whileTap={tapScalePill}
           onMouseEnter={() => setIsLogoHovered(true)}
           onMouseLeave={() => setIsLogoHovered(false)}
-          onClick={() => {
-            if (isCollapsed) onToggle();
-          }}
-          className={`size-10 rounded-xl flex items-center justify-center shrink-0 cursor-pointer transition-colors ${
+          onClick={onToggle}
+          className={`size-10 rounded-xl flex items-center justify-center shrink-0 cursor-pointer transition-colors select-none ${
             isCollapsed
-              ? 'hover:bg-theme-bg-elevated text-theme-brand-binance'
-              : 'hover:bg-theme-bg-elevated/60 text-theme-brand-binance'
+              ? 'hover:bg-theme-bg-elevated active:bg-theme-bg-elevated/80 text-theme-brand-binance border border-transparent hover:border-theme-border-subtle'
+              : 'hover:bg-theme-bg-elevated/60 active:bg-theme-bg-elevated text-theme-brand-binance border border-transparent hover:border-theme-border-subtle'
           }`}
           title={isCollapsed ? APP_CONTENT.sidebar.expandSidebar : APP_CONTENT.sidebar.brand}
           aria-label={isCollapsed ? APP_CONTENT.sidebar.expandSidebar : APP_CONTENT.sidebar.brand}
@@ -38,7 +36,7 @@ export function SidebarHeader({ isCollapsed, onToggle }: SidebarHeaderProps) {
           {isCollapsed && isLogoHovered ? (
             <PanelLeftOpen className="size-5 text-theme-brand-binance animate-in fade-in duration-150" />
           ) : (
-            <ArgusIcon className="size-6 text-theme-brand-binance transition-transform" />
+            <ArgusIcon className="size-6 text-theme-brand-binance" />
           )}
         </motion.button>
 
@@ -74,10 +72,9 @@ export function SidebarHeader({ isCollapsed, onToggle }: SidebarHeaderProps) {
         >
           <motion.button
             type="button"
-            whileHover={{ scale: 1.08 }}
-            whileTap={tapScaleIcon}
+            whileTap={tapScalePill}
             onClick={onToggle}
-            className="size-8 rounded-lg flex items-center justify-center text-theme-text-muted hover:text-theme-text-primary hover:bg-theme-bg-elevated cursor-pointer transition-colors"
+            className="size-8 rounded-lg flex items-center justify-center text-theme-text-muted hover:text-theme-text-primary hover:bg-theme-bg-elevated active:bg-theme-bg-elevated/80 cursor-pointer transition-colors select-none"
             title={APP_CONTENT.sidebar.collapseSidebar}
             aria-label={APP_CONTENT.sidebar.collapseSidebar}
             tabIndex={isCollapsed ? -1 : 0}

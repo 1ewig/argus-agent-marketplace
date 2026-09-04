@@ -4,7 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Sun, Moon } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
-import { sidebarSpringTransition, tapScaleIcon } from '@/constants/animation';
+import { sidebarSpringTransition, tapScalePill } from '@/constants/animation';
 
 interface SidebarThemeToggleProps {
   isCollapsed: boolean;
@@ -21,8 +21,7 @@ export function SidebarThemeToggle({
     <div className="py-spacing-sm px-3.5 flex flex-col border-t border-theme-border-subtle bg-theme-bg-surface shrink-0 items-center">
       <motion.button
         type="button"
-        whileHover={{ y: -1 }}
-        whileTap={tapScaleIcon}
+        whileTap={tapScalePill}
         onClick={onToggle}
         title={isDark ? APP_CONTENT.sidebar.themeLight : APP_CONTENT.sidebar.themeDark}
         aria-label={isDark ? APP_CONTENT.sidebar.themeLight : APP_CONTENT.sidebar.themeDark}
