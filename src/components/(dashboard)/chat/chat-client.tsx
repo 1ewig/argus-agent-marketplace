@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RefreshCw, ArrowUpRight } from 'lucide-react';
 import { ArgusIcon } from '../argus-icon';
@@ -13,7 +13,7 @@ import {
 import { useAgentChat } from '@/hooks';
 import { ChatMessage } from './chat-message';
 import { ChatHeader } from './chat-header';
-import { ChatInput } from './chat-input';
+import { ChatInput, type ChatInputHandle } from './chat-input';
 import type { ExecutionMode } from '@/lib/types';
 
 interface ChatClientProps {
@@ -21,6 +21,8 @@ interface ChatClientProps {
 }
 
 export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
+  const chatInputRef = useRef<ChatInputHandle>(null);
+
   const {
     activeConversationId,
     currentTitle,
@@ -46,6 +48,10 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
     handleDeleteSession,
     handleSend,
   } = useAgentChat({ mode });
+
+  const handleSelectTemplate = useCallback((template: string) => {
+    chatInputRef.current?.setInputText(template);
+  }, []);
 
   return (
     <div className="flex flex-col h-full bg-theme-bg-surface border border-theme-border-subtle rounded-2xl overflow-hidden shadow-xs">
@@ -84,48 +90,46 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
               exit="exit"
               className="absolute inset-0 flex flex-col items-center justify-center p-spacing-md sm:p-spacing-lg text-center overflow-y-auto pointer-events-auto z-10"
             >
-              <div className="my-auto flex flex-col items-center justify-center w-full py-spacing-md">
+              <div className="my-auto flex flex-col items-center justify-center w-full py-spacing-md max-w-lg">
                 {/* Category Tag */}
                 <motion.div
                   variants={emptyStateItemVariants}
-                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-theme-brand-binance/10 border border-theme-brand-binance/30 text-theme-brand-binance text-xs font-bold uppercase tracking-widest mb-spacing-sm"
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-theme-brand-binance/10 border border-theme-brand-binance/30 text-theme-brand-binance text-2xs sm:text-xs font-bold uppercase tracking-wider mb-spacing-xs"
                 >
-                  <ArgusIcon className="size-4 text-theme-brand-binance" />
+                  <ArgusIcon className="size-3.5 text-theme-brand-binance" />
                   <span>{APP_CONTENT.chat.emptyCategory}</span>
                 </motion.div>
 
-                {/* Colossal Architectural Headline */}
+                {/* Practical Utilitarian Headline */}
                 <motion.div variants={emptyStateItemVariants} className="flex flex-col items-center">
-                  <h3 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-theme-text-primary tracking-tighter mb-spacing-xs max-w-xl font-sans leading-tight">
+                  <h3 className="text-xl sm:text-2xl font-bold text-theme-text-primary tracking-tight mb-spacing-xs max-w-md font-sans leading-tight">
                     {APP_CONTENT.chat.emptyTitle}
                   </h3>
-                  <p className="text-sm sm:text-base text-theme-text-secondary max-w-lg mb-spacing-lg leading-relaxed">
+                  <p className="text-xs sm:text-sm text-theme-text-secondary max-w-md mb-spacing-md leading-relaxed">
                     {APP_CONTENT.chat.emptySubtitle}
                   </p>
                 </motion.div>
 
-                {/* Structured Architectural Suggestion Tiles */}
-                <motion.div variants={emptyStateItemVariants} className="flex flex-col gap-spacing-xs w-full max-w-xl">
-                  <div className="flex items-center justify-between mb-spacing-xs px-1">
-                    <span className="text-xs font-bold uppercase tracking-wider text-theme-text-muted">
-                      {APP_CONTENT.chat.quickPromptsTitle}
+                {/* Quick Action Template Pills */}
+                <motion.div variants={emptyStateItemVariants} className="flex flex-col items-center gap-spacing-xs w-full">
+                  <div className="flex items-center justify-center mb-0.5">
+                    <span className="text-2xs font-semibold uppercase tracking-wider text-theme-text-muted">
+                      {APP_CONTENT.chat.quickActionsTitle}
                     </span>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-spacing-xs">
-                    {APP_CONTENT.chat.quickPrompts.map((prompt) => (
+                  <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2">
+                    {APP_CONTENT.chat.quickActions.map((action) => (
                       <motion.button
-                        key={prompt}
+                        key={action.id}
                         variants={emptyStateItemVariants}
                         type="button"
-                        whileHover={{ y: -2 }}
+                        whileHover={{ y: -1 }}
                         whileTap={tapScalePill}
-                        onClick={() => void handleSend(prompt)}
-                        className="text-left text-xs sm:text-sm p-4 rounded-xl bg-theme-bg-elevated/80 hover:bg-theme-bg-surface active:bg-theme-bg-elevated border border-theme-border-subtle hover:border-theme-border-strong active:border-theme-border-strong text-theme-text-primary cursor-pointer transition-colors shadow-2xs hover:shadow-xs group flex items-start justify-between gap-spacing-sm select-none"
+                        onClick={() => handleSelectTemplate(action.template)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-theme-bg-elevated/70 hover:bg-theme-bg-surface active:bg-theme-bg-elevated border border-theme-border-subtle hover:border-theme-border-strong active:border-theme-border-strong text-theme-text-secondary hover:text-theme-text-primary text-xs font-medium cursor-pointer transition-colors shadow-2xs group select-none"
                       >
-                        <span className="leading-snug text-theme-text-primary group-hover:text-theme-text-primary font-medium">
-                          {prompt}
-                        </span>
-                        <ArrowUpRight className="size-4 text-theme-text-muted group-hover:text-theme-brand-binance group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0 mt-0.5" />
+                        <span className="leading-tight">{action.label}</span>
+                        <ArrowUpRight className="size-3 text-theme-text-muted group-hover:text-theme-brand-binance group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0" />
                       </motion.button>
                     ))}
                   </div>
@@ -163,6 +167,7 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
 
       {/* Isolated Input Dock */}
       <ChatInput
+        ref={chatInputRef}
         key={activeConversationId}
         isLoading={isLoading}
         onSend={handleSend}
