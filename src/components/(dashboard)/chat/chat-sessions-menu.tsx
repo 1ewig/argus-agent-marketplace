@@ -30,8 +30,9 @@ export interface ChatSessionsMenuProps {
  * Dropdown popover menu allowing users to switch, rename, and delete chat sessions.
  * Pure presentation component decoupled from database queries and chat orchestration.
  * Sessions are strictly sorted by creation time descending with deletion confirmed via ConfirmDialog.
+ * Memoized to prevent re-rendering when agent streams tokens in ChatWindow.
  */
-export function ChatSessionsMenu({
+export const ChatSessionsMenu = React.memo(function ChatSessionsMenu({
   currentTitle,
   conversations,
   activeConversationId,
@@ -233,5 +234,5 @@ export function ChatSessionsMenu({
       />
     </div>
   );
-}
+});
 

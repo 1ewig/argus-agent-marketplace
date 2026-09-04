@@ -90,15 +90,14 @@ export const ChatMessage = memo(function ChatMessage({
   }
 
   // 2. Assistant Message
-  const effectiveSteps: AgentExecutionStep[] = normalizeMessageSteps(
-    message,
-    APP_CONTENT.process.thinking
-  ).filter((step) => {
-    if (step.type === 'thinking') {
-      return Boolean(step.reasoningText?.trim());
-    }
-    return true;
-  });
+  const effectiveSteps: AgentExecutionStep[] = React.useMemo(() => {
+    return normalizeMessageSteps(message, APP_CONTENT.process.thinking).filter((step) => {
+      if (step.type === 'thinking') {
+        return Boolean(step.reasoningText?.trim());
+      }
+      return true;
+    });
+  }, [message]);
 
   const hasSteps = effectiveSteps.length > 0;
 

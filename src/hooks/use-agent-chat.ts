@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { APP_CONTENT } from '@/constants/content';
 import { generateMessageId, getNowTimestamp } from '@/lib/utils';
@@ -18,6 +18,9 @@ import {
 import { prepareConversationHistory, streamAgentChat } from '@/lib/agents';
 import type { AgentResult, AgentExecutionStep } from '@/agent';
 import type { ExecutionMode } from '@/lib/types';
+
+const SESSION_TITLE_TAG_REGEX = /<session_title>[\s\S]*?<\/session_title>\s*/gi;
+const INCOMPLETE_SESSION_TITLE_TAG_REGEX = /<session_title[\s\S]*$/gi;
 
 export interface UseAgentChatOptions {
   mode?: ExecutionMode;
@@ -61,28 +64,31 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
   }, []);
 
   // 2. Reactive Live Queries directly from Dexie IndexedDB (strictly read-only)
-  const conversations = useLiveQuery(() => listConversations(), []) ?? [];
-  const messages = useLiveQuery(
+  const liveConversations = useLiveQuery(() => listConversations(), []);
+  const conversations = useMemo(() => liveConversations ?? [], [liveConversations]);
+
+  const liveMessages = useLiveQuery(
     () =>
       db.messages
         .where('conversationId')
         .equals(activeConversationId)
         .sortBy('timestamp'),
     [activeConversationId]
-  ) ?? [];
+  );
+  const messages = useMemo(() => liveMessages ?? [], [liveMessages]);
 
   const messagesCount = messages.length;
   const streamStepCount = activeStreamMessage?.steps?.length ?? 0;
   const streamContentLength = activeStreamMessage?.content?.length ?? 0;
 
   // Scroll listener detecting if the user manually scrolled up (locking auto-scroll)
-  const handleScroll = () => {
+  const handleScroll = useCallback(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
     const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
     // Keep auto-scroll active if within 80px of bottom; lock if scrolled up
     isAutoScrollEnabledRef.current = distanceFromBottom <= 80;
-  };
+  }, []);
 
   // Instant scroll to bottom when switching conversations
   useEffect(() => {
@@ -148,36 +154,39 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
   }, [isMenuOpen]);
 
   // Active session title
-  const activeConversation = conversations.find((c) => c.id === activeConversationId);
+  const activeConversation = useMemo(
+    () => conversations.find((c) => c.id === activeConversationId),
+    [conversations, activeConversationId]
+  );
   const currentTitle = activeConversation?.title ?? APP_CONTENT.chat.defaultSessionTitle;
 
   // 5. Create a brand new session thread
-  const handleNewSession = async () => {
+  const handleNewSession = useCallback(async () => {
     setErrorNotice(null);
     setIsMenuOpen(false);
     setEditingId(null);
     setActiveStreamMessage(null);
     const newConv = await createConversation();
     setActiveConversationId(newConv.id);
-  };
+  }, [setErrorNotice, setActiveStreamMessage, setActiveConversationId]);
 
   // 6. Switch session
-  const handleSelectSession = (id: string) => {
+  const handleSelectSession = useCallback((id: string) => {
     setActiveConversationId(id);
     setIsMenuOpen(false);
     setEditingId(null);
     setActiveStreamMessage(null);
-  };
+  }, [setActiveConversationId, setActiveStreamMessage]);
 
   // 7. Start renaming session
-  const handleStartRename = (id: string, sessionTitle: string, e: React.MouseEvent) => {
+  const handleStartRename = useCallback((id: string, sessionTitle: string, e: React.MouseEvent) => {
     e.stopPropagation();
     setEditingId(id);
     setEditTitle(sessionTitle);
-  };
+  }, []);
 
   // 8. Save renamed session
-  const handleSaveRename = async (id: string, e?: React.FormEvent | React.MouseEvent) => {
+  const handleSaveRename = useCallback(async (id: string, e?: React.FormEvent | React.MouseEvent) => {
     e?.stopPropagation();
     const trimmed = editTitle.trim();
     if (!trimmed) {
@@ -186,17 +195,17 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
     }
     await renameConversation(id, trimmed);
     setEditingId(null);
-  };
+  }, [editTitle]);
 
   // 9. Cancel renaming
-  const handleCancelRename = (e?: React.MouseEvent) => {
+  const handleCancelRename = useCallback((e?: React.MouseEvent) => {
     e?.stopPropagation();
     setEditingId(null);
     setEditTitle('');
-  };
+  }, []);
 
   // 10. Delete session
-  const handleDeleteSession = async (id: string, e?: React.MouseEvent) => {
+  const handleDeleteSession = useCallback(async (id: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
     await deleteConversation(id);
     if (activeConversationId === id) {
@@ -208,10 +217,10 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
         setActiveConversationId(newConv.id);
       }
     }
-  };
+  }, [activeConversationId, conversations, setActiveConversationId]);
 
   // 11. Send message with real-time SSE streaming and persistent Dexie transactions
-  const handleSend = async (textToSend?: string) => {
+  const handleSend = useCallback(async (textToSend?: string) => {
     const prompt = (textToSend ?? input).trim();
     if (!prompt || isLoading) return;
 
@@ -301,8 +310,8 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
             currentText += event.delta;
             // Strip any complete or in-progress session_title markup from live markdown display
             const displayContent = currentText
-              .replace(/<session_title>[\s\S]*?<\/session_title>\s*/gi, '')
-              .replace(/<session_title[\s\S]*$/gi, '');
+              .replace(SESSION_TITLE_TAG_REGEX, '')
+              .replace(INCOMPLETE_SESSION_TITLE_TAG_REGEX, '');
             setActiveStreamMessage((prev) =>
               prev ? { ...prev, content: displayContent } : prev
             );
@@ -331,7 +340,7 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
         id: streamMessageId,
         conversationId: activeConversationId,
         role: 'assistant',
-        content: finalResult?.analysis ?? currentText.replace(/<session_title>[\s\S]*?<\/session_title>\s*/gi, '').trim(),
+        content: finalResult?.analysis ?? currentText.replace(SESSION_TITLE_TAG_REGEX, '').trim(),
         status: 'success',
         toolCalls: finalResult?.toolCalls,
         steps: finalResult?.steps ?? currentSteps,
@@ -359,14 +368,14 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
       setActiveStreamMessage(null);
       setIsLoading(false);
     }
-  };
+  }, [input, isLoading, activeConversationId, mode, messages, setActiveStreamMessage, setIsLoading, setErrorNotice, setInput]);
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       void handleSend();
     }
-  };
+  }, [handleSend]);
 
   const handleToggleMenu = () => {
     setIsMenuOpen((prev) => !prev);
