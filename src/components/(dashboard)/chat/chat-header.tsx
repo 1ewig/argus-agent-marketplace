@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { Plus } from 'lucide-react';
 import { ArgusIcon } from '../argus-icon';
 import { APP_CONTENT } from '@/constants/content';
-import { tapScaleButton } from '@/constants/animation';
+import { tapScaleIcon } from '@/constants/animation';
 import { ChatSessionsMenu } from './chat-sessions-menu';
 import type { ConversationRecord } from '@/lib/db';
 
@@ -80,14 +80,14 @@ export const ChatHeader = memo(function ChatHeader({
 
         <motion.button
           type="button"
-          whileHover={{ scale: 1.05 }}
-          whileTap={tapScaleButton}
+          whileHover={{ scale: 1.08 }}
+          whileTap={tapScaleIcon}
           onClick={() => void onNewSession()}
           title={APP_CONTENT.chat.newSessionButton}
           aria-label={APP_CONTENT.chat.newSessionButton}
-          className="size-8 flex items-center justify-center rounded-xl bg-theme-bg-elevated hover:bg-theme-bg-surface active:bg-theme-bg-surface border border-theme-border-subtle hover:border-theme-border-strong active:border-theme-border-strong text-theme-brand-binance hover:text-theme-brand-accent cursor-pointer transition-all shadow-2xs shrink-0 select-none"
+          className="size-8 flex items-center justify-center rounded-xl bg-theme-bg-elevated hover:bg-theme-bg-surface active:bg-theme-bg-surface border border-theme-border-subtle hover:border-theme-border-strong text-theme-brand-binance hover:text-theme-brand-accent cursor-pointer transition-colors shadow-2xs shrink-0 select-none"
         >
-          <Plus className="size-3.5" />
+          <Plus className="size-3.5 transition-transform duration-200" />
         </motion.button>
       </div>
     </div>

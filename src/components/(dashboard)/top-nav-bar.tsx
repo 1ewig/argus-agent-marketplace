@@ -56,7 +56,7 @@ export function TopNavBar() {
         {/* Notifications Button with Counter Badge */}
         <motion.button
           type="button"
-          whileHover={{ scale: 1.06 }}
+          whileHover={{ scale: 1.08 }}
           whileTap={tapScaleIcon}
           title={APP_CONTENT.nav.notificationsTitle}
           aria-label={APP_CONTENT.nav.notificationsTitle}
