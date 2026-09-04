@@ -237,6 +237,11 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
             setActiveStreamMessage((prev) =>
               prev ? { ...prev, content: displayContent } : prev
             );
+          } else if (event.type === 'clear_text') {
+            currentText = '';
+            setActiveStreamMessage((prev) =>
+              prev ? { ...prev, content: '' } : prev
+            );
           } else if (event.type === 'session_title') {
             const convRecord = await db.conversations.get(activeConversationId);
             const isDefaultTitle =
@@ -262,6 +267,7 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
         toolCalls: finalResult?.toolCalls,
         steps: finalResult?.steps ?? currentSteps,
         stepCount: finalResult?.stepCount ?? currentSteps.length,
+        workedDurationMs: finalResult?.workedDurationMs,
         timestamp: finalResult?.timestamp ?? getNowTimestamp(),
       };
 

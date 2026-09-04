@@ -30,6 +30,8 @@ export async function executeAgentStream(
     maxTokens,
   } = prepareAgentInvocation(options);
 
+  const startTime = Date.now();
+  let currentStepPreToolText = '';
   const steps: AgentExecutionStep[] = [];
   const executedToolCalls: ExecutedToolCall[] = [];
   let activeThinkingStepId: string | null = null;
@@ -102,6 +104,9 @@ export async function executeAgentStream(
         onEvent({ type: 'reasoning_delta', stepId: activeThinking.id, delta: part.text });
 
       } else if (part.type === 'start-step') {
+        // Reset pre-tool text for new step
+        currentStepPreToolText = '';
+
         // Spawn a thinking step only if no other step is currently active
         const hasActive = steps.some((s) => s.status === 'active');
         if (!hasActive) {
@@ -120,6 +125,25 @@ export async function executeAgentStream(
         }
 
       } else if (part.type === 'tool-call') {
+        // If text was generated prior to this tool call, convert it to an intermediate_text step
+        if (currentStepPreToolText.trim().length > 0) {
+          const intermediateStepId = `step_text_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+          const intermediateStep: AgentExecutionStep = {
+            id: intermediateStepId,
+            type: 'intermediate_text',
+            label: APP_CONTENT.process.intermediateUpdateLabel,
+            intermediateText: currentStepPreToolText.trim(),
+            status: 'completed',
+            timestamp: Date.now(),
+            durationMs: 1000,
+          };
+          steps.push(intermediateStep);
+          onEvent({ type: 'step_start', step: intermediateStep });
+          onEvent({ type: 'clear_text' });
+          accumulatedText = '';
+          currentStepPreToolText = '';
+        }
+
         // Close active thinking step when tool call initiates
         if (activeThinkingStepId) {
           const activeThinking = steps.find((s) => s.id === activeThinkingStepId);
@@ -150,6 +174,7 @@ export async function executeAgentStream(
         onEvent({ type: 'step_start', step: toolStep });
 
       } else if (part.type === 'tool-result') {
+        currentStepPreToolText = '';
         const targetId = `tool_${part.toolCallId}`;
         const matchingToolStep = steps.find((s) => s.id === targetId);
 
@@ -194,6 +219,7 @@ export async function executeAgentStream(
           activeThinkingStepId = null;
         }
 
+        currentStepPreToolText += part.text;
         accumulatedText += part.text;
         titleFilter.processChunk(part.text);
       }
@@ -245,6 +271,8 @@ export async function executeAgentStream(
     titleFilter.getEmittedTitle()
   );
 
+  const workedDurationMs = Math.max(1000, Date.now() - startTime);
+
   const finalResult: AgentResult = {
     symbol: symbol?.toUpperCase(),
     sessionTitle,
@@ -253,6 +281,7 @@ export async function executeAgentStream(
     steps,
     stepCount: steps.length,
     executionMode: mode,
+    workedDurationMs,
     timestamp: Date.now(),
   };
 

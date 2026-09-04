@@ -28,7 +28,7 @@ export interface ExecutedToolCall {
 /**
  * Step type for the real-time reasoning and tool execution process
  */
-export type AgentStepType = 'thinking' | 'tool';
+export type AgentStepType = 'thinking' | 'tool' | 'intermediate_text';
 
 /**
  * An individual lifecycle step in the agent's real-time reasoning timeline
@@ -39,6 +39,7 @@ export interface AgentExecutionStep {
   label: string;
   toolName?: string;
   reasoningText?: string;
+  intermediateText?: string;
   status: 'active' | 'completed' | 'error';
   timestamp: number;
   durationMs?: number;
@@ -58,11 +59,13 @@ export type AgentStreamEvent =
       durationMs?: number;
       label?: string;
       reasoningText?: string;
+      intermediateText?: string;
       toolArgs?: Record<string, unknown>;
       toolResult?: unknown;
     }
   | { type: 'reasoning_delta'; stepId: string; delta: string }
   | { type: 'text_delta'; delta: string }
+  | { type: 'clear_text' }
   | { type: 'session_title'; title: string }
   | { type: 'done'; result: AgentResult }
   | { type: 'error'; message: string };
@@ -95,6 +98,7 @@ export interface AgentResult {
   steps: AgentExecutionStep[];
   stepCount: number;
   executionMode: AgentExecutionMode;
+  workedDurationMs?: number;
   timestamp: number;
 }
 

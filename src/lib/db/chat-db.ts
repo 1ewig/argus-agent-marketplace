@@ -18,6 +18,7 @@ export interface ChatMessageRecord {
   toolCalls?: ExecutedToolCall[];
   steps?: AgentExecutionStep[];
   stepCount?: number;
+  workedDurationMs?: number;
   timestamp: number;
 }
 

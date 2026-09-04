@@ -17,6 +17,7 @@ export interface ChatMessageData {
   toolCalls?: ExecutedToolCall[];
   steps?: AgentExecutionStep[];
   stepCount?: number;
+  workedDurationMs?: number;
   timestamp: number;
 }
 
@@ -113,9 +114,15 @@ export const ChatMessage = memo(function ChatMessage({
           )}
         </div>
 
-        {/* Chronological Process Timeline (Thoughts & Tools) */}
+        {/* Chronological Process Timeline (Worked Group: Thoughts, Tools, Intermediate Text) */}
         {hasSteps && (
-          <AgentProcessTimeline steps={effectiveSteps} isStreaming={isStreaming} />
+          <AgentProcessTimeline
+            steps={effectiveSteps}
+            isStreaming={isStreaming}
+            isCompleted={Boolean(message.content)}
+            workedDurationMs={message.workedDurationMs}
+            startedAt={message.timestamp}
+          />
         )}
 
         {/* Main Response Markdown Container */}
@@ -131,8 +138,8 @@ export const ChatMessage = memo(function ChatMessage({
               <span className="inline-block size-2 rounded-full bg-theme-brand-binance animate-ping ml-1 align-middle" />
             )}
           </div>
-        ) : isStreaming ? (
-          /* Live Drafting Indicator while assistant generates response */
+        ) : isStreaming && !hasSteps ? (
+          /* Live Drafting Indicator while assistant generates response before steps attach */
           <AgentWorkingDraftIndicator startedAt={message.timestamp} />
         ) : null}
       </div>

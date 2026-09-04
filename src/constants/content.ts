@@ -74,7 +74,11 @@ export const APP_CONTENT = {
     thinkingWithSeconds: (seconds: number) => `Thinking (${seconds}s)`,
     thoughtForDuration: (seconds: number) =>
       `Thought for ${seconds} ${seconds === 1 ? 'second' : 'seconds'}`,
+    workingWithSeconds: (seconds: number) => `Working (${seconds}s)`,
+    workedForDuration: (seconds: number) =>
+      `Worked for ${seconds} ${seconds === 1 ? 'second' : 'seconds'}`,
     agentWorking: (seconds: number) => `Agent working (${seconds}s)`,
+    intermediateUpdateLabel: 'Model update',
     analyzing: 'Analyzing market data...',
     generatingResponse: 'Generating response...',
     toolRunning: 'Running',
