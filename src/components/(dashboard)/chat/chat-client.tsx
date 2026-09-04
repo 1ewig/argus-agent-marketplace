@@ -3,8 +3,7 @@
 import React, { useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowUpRight } from 'lucide-react';
-import { AgentLoader } from '@/components/common';
-import { ArgusIcon } from '../argus-icon';
+import { AgentLoader, ArgusIcon } from '@/components/common';
 import { APP_CONTENT } from '@/constants/content';
 import {
   emptyStateContainerVariants,

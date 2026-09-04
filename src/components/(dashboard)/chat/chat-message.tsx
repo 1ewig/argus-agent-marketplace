@@ -3,8 +3,7 @@
 import React, { memo } from 'react';
 import { motion } from 'framer-motion';
 import { User, AlertCircle } from 'lucide-react';
-import { AgentLoader } from '@/components/common';
-import { ArgusIcon } from '../argus-icon';
+import { AgentLoader, ArgusIcon } from '@/components/common';
 import { APP_CONTENT } from '@/constants/content';
 import { EASING_ARCHITECTURAL } from '@/constants/animation';
 import { MarkdownView } from '../markdown-view';

@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { APP_CONTENT } from '@/constants/content';
 import { tapScaleIcon } from '@/constants/animation';
 import { useTheme } from '@/hooks';
-import { ArgusIcon } from './argus-icon';
+import { ArgusIcon } from '@/components/common';
 import { StageViewSwitcher } from './stage-view-switcher';
 
 export function TopNavBar() {

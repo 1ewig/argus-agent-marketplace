@@ -3,7 +3,7 @@
 import React, { memo } from 'react';
 import { motion } from 'framer-motion';
 import { Plus } from 'lucide-react';
-import { ArgusIcon } from '../argus-icon';
+import { ArgusIcon } from '@/components/common';
 import { APP_CONTENT } from '@/constants/content';
 import { tapScaleIcon } from '@/constants/animation';
 import { ChatSessionsMenu } from './chat-sessions-menu';
