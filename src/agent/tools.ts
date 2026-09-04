@@ -5,6 +5,17 @@ import { getBinanceAdapter } from '@/lib/binance-mcp';
 import { AGENT_TOOL_DESCRIPTIONS } from './prompts';
 
 /**
+ * Strict trading pair symbol schema:
+ * Disallows empty strings, validates length, and checks alphanumeric format.
+ */
+export const symbolSchema = z
+  .string()
+  .trim()
+  .min(2, 'Trading symbol cannot be empty')
+  .max(20, 'Trading symbol is too long')
+  .regex(/^[A-Za-z0-9_]{2,20}$/, 'Trading symbol must be alphanumeric (e.g. BTCUSDT, SOLUSDC)');
+
+/**
  * Builds AI SDK-compatible tools bound to the active Binance Agent OS adapter.
  * 
  * Supports both LiveBinanceMCPAdapter (remote MCP) and SimulatedBinanceAdapter
@@ -17,7 +28,7 @@ export function buildAgentTools(customAdapter?: IBinanceAgentAdapter) {
     get_ticker_price: tool({
       description: AGENT_TOOL_DESCRIPTIONS.getTickerPrice,
       inputSchema: z.object({
-        symbol: z.string().describe('Trading pair symbol in uppercase (e.g. SOLUSDT, BTCUSDT, ETHUSDT)'),
+        symbol: symbolSchema.describe('Trading pair symbol in uppercase (e.g. SOLUSDT, BTCUSDT, ETHUSDT)'),
       }),
       execute: async ({ symbol }) => {
         try {
@@ -39,7 +50,7 @@ export function buildAgentTools(customAdapter?: IBinanceAgentAdapter) {
     get_order_book: tool({
       description: AGENT_TOOL_DESCRIPTIONS.getOrderBook,
       inputSchema: z.object({
-        symbol: z.string().describe('Trading pair symbol in uppercase (e.g. SOLUSDT, BTCUSDT)'),
+        symbol: symbolSchema.describe('Trading pair symbol in uppercase (e.g. SOLUSDT, BTCUSDT)'),
         limit: z.coerce.number().int().min(1).max(100).default(20).describe('Depth levels to retrieve (default 20)'),
       }),
       execute: async ({ symbol, limit }) => {
@@ -84,7 +95,7 @@ export function buildAgentTools(customAdapter?: IBinanceAgentAdapter) {
     get_klines: tool({
       description: AGENT_TOOL_DESCRIPTIONS.getKlines,
       inputSchema: z.object({
-        symbol: z.string().describe('Trading pair symbol in uppercase (e.g. SOLUSDT)'),
+        symbol: symbolSchema.describe('Trading pair symbol in uppercase (e.g. SOLUSDT)'),
         interval: z
           .preprocess(
             (val) => (typeof val === 'string' ? val.toLowerCase() : val),
@@ -124,7 +135,7 @@ export function buildAgentTools(customAdapter?: IBinanceAgentAdapter) {
     get_24h_stats: tool({
       description: AGENT_TOOL_DESCRIPTIONS.get24hStats,
       inputSchema: z.object({
-        symbol: z.string().describe('Trading pair symbol in uppercase (e.g. SOLUSDT)'),
+        symbol: symbolSchema.describe('Trading pair symbol in uppercase (e.g. SOLUSDT)'),
       }),
       execute: async ({ symbol }) => {
         try {
@@ -166,7 +177,7 @@ export function buildAgentTools(customAdapter?: IBinanceAgentAdapter) {
     place_spot_order: tool({
       description: AGENT_TOOL_DESCRIPTIONS.placeSpotOrder,
       inputSchema: z.object({
-        symbol: z.string().describe('Trading pair symbol e.g. SOLUSDT'),
+        symbol: symbolSchema.describe('Trading pair symbol e.g. SOLUSDT'),
         side: z.enum(['BUY', 'SELL']).describe('Order direction'),
         quantity: z.number().positive().describe('Order size in base currency'),
         orderType: z.enum(['LIMIT', 'MARKET']).default('MARKET'),
@@ -198,7 +209,7 @@ export function buildAgentTools(customAdapter?: IBinanceAgentAdapter) {
     cancel_order: tool({
       description: AGENT_TOOL_DESCRIPTIONS.cancelOrder,
       inputSchema: z.object({
-        symbol: z.string().describe('Trading pair symbol e.g. SOLUSDT'),
+        symbol: symbolSchema.describe('Trading pair symbol e.g. SOLUSDT'),
         orderId: z.string().describe('Order ID to cancel'),
       }),
       execute: async ({ symbol, orderId }) => {
@@ -221,7 +232,7 @@ export function buildAgentTools(customAdapter?: IBinanceAgentAdapter) {
     get_funding_rate: tool({
       description: AGENT_TOOL_DESCRIPTIONS.getFundingRate,
       inputSchema: z.object({
-        symbol: z.string().describe('Trading pair or perpetual contract symbol in uppercase (e.g. BTCUSDT, ETHUSDT, SOLUSDT)'),
+        symbol: symbolSchema.describe('Trading pair or perpetual contract symbol in uppercase (e.g. BTCUSDT, ETHUSDT, SOLUSDT)'),
       }),
       execute: async ({ symbol }) => {
         try {
@@ -243,7 +254,7 @@ export function buildAgentTools(customAdapter?: IBinanceAgentAdapter) {
     get_average_price: tool({
       description: AGENT_TOOL_DESCRIPTIONS.getAveragePrice,
       inputSchema: z.object({
-        symbol: z.string().describe('Trading pair symbol in uppercase (e.g. BTCUSDT, SOLUSDT)'),
+        symbol: symbolSchema.describe('Trading pair symbol in uppercase (e.g. BTCUSDT, SOLUSDT)'),
       }),
       execute: async ({ symbol }) => {
         try {
@@ -265,7 +276,7 @@ export function buildAgentTools(customAdapter?: IBinanceAgentAdapter) {
     get_recent_trades: tool({
       description: AGENT_TOOL_DESCRIPTIONS.getRecentTrades,
       inputSchema: z.object({
-        symbol: z.string().describe('Trading pair symbol in uppercase (e.g. BTCUSDT, SOLUSDT)'),
+        symbol: symbolSchema.describe('Trading pair symbol in uppercase (e.g. BTCUSDT, SOLUSDT)'),
         limit: z.number().int().min(5).max(50).default(15).describe('Number of recent trades to fetch (default 15)'),
       }),
       execute: async ({ symbol, limit }) => {

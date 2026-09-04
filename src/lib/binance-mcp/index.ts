@@ -3,6 +3,8 @@ import { LiveBinanceMCPAdapter } from './live-mcp-adapter';
 import { SimulatedBinanceAdapter } from './simulated-adapter';
 
 export * from './types';
+export * from './public-api-client';
+export * from './simulated-wallet';
 export * from './simulated-adapter';
 export * from './live-mcp-adapter';
 
