@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Pencil, Trash2, Check, X } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
 import type { ConversationRecord } from '@/lib/db';
@@ -59,8 +60,15 @@ export function ChatSessionsMenu({
         />
       </button>
 
-      {isMenuOpen && (
-        <div className="absolute right-0 mt-spacing-xs w-72 sm:w-80 bg-theme-bg-surface border border-theme-border-subtle rounded-2xl shadow-xl z-50 overflow-hidden">
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96, y: -4 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.96, y: -4 }}
+            transition={{ duration: 0.15, ease: 'easeOut' }}
+            className="absolute right-0 mt-spacing-xs w-72 sm:w-80 bg-theme-bg-surface border border-theme-border-subtle rounded-2xl shadow-xl z-50 overflow-hidden"
+          >
           <div className="flex items-center justify-between px-spacing-sm py-spacing-xs bg-theme-bg-elevated border-b border-theme-border-subtle text-2xs font-semibold text-theme-text-secondary">
             <span>{APP_CONTENT.sessions.menuTitle}</span>
             <span className="px-spacing-xs py-0.5 rounded bg-theme-bg-surface text-theme-text-muted border border-theme-border-subtle text-2xs font-mono">
@@ -169,8 +177,9 @@ export function ChatSessionsMenu({
               })
             )}
           </div>
-        </div>
+        </motion.div>
       )}
-    </div>
-  );
+    </AnimatePresence>
+  </div>
+);
 }

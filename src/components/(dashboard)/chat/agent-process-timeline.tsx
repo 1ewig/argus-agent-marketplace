@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronDown,
   ChevronUp,
@@ -122,101 +123,109 @@ export function AgentProcessTimeline({
       )}
 
       {/* Collapsible Inner Steps */}
-      {isOpen && (
-        <div className="flex flex-col gap-spacing-xs pl-3.5 border-l-2 border-theme-brand-binance/30 mt-1 mb-1.5 transition-all">
-          {visibleSteps.map((step, idx) => {
-            if (step.type === 'thinking') {
-              return (
-                <AgentThoughtAccordion
-                  key={step.id ?? `think_${idx}`}
-                  step={step}
-                  isStreaming={isStreaming}
-                />
-              );
-            }
+      <AnimatePresence initial={false}>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+            className="flex flex-col gap-spacing-xs pl-3.5 border-l-2 border-theme-brand-binance/30 mt-1 mb-1.5 overflow-hidden"
+          >
+            {visibleSteps.map((step, idx) => {
+              if (step.type === 'thinking') {
+                return (
+                  <AgentThoughtAccordion
+                    key={step.id ?? `think_${idx}`}
+                    step={step}
+                    isStreaming={isStreaming}
+                  />
+                );
+              }
 
-            if (step.type === 'intermediate_text') {
-              return (
-                <div
-                  key={step.id ?? `interm_${idx}`}
-                  className="flex flex-col gap-0.5 py-1 text-2xs text-theme-text-secondary"
-                >
-                  <div className="flex items-center gap-1 text-theme-text-muted font-medium">
-                    <Bot className="size-3 text-theme-brand-binance shrink-0" />
-                    <span>{step.label || APP_CONTENT.process.intermediateUpdateLabel}</span>
+              if (step.type === 'intermediate_text') {
+                return (
+                  <div
+                    key={step.id ?? `interm_${idx}`}
+                    className="flex flex-col gap-0.5 py-1 text-2xs text-theme-text-secondary"
+                  >
+                    <div className="flex items-center gap-1 text-theme-text-muted font-medium">
+                      <Bot className="size-3 text-theme-brand-binance shrink-0" />
+                      <span>{step.label || APP_CONTENT.process.intermediateUpdateLabel}</span>
+                    </div>
+                    <div className="pl-4 text-xs text-theme-text-secondary leading-relaxed select-text">
+                      <MarkdownView content={step.intermediateText || ''} />
+                    </div>
                   </div>
-                  <div className="pl-4 text-xs text-theme-text-secondary leading-relaxed">
-                    <MarkdownView content={step.intermediateText || ''} />
-                  </div>
-                </div>
-              );
-            }
+                );
+              }
 
-            const isActive = step.status === 'active';
-            const isStepError = step.status === 'error';
-            const isDetailsOpen = Boolean(expandedDetailsIds[step.id]);
-            const hasToolData = Boolean(step.toolArgs || step.toolResult);
+              const isActive = step.status === 'active';
+              const isStepError = step.status === 'error';
+              const isDetailsOpen = Boolean(expandedDetailsIds[step.id]);
+              const hasToolData = Boolean(step.toolArgs || step.toolResult);
 
-            const displayInfo = getToolDisplayInfo(step.toolName, step.toolArgs);
-            const ToolIcon = displayInfo.icon;
+              const displayInfo = getToolDisplayInfo(step.toolName, step.toolArgs);
+              const ToolIcon = displayInfo.icon;
 
-            return (
-              <div key={step.id ?? `tool_${idx}`} className="flex flex-col gap-0.5">
-                <div className="flex flex-col gap-1 py-0.5">
-                  <div className="flex flex-wrap items-center gap-spacing-xs py-0.5">
-                    <button
-                      type="button"
-                      onClick={() => hasToolData && toggleDetails(step.id)}
-                      className={`flex items-center gap-1.5 text-left transition-colors select-none w-fit ${hasToolData
-                          ? 'cursor-pointer group text-theme-text-secondary hover:text-theme-text-primary'
-                          : 'cursor-default text-theme-text-muted'
-                        }`}
-                    >
-                      {isActive ? (
-                        <Loader2 className="size-3 text-theme-brand-binance animate-spin shrink-0" />
-                      ) : isStepError ? (
-                        <AlertCircle className="size-3 text-theme-status-danger shrink-0" />
-                      ) : (
-                        <ToolIcon className="size-3 text-theme-brand-binance shrink-0" />
-                      )}
-                      <span
-                        className={`text-2xs ${isActive
-                            ? 'text-theme-text-primary font-semibold'
-                            : isStepError
-                              ? 'text-theme-status-danger font-medium'
-                              : hasToolData
-                                ? 'text-theme-text-secondary group-hover:text-theme-text-primary font-medium'
-                                : 'text-theme-text-muted'
+              return (
+                <div key={step.id ?? `tool_${idx}`} className="flex flex-col gap-0.5">
+                  <div className="flex flex-col gap-1 py-0.5">
+                    <div className="flex flex-wrap items-center gap-spacing-xs py-0.5">
+                      <button
+                        type="button"
+                        onClick={() => hasToolData && toggleDetails(step.id)}
+                        className={`flex items-center gap-1.5 text-left transition-colors select-none w-fit ${hasToolData
+                            ? 'cursor-pointer group text-theme-text-secondary hover:text-theme-text-primary'
+                            : 'cursor-default text-theme-text-muted'
                           }`}
                       >
-                        {displayInfo.title}
-                      </span>
-                      {hasToolData && (
-                        isDetailsOpen ? (
-                          <ChevronUp className="size-2.5 text-theme-text-muted group-hover:text-theme-text-primary transition-colors" />
+                        {isActive ? (
+                          <Loader2 className="size-3 text-theme-brand-binance animate-spin shrink-0" />
+                        ) : isStepError ? (
+                          <AlertCircle className="size-3 text-theme-status-danger shrink-0" />
                         ) : (
-                          <ChevronDown className="size-2.5 text-theme-text-muted group-hover:text-theme-text-primary transition-colors" />
-                        )
-                      )}
-                    </button>
-                  </div>
-
-                  {/* Tool Arguments/Results Drawer */}
-                  {hasToolData && isDetailsOpen && (
-                    <div className="ml-4 pt-1">
-                      <ToolResultCard
-                        toolName={step.toolName}
-                        toolArgs={step.toolArgs}
-                        toolResult={step.toolResult}
-                      />
+                          <ToolIcon className="size-3 text-theme-brand-binance shrink-0" />
+                        )}
+                        <span
+                          className={`text-2xs ${isActive
+                              ? 'text-theme-text-primary font-semibold'
+                              : isStepError
+                                ? 'text-theme-status-danger font-medium'
+                                : hasToolData
+                                  ? 'text-theme-text-secondary group-hover:text-theme-text-primary font-medium'
+                                  : 'text-theme-text-muted'
+                            }`}
+                        >
+                          {displayInfo.title}
+                        </span>
+                        {hasToolData && (
+                          isDetailsOpen ? (
+                            <ChevronUp className="size-2.5 text-theme-text-muted group-hover:text-theme-text-primary transition-colors" />
+                          ) : (
+                            <ChevronDown className="size-2.5 text-theme-text-muted group-hover:text-theme-text-primary transition-colors" />
+                          )
+                        )}
+                      </button>
                     </div>
-                  )}
+
+                    {/* Tool Arguments/Results Drawer */}
+                    {hasToolData && isDetailsOpen && (
+                      <div className="ml-4 pt-1">
+                        <ToolResultCard
+                          toolName={step.toolName}
+                          toolArgs={step.toolArgs}
+                          toolResult={step.toolResult}
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+              );
+            })}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Active Running State: Working indicator moved to the bottom */}
       {isActiveWork && (

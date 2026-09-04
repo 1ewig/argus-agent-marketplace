@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useRef } from 'react';
+import { motion } from 'framer-motion';
 import { Send, RefreshCw, Plus, ArrowUpRight } from 'lucide-react';
 import { ArgusIcon } from '../argus-icon';
 import { APP_CONTENT } from '@/constants/content';
@@ -100,15 +101,16 @@ export function ChatWindow({ mode = 'simulation' }: ChatWindowProps) {
             onDeleteSession={handleDeleteSession}
           />
 
-          <button
+          <motion.button
             type="button"
+            whileTap={{ scale: 0.94 }}
             onClick={() => void handleNewSession()}
             title={APP_CONTENT.chat.newSessionButton}
             aria-label={APP_CONTENT.chat.newSessionButton}
             className="size-8 flex items-center justify-center rounded-xl bg-theme-bg-elevated hover:bg-theme-bg-base border border-theme-border-subtle hover:border-theme-border-strong text-theme-brand-binance hover:text-theme-brand-accent cursor-pointer transition-all shadow-2xs shrink-0"
           >
             <Plus className="size-3.5" />
-          </button>
+          </motion.button>
         </div>
       </div>
 
@@ -139,17 +141,19 @@ export function ChatWindow({ mode = 'simulation' }: ChatWindowProps) {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-spacing-xs">
                 {APP_CONTENT.chat.quickPrompts.map((prompt) => (
-                  <button
+                  <motion.button
                     key={prompt}
                     type="button"
+                    whileHover={{ y: -2 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={() => void handleSend(prompt)}
-                    className="text-left text-xs p-3.5 rounded-xl bg-theme-bg-elevated/60 hover:bg-theme-bg-surface border border-theme-border-subtle hover:border-theme-border-strong text-theme-text-primary cursor-pointer transition-all shadow-2xs hover:shadow-xs group flex items-start justify-between gap-spacing-sm hover:-translate-y-0.5"
+                    className="text-left text-xs p-3.5 rounded-xl bg-theme-bg-elevated/60 hover:bg-theme-bg-surface border border-theme-border-subtle hover:border-theme-border-strong text-theme-text-primary cursor-pointer transition-colors shadow-2xs hover:shadow-xs group flex items-start justify-between gap-spacing-sm"
                   >
                     <span className="leading-snug text-theme-text-primary group-hover:text-theme-text-primary font-medium">
                       {prompt}
                     </span>
                     <ArrowUpRight className="size-3.5 text-theme-text-muted group-hover:text-theme-brand-binance group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0 mt-0.5" />
-                  </button>
+                  </motion.button>
                 ))}
               </div>
             </div>
@@ -194,8 +198,10 @@ export function ChatWindow({ mode = 'simulation' }: ChatWindowProps) {
             rows={1}
             className="flex-1 resize-none bg-transparent text-xs text-theme-text-primary placeholder:text-theme-text-muted focus:outline-hidden p-spacing-xs leading-relaxed max-h-32"
           />
-          <button
+          <motion.button
             type="button"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.94 }}
             onClick={() => {
               void handleSend();
               if (textareaRef.current) {
@@ -204,10 +210,10 @@ export function ChatWindow({ mode = 'simulation' }: ChatWindowProps) {
             }}
             disabled={!input.trim() || isLoading}
             aria-label={APP_CONTENT.chat.sendButton}
-            className="flex items-center justify-center size-8 rounded-lg bg-theme-bg-overlay text-theme-brand-binance hover:bg-black hover:scale-105 disabled:hover:scale-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-all shadow-2xs shrink-0"
+            className="flex items-center justify-center size-8 rounded-lg bg-theme-bg-overlay text-theme-brand-binance hover:bg-black disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors shadow-2xs shrink-0"
           >
             <Send className="size-3.5" />
-          </button>
+          </motion.button>
         </div>
       </div>
     </div>

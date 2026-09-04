@@ -1,6 +1,7 @@
 'use client';
 
 import React, { memo } from 'react';
+import { motion } from 'framer-motion';
 import { User, AlertCircle, Loader2 } from 'lucide-react';
 import { ArgusIcon } from '../argus-icon';
 import { APP_CONTENT } from '@/constants/content';
@@ -67,7 +68,12 @@ export const ChatMessage = memo(function ChatMessage({
   // 1. User Message (Right-aligned jet-black capsule bubble mirroring the black card in the reference design)
   if (isUser) {
     return (
-      <div className="flex justify-end items-start gap-spacing-xs w-full py-1">
+      <motion.div
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.18, ease: 'easeOut' }}
+        className="flex justify-end items-start gap-spacing-xs w-full py-1"
+      >
         <div className="flex flex-col items-end gap-1 max-w-[85%] sm:max-w-[75%]">
           <div className="bg-theme-bg-overlay text-white px-4 py-3 rounded-2xl rounded-tr-xs shadow-sm border border-theme-border-strong text-xs font-normal leading-relaxed break-words select-text">
             {message.content}
@@ -79,7 +85,7 @@ export const ChatMessage = memo(function ChatMessage({
         <div className="size-7 rounded-full bg-theme-bg-elevated border border-theme-border-subtle flex items-center justify-center text-theme-text-secondary shrink-0 mt-0.5 shadow-2xs">
           <User className="size-3.5" />
         </div>
-      </div>
+      </motion.div>
     );
   }
 
@@ -97,7 +103,12 @@ export const ChatMessage = memo(function ChatMessage({
   const hasSteps = effectiveSteps.length > 0;
 
   return (
-    <div className="flex items-start gap-spacing-sm w-full max-w-[95%] py-1">
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.18, ease: 'easeOut' }}
+      className="flex items-start gap-spacing-sm w-full max-w-[95%] py-1"
+    >
       {/* Brand Monogram Icon */}
       <div className="size-8 rounded-xl bg-theme-bg-elevated border border-theme-border-subtle flex items-center justify-center shrink-0 shadow-2xs">
         <ArgusIcon className="size-4.5 text-theme-brand-binance shrink-0" />
@@ -149,6 +160,6 @@ export const ChatMessage = memo(function ChatMessage({
           <AgentWorkingDraftIndicator startedAt={message.timestamp} />
         ) : null}
       </div>
-    </div>
+    </motion.div>
   );
 });
