@@ -77,6 +77,7 @@ export interface AgentOptions {
   prompt: string;
   symbol?: string;
   mode?: AgentExecutionMode;
+  provider?: 'groq' | 'fireworks';
   modelName?: string;
   backupModelName?: string;
   apiKey?: string;

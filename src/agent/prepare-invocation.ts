@@ -24,6 +24,7 @@ export function prepareAgentInvocation(options: AgentOptions): PreparedAgentInvo
     prompt,
     symbol,
     mode = 'simulation',
+    provider,
     modelName,
     backupModelName,
     apiKey,
@@ -34,7 +35,7 @@ export function prepareAgentInvocation(options: AgentOptions): PreparedAgentInvo
 
   const adapter = getBinanceAdapter(mode);
   const tools = buildAgentTools(adapter);
-  const model = getAgentModel(modelName, apiKey);
+  const model = getAgentModel(modelName, apiKey, provider);
   const backupModel = getBackupAgentModel(backupModelName, apiKey);
 
   const currentUserPrompt = symbol

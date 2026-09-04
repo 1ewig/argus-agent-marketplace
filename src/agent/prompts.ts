@@ -72,7 +72,8 @@ export const AGENT_TOOL_DESCRIPTIONS = {
 
 export const AGENT_ERROR_MESSAGES = {
   missingGroqApiKey: 'GROQ_API_KEY environment variable is not configured. Please set your Groq API key in .env.local to enable inference.',
+  missingFireworksApiKey: 'FIREWORKS_API_KEY environment variable is not configured. Please set your Fireworks API key in .env.local to enable inference.',
   symbolRequired: 'A valid trading pair symbol (e.g., SOLUSDT) is required for analysis.',
-  inferenceFailed: 'Failed to complete inference with Groq provider. Please verify network connectivity and API quota.',
+  inferenceFailed: 'Failed to complete inference. Please verify network connectivity and API quota.',
   toolExecutionFailed: 'An error occurred while executing Binance MCP tool.',
 } as const;

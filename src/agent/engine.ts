@@ -231,7 +231,7 @@ export async function executeAgentStream(
       await runStreamWithModel(model);
     } catch (primaryErr) {
       if (accumulatedText.length === 0 && backupModel) {
-        console.warn('Primary model error, failing over to backup model (openai/gpt-oss-120b):', primaryErr);
+        console.warn('Primary model error, failing over to backup model:', primaryErr);
         await runStreamWithModel(backupModel);
       } else {
         throw primaryErr;
@@ -322,7 +322,7 @@ export async function executeAgent(options: AgentOptions): Promise<AgentResult> 
     generateResult = await generateText(buildGenerateParams(model));
   } catch (primaryErr) {
     if (backupModel) {
-      console.warn('Primary model error, failing over to backup model (openai/gpt-oss-120b):', primaryErr);
+      console.warn('Primary model error, failing over to backup model:', primaryErr);
       generateResult = await generateText(buildGenerateParams(backupModel));
     } else {
       throw primaryErr;
