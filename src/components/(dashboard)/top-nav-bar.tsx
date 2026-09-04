@@ -3,6 +3,7 @@
 import React from 'react';
 import { Search, Bell } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
+import { StageViewSwitcher } from './stage-view-switcher';
 
 export function TopNavBar() {
   return (
@@ -17,8 +18,10 @@ export function TopNavBar() {
         </span>
       </div>
 
-      {/* Right Area: Search, Notifications, Paper Sandbox Pill */}
+      {/* Right Area: Stage Switcher, Search, Notifications, Paper Sandbox Pill */}
       <div className="flex items-center gap-spacing-sm sm:gap-spacing-md">
+        {/* Stage View Switcher (Agent vs Chart) */}
+        <StageViewSwitcher />
         {/* Quick Search Bar */}
         <div className="hidden lg:flex items-center gap-spacing-xs bg-theme-bg-elevated px-spacing-sm py-1.5 rounded-lg border border-theme-border-subtle text-theme-text-muted text-xs">
           <Search className="size-3.5" />

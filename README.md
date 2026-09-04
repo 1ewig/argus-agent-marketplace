@@ -104,7 +104,6 @@ src/
 │       ├── chat/         # ChatWindow, ChatMessage, ProcessTimeline, ToolResultCard, SessionsMenu
 │       ├── argus-icon.tsx# Brand SVG icon
 │       ├── market-chart-view.tsx # High-fidelity candlestick market chart
-│       ├── nav-dock.tsx  # Minimalist left vertical icon dock
 │       ├── stage-view-switcher.tsx # Agent Chat vs Trading Chart toggle
 │       ├── top-nav-bar.tsx # Architectural top bar with search and status
 │       └── markdown-view.tsx # Custom GFM renderer with styled tables & code blocks
