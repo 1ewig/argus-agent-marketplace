@@ -50,17 +50,12 @@ export const ChatHeader = memo(function ChatHeader({
 }: ChatHeaderProps) {
   return (
     <div className="flex items-center justify-between gap-spacing-xs px-spacing-md py-spacing-sm bg-theme-bg-surface border-b border-theme-border-subtle shrink-0">
-      {/* Brand Icon & Section Metadata */}
-      <div className="flex items-center gap-spacing-xs">
-        <ArgusIcon className="size-4 text-theme-brand-binance shrink-0" />
-        <div className="flex flex-col">
-          <span className="text-xs font-bold uppercase tracking-wider text-theme-text-muted">
-            {APP_CONTENT.header.title}
-          </span>
-          <h2 className="text-sm font-bold text-theme-text-primary tracking-tight">
-            {APP_CONTENT.chat.subtitle}
-          </h2>
-        </div>
+      {/* Brand Icon & Description */}
+      <div className="flex items-center gap-spacing-sm min-w-0">
+        <ArgusIcon className="size-5 text-theme-brand-binance shrink-0" />
+        <h2 className="text-xs font-medium text-theme-text-secondary tracking-normal truncate">
+          {APP_CONTENT.chat.subtitle}
+        </h2>
       </div>
 
       {/* Sessions Dropdown and New Session Action */}

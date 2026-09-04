@@ -3,24 +3,18 @@
 import React from 'react';
 import { Search, Bell } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
+import { ArgusIcon } from './argus-icon';
 import { StageViewSwitcher } from './stage-view-switcher';
 
 export function TopNavBar() {
   return (
     <header className="relative z-30 h-navbar flex items-center justify-between gap-spacing-md px-spacing-lg bg-theme-bg-surface border-b border-theme-border-subtle shrink-0 w-full">
-      {/* Left Area: Monogram & Brand Info */}
+      {/* Left Area: Brand Icon & Title */}
       <div className="flex items-center gap-spacing-sm">
-        <div className="size-9 rounded-xl bg-theme-bg-overlay text-white flex items-center justify-center font-extrabold text-sm tracking-tighter shadow-sm border border-theme-border-strong shrink-0">
-          <span>A<span className="text-theme-brand-binance">.</span></span>
-        </div>
-        <div className="flex flex-col">
-          <span className="text-xs font-bold uppercase tracking-wider text-theme-text-primary">
-            {APP_CONTENT.header.title}
-          </span>
-          <span className="text-2xs text-theme-text-muted hidden md:inline">
-            {APP_CONTENT.header.subtitle}
-          </span>
-        </div>
+        <ArgusIcon className="size-6 text-theme-brand-binance shrink-0" />
+        <h1 className="text-base font-extrabold tracking-tight text-theme-text-primary">
+          {APP_CONTENT.header.title}
+        </h1>
       </div>
 
       {/* Right Area: Stage Switcher, Search, Notifications, Paper Sandbox Pill */}
