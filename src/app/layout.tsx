@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { TopNavBar } from "@/components/(dashboard)/top-nav-bar";
-import { ExecutionModeProvider } from "@/context/execution-mode-context";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,10 +32,8 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="h-full bg-theme-bg-base flex flex-col overflow-hidden">
-        <ExecutionModeProvider>
-          <TopNavBar />
-          {children}
-        </ExecutionModeProvider>
+        <TopNavBar />
+        {children}
       </body>
     </html>
   );

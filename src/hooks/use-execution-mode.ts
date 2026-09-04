@@ -1,29 +1,21 @@
 'use client';
 
-import { useContext, useState } from 'react';
-import { ExecutionModeContext } from '@/context/execution-mode-context';
-import type { ExecutionMode } from '@/lib/types';
+import { useAppStore } from '@/stores/app-store';
 
 /**
  * Custom hook to manage or access the Binance Agent OS execution mode (simulation vs live_mcp).
- * Automatically consumes the global ExecutionModeContext when mounted inside ExecutionModeProvider,
- * with graceful fallback to isolated local state when used independently.
+ * Backed by the global Zustand app store to guarantee zero re-render flashes or state loss.
  * 
- * @param initialMode - Initial execution mode, defaulting to 'simulation'
  * @returns Execution mode state and state modifier functions
  */
-export function useExecutionMode(initialMode: ExecutionMode = 'simulation') {
-  const context = useContext(ExecutionModeContext);
-  const [localMode, setLocalMode] = useState<ExecutionMode>(initialMode);
-
-  if (context) {
-    return context;
-  }
+export function useExecutionMode() {
+  const executionMode = useAppStore((state) => state.executionMode);
+  const setExecutionMode = useAppStore((state) => state.setExecutionMode);
 
   return {
-    executionMode: localMode,
-    setExecutionMode: setLocalMode,
-    isSimulation: localMode === 'simulation',
-    isLiveMcp: localMode === 'live_mcp',
+    executionMode,
+    setExecutionMode,
+    isSimulation: executionMode === 'simulation',
+    isLiveMcp: executionMode === 'live_mcp',
   };
 }

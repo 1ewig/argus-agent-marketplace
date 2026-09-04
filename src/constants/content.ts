@@ -69,7 +69,7 @@ export const APP_CONTENT = {
   },
   modes: {
     simulation: {
-      label: 'Sandbox',
+      label: 'Paper Sandbox',
       description: 'Practice with live Binance market data and a simulated balance.',
     },
     liveMcp: {

@@ -1,18 +1,19 @@
 'use client';
 
-import React, { useState } from 'react';
-import { StageViewSwitcher, type StageViewMode } from '@/components/(dashboard)/stage-view-switcher';
+import React from 'react';
+import { StageViewSwitcher } from '@/components/(dashboard)/stage-view-switcher';
 import { MarketChartView } from '@/components/(dashboard)/market-chart-view';
 import { AccountPortfolioCard } from '@/components/(dashboard)/cards/account-portfolio-card';
 import { ActiveTradesCard } from '@/components/(dashboard)/cards/active-trades-card';
 import { DailyMarketCard } from '@/components/(dashboard)/cards/daily-market-card';
 import { ChatWindow } from '@/components/(dashboard)/chat/chat-window';
 import { APP_CONTENT } from '@/constants/content';
-import { useExecutionMode } from '@/hooks';
+import { useAppStore } from '@/stores/app-store';
 
 export default function Home() {
-  const { executionMode } = useExecutionMode('simulation');
-  const [stageView, setStageView] = useState<StageViewMode>('agent');
+  const executionMode = useAppStore((state) => state.executionMode);
+  const stageView = useAppStore((state) => state.stageView);
+  const setStageView = useAppStore((state) => state.setStageView);
 
   return (
     <main className="h-screen w-screen pt-navbar flex flex-col overflow-hidden bg-theme-bg-base">
@@ -41,13 +42,14 @@ export default function Home() {
             />
           </div>
 
-          {/* Central Stage View (Agent Chat or Market Chart) */}
-          <div className="flex-1 min-h-[420px] lg:min-h-0 overflow-hidden">
-            {stageView === 'agent' ? (
+          {/* Central Stage View (Zero-flash dual-render with CSS toggle) */}
+          <div className="flex-1 min-h-[420px] lg:min-h-0 overflow-hidden relative">
+            <div className={`h-full w-full ${stageView === 'agent' ? 'flex flex-col' : 'hidden'}`}>
               <ChatWindow mode={executionMode} />
-            ) : (
+            </div>
+            <div className={`h-full w-full ${stageView === 'chart' ? 'flex flex-col' : 'hidden'}`}>
               <MarketChartView />
-            )}
+            </div>
           </div>
         </section>
 

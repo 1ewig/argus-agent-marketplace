@@ -4,9 +4,9 @@ import { useState, useRef, useEffect } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { APP_CONTENT } from '@/constants/content';
 import { generateMessageId, getNowTimestamp } from '@/lib/utils';
+import { useAppStore } from '@/stores/app-store';
 import {
   db,
-  DEFAULT_CONVERSATION_ID,
   ensureDefaultConversation,
   createConversation,
   deleteConversation,
@@ -34,11 +34,17 @@ export interface UseAgentChatOptions {
  * @returns State, refs, and action handlers for the chat console
  */
 export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) {
-  const [activeConversationId, setActiveConversationId] = useState<string>(DEFAULT_CONVERSATION_ID);
-  const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [activeStreamMessage, setActiveStreamMessage] = useState<ChatMessageRecord | null>(null);
-  const [errorNotice, setErrorNotice] = useState<string | null>(null);
+  const activeConversationId = useAppStore((state) => state.activeConversationId);
+  const setActiveConversationId = useAppStore((state) => state.setActiveConversationId);
+  const input = useAppStore((state) => state.input);
+  const setInput = useAppStore((state) => state.setInput);
+  const isLoading = useAppStore((state) => state.isLoading);
+  const setIsLoading = useAppStore((state) => state.setIsLoading);
+  const activeStreamMessage = useAppStore((state) => state.activeStreamMessage);
+  const setActiveStreamMessage = useAppStore((state) => state.setActiveStreamMessage);
+  const errorNotice = useAppStore((state) => state.errorNotice);
+  const setErrorNotice = useAppStore((state) => state.setErrorNotice);
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
