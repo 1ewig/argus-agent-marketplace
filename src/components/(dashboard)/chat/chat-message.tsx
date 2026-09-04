@@ -133,7 +133,7 @@ export const ChatMessage = memo(function ChatMessage({
           <AgentProcessTimeline
             steps={effectiveSteps}
             isStreaming={isStreaming}
-            isCompleted={Boolean(message.content)}
+            isCompleted={!isStreaming}
             workedDurationMs={message.workedDurationMs}
             startedAt={message.timestamp}
           />
