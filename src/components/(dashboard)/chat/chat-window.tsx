@@ -164,8 +164,8 @@ export function ChatWindow({ mode = 'simulation' }: ChatWindowProps) {
           <ChatMessage key={msg.id} message={msg} />
         ))}
 
-        {activeStreamMessage && (
-          <ChatMessage message={activeStreamMessage} isStreaming={true} />
+        {activeStreamMessage && !messages.some((m) => m.id === activeStreamMessage.id) && (
+          <ChatMessage key={activeStreamMessage.id} message={activeStreamMessage} isStreaming={true} />
         )}
 
         {isLoading && !activeStreamMessage && (
