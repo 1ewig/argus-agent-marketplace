@@ -1,7 +1,16 @@
 import { tool } from 'ai';
 import { z } from 'zod';
-import type { IBinanceAgentAdapter } from '@/lib/binance-mcp/types';
-import { getBinanceAdapter, normalizeSymbol } from '@/lib/binance-mcp';
+import {
+  normalizeSymbol,
+  getTickerPrice,
+  getOrderBook,
+  getKlines,
+  get24hStats,
+  getFundingRate,
+  getAveragePrice,
+  getRecentTrades,
+  getOpenInterest,
+} from '@/lib/binance-mcp';
 import { AGENT_TOOL_DESCRIPTIONS } from './prompts';
 
 /**
@@ -26,14 +35,9 @@ export const symbolSchema = z
   .transform((val) => normalizeSymbol(val));
 
 /**
- * Builds AI SDK-compatible tools bound to the active Binance Agent OS adapter.
- * 
- * Supports both LiveBinanceMCPAdapter (remote MCP) and SimulatedBinanceAdapter
- * (live depth + in-memory Agentic sandbox).
+ * Builds AI SDK-compatible tools calling live Binance public endpoints directly.
  */
-export function buildAgentTools(customAdapter?: IBinanceAgentAdapter) {
-  const adapter = customAdapter ?? getBinanceAdapter();
-
+export function buildAgentTools() {
   return {
     get_ticker_price: tool({
       description: AGENT_TOOL_DESCRIPTIONS.getTickerPrice,
@@ -42,7 +46,7 @@ export function buildAgentTools(customAdapter?: IBinanceAgentAdapter) {
       }),
       execute: async ({ symbol }) => {
         try {
-          const result = await adapter.getTickerPrice(symbol.toUpperCase());
+          const result = await getTickerPrice(symbol.toUpperCase());
           return {
             success: true,
             data: result,
@@ -65,7 +69,7 @@ export function buildAgentTools(customAdapter?: IBinanceAgentAdapter) {
       }),
       execute: async ({ symbol, limit }) => {
         try {
-          const result = await adapter.getOrderBook(symbol.toUpperCase(), limit);
+          const result = await getOrderBook(symbol.toUpperCase(), limit);
           // Compute summary statistics for LLM context
           const bestBid = result.bids[0]?.[0] ?? 0;
           const bestAsk = result.asks[0]?.[0] ?? 0;
@@ -117,7 +121,7 @@ export function buildAgentTools(customAdapter?: IBinanceAgentAdapter) {
       }),
       execute: async ({ symbol, interval, limit }) => {
         try {
-          const klines = await adapter.getKlines(symbol.toUpperCase(), interval, limit);
+          const klines = await getKlines(symbol.toUpperCase(), interval, limit);
           const recentCloses = klines.map((k) => k.close);
           const latestPrice = recentCloses[recentCloses.length - 1] ?? 0;
           const earliestPrice = recentCloses[0] ?? latestPrice;
@@ -149,101 +153,13 @@ export function buildAgentTools(customAdapter?: IBinanceAgentAdapter) {
       }),
       execute: async ({ symbol }) => {
         try {
-          const stats = await adapter.get24hStats(symbol.toUpperCase());
+          const stats = await get24hStats(symbol.toUpperCase());
           return {
             success: true,
             data: stats,
           };
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : 'Unknown error';
-          return {
-            success: false,
-            error: message,
-          };
-        }
-      },
-    }),
-
-    get_account_balance: tool({
-      description: AGENT_TOOL_DESCRIPTIONS.getAccountBalances,
-      inputSchema: z.object({}),
-      execute: async () => {
-        try {
-          const balances = await adapter.getAccountBalances();
-          return {
-            success: true,
-            balances,
-          };
-        } catch (err: unknown) {
-          const message = err instanceof Error ? err.message : 'Unknown error';
-          return {
-            success: false,
-            error: message,
-          };
-        }
-      },
-    }),
-
-    place_spot_order: tool({
-      description: AGENT_TOOL_DESCRIPTIONS.placeSpotOrder,
-      inputSchema: z
-        .object({
-          symbol: symbolSchema.describe('Trading pair symbol e.g. SOLUSDT'),
-          side: z.enum(['BUY', 'SELL']).describe('Order direction'),
-          quantity: z.number().positive().describe('Order size in base currency'),
-          orderType: z.enum(['LIMIT', 'MARKET']).default('MARKET'),
-          price: z.number().positive().optional().describe('Limit price (required for LIMIT orders)'),
-          clientOrderId: z.string().optional().describe('Unique client idempotency identifier to prevent double-fills on retry'),
-          newClientOrderId: z.string().optional().describe('Binance alias for clientOrderId'),
-        })
-        .refine(
-          (data) => data.orderType !== 'LIMIT' || (typeof data.price === 'number' && data.price > 0),
-          {
-            message: 'A positive limit price is required when orderType is LIMIT',
-            path: ['price'],
-          }
-        ),
-      execute: async ({ symbol, side, quantity, orderType, price, clientOrderId, newClientOrderId }) => {
-        const effectiveClientId = clientOrderId ?? newClientOrderId;
-        try {
-          const result = await adapter.placeSpotOrder({
-            symbol,
-            side,
-            type: orderType,
-            quantity,
-            price,
-            clientOrderId: effectiveClientId,
-            newClientOrderId: effectiveClientId,
-          });
-          return {
-            success: true,
-            receipt: result,
-          };
-        } catch (err: unknown) {
-          const message = err instanceof Error ? err.message : 'Execution rejected';
-          return {
-            success: false,
-            error: message,
-          };
-        }
-      },
-    }),
-
-    cancel_order: tool({
-      description: AGENT_TOOL_DESCRIPTIONS.cancelOrder,
-      inputSchema: z.object({
-        symbol: symbolSchema.describe('Trading pair symbol e.g. SOLUSDT'),
-        orderId: z.string().describe('Order ID to cancel'),
-      }),
-      execute: async ({ symbol, orderId }) => {
-        try {
-          const result = await adapter.cancelOrder(symbol.toUpperCase(), orderId);
-          return {
-            success: true,
-            data: result,
-          };
-        } catch (err: unknown) {
-          const message = err instanceof Error ? err.message : 'Cancel failed';
           return {
             success: false,
             error: message,
@@ -259,7 +175,7 @@ export function buildAgentTools(customAdapter?: IBinanceAgentAdapter) {
       }),
       execute: async ({ symbol }) => {
         try {
-          const result = await adapter.getFundingRate(symbol.toUpperCase());
+          const result = await getFundingRate(symbol.toUpperCase());
           return {
             success: true,
             data: result,
@@ -281,7 +197,7 @@ export function buildAgentTools(customAdapter?: IBinanceAgentAdapter) {
       }),
       execute: async ({ symbol }) => {
         try {
-          const result = await adapter.getAveragePrice(symbol.toUpperCase());
+          const result = await getAveragePrice(symbol.toUpperCase());
           return {
             success: true,
             data: result,
@@ -304,7 +220,7 @@ export function buildAgentTools(customAdapter?: IBinanceAgentAdapter) {
       }),
       execute: async ({ symbol, limit }) => {
         try {
-          const trades = await adapter.getRecentTrades(symbol.toUpperCase(), limit);
+          const trades = await getRecentTrades(symbol.toUpperCase(), limit);
           const totalVolume = trades.reduce((sum, t) => sum + t.qty, 0);
           const buyerMakerVolume = trades.filter((t) => t.isBuyerMaker).reduce((sum, t) => sum + t.qty, 0);
           const takerBuyVolume = +(totalVolume - buyerMakerVolume).toFixed(4);
@@ -339,7 +255,7 @@ export function buildAgentTools(customAdapter?: IBinanceAgentAdapter) {
       }),
       execute: async ({ symbol }) => {
         try {
-          const result = await adapter.getOpenInterest(symbol.toUpperCase());
+          const result = await getOpenInterest(symbol.toUpperCase());
           return {
             success: true,
             data: result,

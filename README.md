@@ -37,28 +37,19 @@ Argus provides immediate, unauthenticated access to the full suite of public Bin
 * **`get_open_interest`:** Real-time Binance Perpetual Futures open interest contracts and latest settlement timestamp.
 * **`get_average_price`:** 5-minute rolling Volume Weighted Average Price (VWAP) fair value benchmark.
 * **`get_recent_trades`:** Public trade tape prints with timestamps, quantities, and taker buyer vs. seller volume ratio.
-* **`get_account_balance`:** Queries real-time paper wallet balances ($500 test funds) in sandbox mode.
-* **`place_spot_order`:** Executes market or limit spot orders with strict price filter validation and idempotency keys.
-* **`cancel_order`:** Cancels open limit orders and safely releases locked collateral back to available balance.
 
-### 3. Execution Guardrails & Server-Side Idempotency
-To prevent catastrophic trading errors and simulate production exchange safeguards, Argus incorporates enterprise-grade execution rules:
-* **Strict Server-Side Idempotency:** Duplicate order submissions carrying the same `clientOrderId` (or `newClientOrderId`) return the original fill receipt instead of creating a new order, preventing double-fills on network retries or agent self-correction loops.
-* **Binance `PERCENT_PRICE` Filter:** Limit orders deviating unrealistically far from current mark price (e.g., $0.0000001 for BTC) are rejected off-hand, matching real exchange mechanics.
-* **Resting Limit Orders (`status: 'NEW'`):** Limit buy orders below market and limit sell orders above market do not unrealistically fill immediately; they rest as open orders and lock collateral until crossed or canceled.
-* **Order Cancellation Validation:** Non-existent order IDs (`SIM-999999999`), symbol mismatches, or already-filled orders cannot be canceled; canceling active limit orders instantly unlocks reserved collateral.
+### 3. Market Data Guardrails & Universal Symbol Sanitization
+To ensure robust analysis and protect against faulty inputs, Argus incorporates rigorous data handling rules:
+* **Zero Fake / Synthetic Market Data:** If an invalid symbol is passed or an API request fails, authentic Binance errors are surfaced. Prices and market metrics are never fabricated or estimated.
 * **Symbol Sanitization (`normalizeSymbol`):** Automatically cleans quotes (`"BTCUSDT"`), internal separators (`BTC/USDT`, `BTC-USDT`), and lowercase casing (`btcusdt`), enforcing standard alphanumeric quote asset formats (`USDT`, `USDC`, etc.).
+* **Deterministic Calculations:** Order book spread percentages, depth imbalance ratios, candlestick percentage movements, and taker volume flow are computed via pure mathematical functions.
 
 ### 4. Single-Turn Parallel Tool Execution
 * Dispatches independent market queries concurrently in a single LLM round-trip.
 * When asking for a coin's status, Argus simultaneously fetches ticker price, 24h market statistics, recent trades, and order book depth—reducing multi-step latency by up to 70%.
 
-### 5. Live Public Feeds & Local Paper Sandbox
-Argus implements a unified architecture querying production Binance REST APIs (`api.binance.com` and `fapi.binance.com`) for **100% real, live market data** across all market tools. Account balances ($500 test funds) and order executions operate in an isolated in-memory paper trading sandbox (`SimulatedAgentWallet`) with server-side idempotency, resting limit orders, and collateral locking. Hackathon judges and traders can evaluate real-time analytics, risk checks, and trade executions immediately out of the box with zero deposit, API keys, or KYC requirements.
-
-### 6. Dynamic Environment Awareness
-* During prompt assembly, the agent dynamically injects its active environment status into its system directives.
-* In Sandbox mode, Argus explicitly knows it is querying real live production market feeds while placing simulated paper trades, allowing it to communicate with full transparency without confusing test funds with real assets.
+### 5. 100% Live Public Feeds (Zero API Keys or KYC Required)
+Argus queries production Binance REST APIs (`api.binance.com` and `fapi.binance.com`) for **100% real, live market data** across all market analysis tools. Anyone can run and evaluate real-time analytics, liquidity depth checks, and derivative sentiment immediately out of the box with zero deposit, API keys, KYC, or private credentials required.
 
 ### 7. Unified "Worked for # seconds" Process Timeline
 * **Single Collapsible Group:** All agent execution steps (reasoning blocks, tool invocations, and formatted tool results) are cleanly bundled inside an overarching accordion.

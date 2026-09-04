@@ -1,6 +1,5 @@
 import { getAgentModel, getBackupAgentModel } from './providers';
 import { buildAgentTools } from './tools';
-import { getBinanceAdapter } from '@/lib/binance-mcp';
 import {
   ARGUS_SYSTEM_PROMPT,
   FIRST_TURN_SESSION_TITLE_DIRECTIVE,
@@ -37,8 +36,7 @@ export function prepareAgentInvocation(options: AgentOptions): PreparedAgentInvo
     systemDirective,
   } = options;
 
-  const adapter = getBinanceAdapter();
-  const tools = buildAgentTools(adapter);
+  const tools = buildAgentTools();
   const model = getAgentModel(modelName, apiKey, provider);
   const backupModel = getBackupAgentModel(backupModelName, apiKey);
 

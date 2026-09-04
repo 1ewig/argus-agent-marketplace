@@ -6,9 +6,6 @@ import {
   Layers,
   BarChart3,
   Activity,
-  Wallet,
-  ArrowRightLeft,
-  XCircle,
   Sparkles,
   AlertCircle,
   CheckCircle2,
@@ -34,8 +31,6 @@ export function getToolDisplayInfo(
   const normalizedName = toolName ?? '';
   const symbol = typeof toolArgs?.symbol === 'string' ? toolArgs.symbol.toUpperCase() : undefined;
   const interval = typeof toolArgs?.interval === 'string' ? toolArgs.interval : undefined;
-  const side = typeof toolArgs?.side === 'string' ? toolArgs.side.toUpperCase() : undefined;
-  const quantity = typeof toolArgs?.quantity === 'number' ? toolArgs.quantity : undefined;
 
   const labels = APP_CONTENT.process.toolLabels;
 
@@ -86,24 +81,6 @@ export function getToolDisplayInfo(
       return {
         title: labels.get_open_interest(symbol),
         icon: Layers,
-        symbol,
-      };
-    case 'get_account_balance':
-      return {
-        title: labels.get_account_balance(),
-        icon: Wallet,
-        symbol,
-      };
-    case 'place_spot_order':
-      return {
-        title: labels.place_spot_order(symbol, side, quantity),
-        icon: ArrowRightLeft,
-        symbol,
-      };
-    case 'cancel_order':
-      return {
-        title: labels.cancel_order(symbol),
-        icon: XCircle,
         symbol,
       };
     default:
@@ -166,7 +143,6 @@ interface ToolResultCardProps {
  */
 export const ToolResultCard = React.memo(function ToolResultCard({
   toolName,
-  toolArgs,
   toolResult,
 }: ToolResultCardProps) {
   const res = APP_CONTENT.process.results;
@@ -552,92 +528,6 @@ export const ToolResultCard = React.memo(function ToolResultCard({
                 <span className="font-mono text-theme-text-secondary">{time}</span>
               </div>
             </div>
-          </div>
-        );
-      }
-
-      case 'get_account_balance': {
-        const balances = Array.isArray(resultObj?.balances)
-          ? (resultObj.balances as Array<{ asset: string; free: number; locked: number }>).filter(
-              (b) => b.free > 0 || b.locked > 0
-            )
-          : [];
-
-        if (balances.length === 0) {
-          return (
-            <div className="p-spacing-xs rounded-md bg-theme-bg-elevated border border-theme-border-subtle text-2xs text-theme-text-muted">
-              {res.noBalances}
-            </div>
-          );
-        }
-
-        return (
-          <div className="flex flex-wrap gap-spacing-xs p-spacing-xs rounded-md bg-theme-bg-elevated border border-theme-border-subtle">
-            {balances.map((b) => (
-              <div
-                key={b.asset}
-                className="flex items-center gap-spacing-xs px-spacing-xs py-0.5 rounded bg-theme-bg-surface border border-theme-border-subtle text-2xs"
-              >
-                <span className="font-bold text-theme-text-primary">{b.asset}</span>
-                <span className="text-theme-text-secondary">
-                  {b.free.toLocaleString('en-US', { maximumFractionDigits: 4 })}
-                </span>
-                {b.locked > 0 && (
-                  <span className="text-[10px] text-theme-text-muted">
-                    ({b.locked} {res.lockedBalance})
-                  </span>
-                )}
-              </div>
-            ))}
-          </div>
-        );
-      }
-
-      case 'place_spot_order': {
-        const receipt = (resultObj?.receipt as Record<string, unknown>) ?? resultObj;
-        const side = String(receipt?.side ?? 'BUY');
-        const isBuy = side === 'BUY';
-
-        return (
-          <div className="flex flex-wrap items-center gap-spacing-sm p-spacing-xs rounded-md bg-theme-bg-elevated border border-theme-border-subtle text-2xs">
-            <span
-              className={`px-spacing-xs py-0.5 rounded font-bold uppercase ${
-                isBuy
-                  ? 'bg-theme-status-success/15 text-theme-status-success'
-                  : 'bg-theme-status-danger/15 text-theme-status-danger'
-              }`}
-            >
-              {side} {String(receipt?.symbol ?? '')}
-            </span>
-            <span className="text-theme-text-muted">{res.orderStatus}:</span>
-            <span className="font-semibold text-theme-text-primary">{String(receipt?.status ?? 'FILLED')}</span>
-            <span className="text-theme-text-muted">•</span>
-            <span className="text-theme-text-secondary">
-              {String(receipt?.executedQty ?? '')} @ {formatUsd(receipt?.price)}
-            </span>
-          </div>
-        );
-      }
-
-      case 'cancel_order': {
-        const data = (resultObj?.data as Record<string, unknown>) ?? resultObj;
-        const symbol = typeof toolArgs?.symbol === 'string' ? (toolArgs.symbol as string).toUpperCase() : undefined;
-        const orderId = typeof data?.orderId === 'string' ? data.orderId : typeof toolArgs?.orderId === 'string' ? (toolArgs.orderId as string) : undefined;
-
-        return (
-          <div className="flex flex-wrap items-center gap-spacing-sm p-spacing-xs rounded-md bg-theme-bg-elevated border border-theme-border-subtle text-2xs">
-            <span className="px-spacing-xs py-0.5 rounded font-bold uppercase bg-theme-status-warning/15 text-theme-status-warning">
-              {res.orderCanceled}
-            </span>
-            {symbol && (
-              <span className="font-semibold text-theme-text-primary">{symbol}</span>
-            )}
-            {orderId && (
-              <>
-                <span className="text-theme-text-muted">•</span>
-                <span className="text-theme-text-secondary">#{orderId}</span>
-              </>
-            )}
           </div>
         );
       }

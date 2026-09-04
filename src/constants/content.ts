@@ -71,26 +71,26 @@ export const APP_CONTENT = {
   },
   modes: {
     simulation: {
-      label: 'Paper Sandbox',
-      description: 'Practice with live Binance market data and a simulated balance.',
+      label: 'Live Public Feeds',
+      description: 'Stream and analyze real-time Binance spot and derivative market data with zero API keys.',
     },
   },
   chat: {
     title: 'Chat',
     subtitle: 'Ask questions, check prices, and inspect order books in real time',
-    inputPlaceholder: 'Ask about prices, market trends, order book depth, or wallet balances...',
+    inputPlaceholder: 'Ask about prices, market trends, order book depth, or funding rates...',
     sendButton: 'Send',
     clearButton: 'Clear',
     emptyCategory: 'Binance Market Assistant',
     emptyTitle: 'How can I help you today?',
-    emptySubtitle: 'Inspect live order books, 24h volume stats, perpetual funding rates, or test orders with paper funds.',
+    emptySubtitle: 'Inspect live order books, 24h volume stats, perpetual funding rates, and recent trades in real time.',
     quickActionsTitle: 'Quick Actions',
     quickActions: [
       { id: 'depth', label: 'SOL/USDT Depth', template: 'Check SOLUSDT live price, spread, and order book depth' },
       { id: 'stats', label: 'BTC 24h Stats', template: 'Show 24h market stats and volume for BTCUSDT' },
       { id: 'oi', label: 'BTC Open Interest', template: 'Check BTCUSDT live open interest and funding rate' },
       { id: 'chart', label: 'ETH 15m Chart', template: 'Analyze ETHUSDT on the 15m candlestick chart' },
-      { id: 'wallet', label: 'Wallet Balance', template: 'Check my paper wallet balances and available margin' },
+      { id: 'vwap', label: 'BTC 5m VWAP', template: 'Calculate BTCUSDT 5-minute rolling average price (VWAP)' },
       { id: 'trades', label: 'Recent Trades', template: 'Show recent trades and taker buyer/seller ratio for SOLUSDT' },
     ],
     quickPromptsTitle: 'Quick Actions',
@@ -99,7 +99,7 @@ export const APP_CONTENT = {
       'Show 24h market stats and volume for BTCUSDT',
       'Check BTCUSDT live open interest and funding rate',
       'Analyze ETHUSDT on the 15m candlestick chart',
-      'Check my paper wallet balances and available margin',
+      'Calculate BTCUSDT 5-minute rolling average price (VWAP)',
       'Show recent trades and taker buyer/seller ratio for SOLUSDT',
     ],
     toolCallsLabel: 'Tools used',
@@ -183,11 +183,6 @@ export const APP_CONTENT = {
         symbol && interval ? `Reading ${symbol} ${interval} chart` : symbol ? `Reading ${symbol} chart` : 'Reading chart',
       get_24h_stats: (symbol?: string) =>
         symbol ? `Fetching ${symbol} 24h market stats` : 'Fetching 24h market stats',
-      get_account_balance: () => 'Checking wallet balances',
-      place_spot_order: (symbol?: string, side?: string, quantity?: number) =>
-        side && symbol ? `Placing ${side} order for ${quantity ? `${quantity} ` : ''}${symbol}` : 'Placing spot order',
-      cancel_order: (symbol?: string) =>
-        symbol ? `Cancelling order for ${symbol}` : 'Cancelling order',
       get_funding_rate: (symbol?: string) =>
         symbol ? `Checking ${symbol} funding rate` : 'Checking funding rate',
       get_average_price: (symbol?: string) =>
@@ -200,7 +195,6 @@ export const APP_CONTENT = {
     },
     results: {
       actionSuccess: 'Action completed',
-      orderCanceled: 'Order Canceled',
       livePrice: 'Live Price',
       fundingRate: 'Funding Rate',
       annualizedRate: 'Annualized (APR)',
@@ -232,14 +226,6 @@ export const APP_CONTENT = {
       periodChange: 'Period Change',
       latestPrice: 'Latest Price',
       candlesCount: 'Candles Analyzed',
-      availableBalance: 'Available',
-      lockedBalance: 'In Orders',
-      orderStatus: 'Status',
-      executedQuantity: 'Quantity',
-      executionPrice: 'Executed Price',
-      totalQuote: 'Total',
-      commission: 'Commission',
-      noBalances: 'No active balances found',
       errorTitle: 'Action Error',
       emptyResult: 'No details available',
       priceHeader: 'Price',
@@ -254,9 +240,6 @@ export const APP_CONTENT = {
       get_average_price: 'get_average_price',
       get_recent_trades: 'get_recent_trades',
       get_open_interest: 'get_open_interest',
-      get_account_balance: 'get_account_balance',
-      place_spot_order: 'place_spot_order',
-      cancel_order: 'cancel_order',
     } as Record<string, string>,
   },
 } as const;

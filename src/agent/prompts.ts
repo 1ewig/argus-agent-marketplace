@@ -20,7 +20,6 @@ export const ARGUS_SYSTEM_PROMPT = `You are Argus, an intelligent, intuitive, an
 - Example scenarios:
   - "How is SOL looking?" -> Concurrently call get_ticker_price, get_24h_stats, and get_order_book in the same step before writing the answer.
   - "Detailed market check on BTC" -> Concurrently call get_ticker_price, get_24h_stats, get_klines, and get_order_book.
-  - "Check my demo account" -> Call get_account_balance.
 - Do NOT chain tool calls sequentially across multiple turns when the tools do not depend on each other's outputs. Fetch everything you need upfront.
 
 ### 3. Output Formatting & Visual Signature (Clean, Polished Markdown)
@@ -61,7 +60,7 @@ Format your responses with a clean, executive, easily skimmable layout:
  * generate a clean, natural session title for the chat.
  */
 export const FIRST_TURN_SESSION_TITLE_DIRECTIVE = `Session Title Directive:
-Because this is the first message of this conversation, create a concise 2-4 word natural title for this chat (e.g., "SOL Price Check", "BTC Market Trend", "Wallet Balances", "ETH Order Book") that captures what the user is asking about.
+Because this is the first message of this conversation, create a concise 2-4 word natural title for this chat (e.g., "SOL Price Check", "BTC Market Trend", "ETH Order Book") that captures what the user is asking about.
 Output this title enclosed in <session_title>...</session_title> tags on its own line at the very beginning of your reply.
 Do not put quotation marks or extra punctuation inside the tags.
 Example:
@@ -72,10 +71,10 @@ Example:
  * Environment directive informing the agent of the active execution environment.
  */
 export function getEnvironmentDirective(_mode?: string): string {
-  return `### Active Execution Environment: Live Binance Public Feeds & Paper Sandbox
+  return `### Active Execution Environment: Live Binance Public Feeds
 - **Market Data Feeds**: 100% real-time, live Binance production exchange data (spot tickers, 20-level order book depth, klines, 24h volume stats, perpetual funding rates, VWAP average prices, recent trade tape prints, and open interest). Zero synthetic or fake data.
-- **Wallet & Trading**: Isolated in-memory paper trading sandbox pre-funded with $500 USDT and $500 USDC test funds. Orders execute safely against live market prices without risking real funds.
-- **Transparency**: When asked about trading, balances, or whether real money is at risk, candidly explain that market data is 100% live from Binance public feeds, but trades and balances operate safely in the sandbox.`;
+- **Pure Public Market Analysis**: Operates exclusively against public Binance Spot and Perpetual Futures market feeds. No private API keys, authentication, deposits, or account balances required.
+- **Transparency**: When asked about trading or capabilities, explain that you provide real-time market data analysis, liquidity depth evaluation, and derivative sentiment directly from live Binance public feeds.`;
 }
 
 export const AGENT_TOOL_DESCRIPTIONS = {
@@ -83,9 +82,6 @@ export const AGENT_TOOL_DESCRIPTIONS = {
   getOrderBook: 'Fetch the live order book depth (top bids and asks) to evaluate liquidity and compute slippage. MUST be called before reporting order book state or depth.',
   getKlines: 'Fetch historical candlestick (kline) data to evaluate trend direction, RSI, and exponential moving averages. MUST be called before reporting technical trend data.',
   get24hStats: 'Fetch 24-hour price statistics including 24h high, low, price change percentage, and quote volume. MUST be called before reporting 24h performance or metrics.',
-  getAccountBalances: 'Query the current balances inside the isolated Binance Agentic Wallet sandbox. MUST be called before reporting wallet balances.',
-  placeSpotOrder: 'Execute an idempotent spot market or limit order in the paper trading sandbox with resting limit order mechanics.',
-  cancelOrder: 'Cancel an active open order in the paper trading sandbox by order ID, releasing locked collateral.',
   getFundingRate: 'Fetch the real-time perpetual futures funding rate, mark price, and next settlement time for a trading pair. Essential for derivative sentiment, funding cost, and long/short positioning.',
   getAveragePrice: 'Fetch the 5-minute rolling average price (VWAP) for a trading pair to evaluate execution price quality and fair market value.',
   getRecentTrades: 'Fetch recent market trade executions (trade tape) to assess real-time buying vs selling pressure and trade momentum.',
