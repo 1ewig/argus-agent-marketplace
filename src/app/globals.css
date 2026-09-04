@@ -192,11 +192,40 @@ html.light {
   background: var(--theme-text-muted);
 }
 
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(150, 150, 150, 0.25) transparent;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(150, 150, 150, 0.25);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(150, 150, 150, 0.4);
+}
+
 /* Touch responsiveness and mobile tap highlight elimination */
 button,
 [role="button"] {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+}
+
+/* Gemini-style Atmospheric Ambient Depth Glow */
+.ambient-glow-gemini {
+  background: radial-gradient(
+    ellipse 75% 55% at 50% 50%,
+    color-mix(in srgb, var(--theme-status-info) 14%, transparent) 0%,
+    color-mix(in srgb, var(--theme-brand-binance) 5%, transparent) 40%,
+    transparent 72%
+  );
 }
 
 body {

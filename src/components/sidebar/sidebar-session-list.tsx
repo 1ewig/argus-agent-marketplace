@@ -56,7 +56,7 @@ export function SidebarSessionList({
       <div
         className={`flex-1 overflow-y-auto overflow-x-hidden flex flex-col gap-1 ${
           isCollapsed ? 'items-center' : 'pr-0.5'
-        } scrollbar-thin`}
+        } custom-scrollbar`}
       >
         {conversations.length === 0 ? (
           <motion.div

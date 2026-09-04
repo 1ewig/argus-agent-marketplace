@@ -41,12 +41,20 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
   const isChatEmpty = messages.length === 0 && !activeStreamMessage;
 
   return (
-    <div className="flex flex-col h-full w-full bg-theme-bg-base overflow-hidden">
+    <div className="relative flex flex-col h-full w-full bg-theme-bg-base overflow-hidden">
+      {/* Gemini-Style Atmospheric Ambient Depth Glow */}
+      <div
+        aria-hidden="true"
+        className={`pointer-events-none absolute inset-0 ambient-glow-gemini transition-opacity duration-700 ${
+          isChatEmpty ? 'opacity-90' : 'opacity-30'
+        }`}
+      />
+
       {/* Messages Scroll Area */}
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className="relative flex-1 overflow-y-auto overscroll-y-contain [will-change:scroll-position] [transform:translateZ(0)] px-spacing-md sm:px-spacing-lg py-spacing-md min-h-0"
+        className="relative z-10 flex-1 overflow-y-auto overscroll-y-contain [will-change:scroll-position] [transform:translateZ(0)] px-spacing-md sm:px-spacing-lg py-spacing-md min-h-0 custom-scrollbar"
       >
         <AnimatePresence>
           {isChatEmpty && (
@@ -69,17 +77,14 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
                 </motion.div>
 
                 {/* Practical Utilitarian Headline */}
-                <motion.div variants={emptyStateItemVariants} className="flex flex-col items-center w-full">
-                  <h3 className="text-xl sm:text-2xl font-bold text-theme-text-primary tracking-tight mb-spacing-xs max-w-3xl font-sans leading-tight">
+                <motion.div variants={emptyStateItemVariants} className="flex flex-col items-center w-full mb-spacing-md">
+                  <h3 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-theme-text-primary tracking-tight font-sans leading-tight text-center">
                     {APP_CONTENT.chat.emptyTitle}
                   </h3>
-                  <p className="text-xs sm:text-sm text-theme-text-secondary max-w-2xl mb-spacing-md leading-relaxed">
-                    {APP_CONTENT.chat.emptySubtitle}
-                  </p>
                 </motion.div>
 
                 {/* Quick Action Template Pills */}
-                <motion.div variants={emptyStateItemVariants} className="flex flex-col items-center gap-spacing-xs w-full">
+                <motion.div variants={emptyStateItemVariants} className="flex flex-col items-center gap-spacing-xs w-full mb-spacing-sm">
                   <div className="flex items-center justify-center mb-0.5">
                     <span className="text-2xs font-semibold uppercase tracking-wider text-theme-text-muted">
                       {APP_CONTENT.chat.quickActionsTitle}
@@ -94,7 +99,7 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
                         whileHover={{ y: -1 }}
                         whileTap={tapScalePill}
                         onClick={() => handleSelectTemplate(action.template)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-theme-bg-elevated/70 hover:bg-theme-bg-surface active:bg-theme-bg-elevated border border-theme-border-subtle hover:border-theme-border-strong active:border-theme-border-strong text-theme-text-secondary hover:text-theme-text-primary text-xs font-medium cursor-pointer transition-colors shadow-2xs group select-none"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-theme-bg-surface/80 hover:bg-theme-bg-surface active:bg-theme-bg-elevated border border-theme-border-subtle hover:border-theme-border-strong active:border-theme-border-strong text-theme-text-secondary hover:text-theme-text-primary text-xs font-medium cursor-pointer transition-all shadow-2xs group select-none backdrop-blur-xs"
                       >
                         <span className="leading-tight">{action.label}</span>
                         <ArrowUpRight className="size-3 text-theme-text-muted group-hover:text-theme-brand-binance group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0" />
@@ -106,7 +111,7 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
                 {/* Hero Input (directly below quick action chips) */}
                 <motion.div
                   variants={emptyStateItemVariants}
-                  className="w-full max-w-2xl mt-spacing-md px-spacing-xs"
+                  className="w-full max-w-2xl px-spacing-xs mt-spacing-xs"
                 >
                   <ChatInput
                     ref={chatInputRef}

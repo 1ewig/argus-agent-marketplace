@@ -106,12 +106,11 @@ export const APP_CONTENT = {
   chat: {
     title: 'Chat',
     subtitle: 'Ask questions, check prices, and inspect order books in real time',
-    inputPlaceholder: 'Ask about prices, market trends, order book depth, or funding rates...',
+    inputPlaceholder: 'Ask Argus...',
     sendButton: 'Send',
     clearButton: 'Clear',
     emptyCategory: 'Binance Market Assistant',
     emptyTitle: 'How can I help you today?',
-    emptySubtitle: 'Inspect live order books, 24h volume stats, perpetual funding rates, and recent trades in real time.',
     quickActionsTitle: 'Quick Actions',
     quickActions: [
       { id: 'depth', label: 'SOL/USDT Depth', template: 'Check SOLUSDT live price, spread, and order book depth' },

@@ -13,7 +13,7 @@ import React, {
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Square, Loader2 } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
-import { tapScaleButton } from '@/constants/animation';
+import { tapScaleIcon } from '@/constants/animation';
 
 export interface ChatInputHandle {
   setInputText: (text: string) => void;
@@ -143,7 +143,7 @@ export const ChatInput = memo(
     return (
       <div className={containerClassName ?? 'p-spacing-md pt-0 bg-theme-bg-base shrink-0'}>
         <div
-          className={`${className ?? 'max-w-3xl'} mx-auto w-full relative flex items-end gap-2 bg-theme-bg-surface hover:bg-theme-bg-surface/90 border border-theme-border-subtle rounded-2xl p-1.5 sm:p-2 focus-within:border-theme-border-strong focus-within:ring-1 focus-within:ring-theme-border-strong transition-all shadow-xs`}
+          className={`${className ?? 'max-w-3xl'} mx-auto w-full relative flex items-center gap-2 bg-theme-bg-surface/90 hover:bg-theme-bg-surface border border-theme-border-subtle hover:border-theme-border-strong focus-within:border-theme-border-strong rounded-3xl sm:rounded-full pl-4 pr-1.5 py-1.5 focus-within:ring-2 focus-within:ring-theme-brand-binance/20 shadow-xl shadow-black/30 dark:shadow-black/60 transition-all backdrop-blur-xl`}
         >
           {/* Text Area */}
           <textarea
@@ -158,16 +158,15 @@ export const ChatInput = memo(
             onPaste={handlePaste}
             onCompositionStart={() => setIsComposing(true)}
             onCompositionEnd={() => setIsComposing(false)}
-            className="flex-1 resize-none bg-transparent text-sm leading-6 text-theme-text-primary placeholder:text-theme-text-muted focus:outline-hidden px-2.5 py-1.5 custom-scrollbar min-h-[38px]"
+            className="flex-1 resize-none bg-transparent text-sm leading-6 text-theme-text-primary placeholder:text-theme-text-muted focus:outline-hidden py-1.5 custom-scrollbar min-h-[38px]"
             style={{ maxHeight: `${maxHeight}px` }}
           />
 
           {/* Action Button (Send / Stop / Loading) */}
-          <div className="pb-0.5 pr-0.5 shrink-0">
-            <motion.button
+          <motion.button
               type="button"
-              whileHover={!isButtonDisabled ? { scale: 1.05 } : undefined}
-              whileTap={!isButtonDisabled ? tapScaleButton : undefined}
+              whileHover={!isButtonDisabled ? { scale: 1.06 } : undefined}
+              whileTap={!isButtonDisabled ? tapScaleIcon : undefined}
               onClick={isLoading && onStop ? onStop : handleSubmit}
               disabled={isButtonDisabled}
               aria-label={
@@ -177,9 +176,11 @@ export const ChatInput = memo(
                     : 'Generating response...'
                   : APP_CONTENT.chat.sendButton
               }
-              className={`flex items-center justify-center size-8 rounded-xl transition-all shadow-2xs select-none ${isLoading
-                  ? 'bg-theme-bg-overlay text-theme-text-primary hover:bg-black/10 dark:hover:bg-white/10 cursor-pointer'
-                  : 'bg-theme-bg-overlay text-theme-brand-binance hover:bg-black active:brightness-95 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer'
+              className={`flex items-center justify-center size-8 rounded-full transition-all shadow-xs select-none ${isLoading
+                  ? 'bg-theme-bg-overlay text-theme-text-primary hover:bg-theme-bg-elevated cursor-pointer'
+                  : isButtonDisabled
+                    ? 'bg-theme-bg-elevated text-theme-text-muted opacity-40 cursor-not-allowed'
+                    : 'bg-theme-brand-binance text-theme-bg-overlay hover:brightness-105 active:brightness-95 cursor-pointer'
                 }`}
             >
               <AnimatePresence mode="wait" initial={false}>
@@ -218,7 +219,6 @@ export const ChatInput = memo(
                 )}
               </AnimatePresence>
             </motion.button>
-          </div>
         </div>
       </div>
     );
