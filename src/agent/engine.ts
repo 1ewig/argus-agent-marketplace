@@ -188,6 +188,48 @@ export async function executeAgentStream(
           result: part.output,
         });
 
+      } else if (part.type === 'tool-error' || part.type === 'tool-output-denied') {
+        currentStepPreToolText = '';
+        const targetId = `tool_${part.toolCallId}`;
+        const matchingToolStep = steps.find((s) => s.id === targetId);
+
+        const errorObj = 'error' in part ? part.error : 'Tool execution denied';
+        const errorMessage =
+          errorObj instanceof Error
+            ? errorObj.message
+            : typeof errorObj === 'string'
+            ? errorObj
+            : typeof errorObj === 'object' && errorObj !== null && 'message' in errorObj
+            ? String((errorObj as { message: unknown }).message)
+            : 'Tool execution failed';
+
+        if (matchingToolStep) {
+          matchingToolStep.status = 'error';
+          matchingToolStep.durationMs = Math.max(1000, Date.now() - matchingToolStep.timestamp);
+          matchingToolStep.toolResult = {
+            success: false,
+            error: errorMessage,
+          };
+          if (!matchingToolStep.toolArgs && 'input' in part && part.input) {
+            matchingToolStep.toolArgs = part.input as Record<string, unknown>;
+          }
+
+          onEvent({
+            type: 'step_update',
+            stepId: matchingToolStep.id,
+            status: 'error',
+            durationMs: matchingToolStep.durationMs,
+            toolArgs: matchingToolStep.toolArgs,
+            toolResult: matchingToolStep.toolResult,
+          });
+        }
+
+        executedToolCalls.push({
+          toolName: part.toolName,
+          args: ('input' in part && (part.input as Record<string, unknown>)) || {},
+          result: { success: false, error: errorMessage },
+        });
+
       } else if (part.type === 'text-delta') {
         // Output text started; close any remaining active thinking step
         if (activeThinkingStepId) {
@@ -223,6 +265,22 @@ export async function executeAgentStream(
     } catch (primaryErr) {
       if (accumulatedText.length === 0 && backupModel) {
         console.warn('Primary model error, failing over to backup model:', primaryErr);
+        // Cleanly mark any dangling active steps from the failed primary attempt
+        steps
+          .filter((s) => s.status === 'active')
+          .forEach((step) => {
+            step.status = 'error';
+            if (!step.toolResult && step.type === 'tool') {
+              step.toolResult = { success: false, error: 'Switched to backup model' };
+            }
+            onEvent({
+              type: 'step_update',
+              stepId: step.id,
+              status: 'error',
+              toolResult: step.toolResult,
+            });
+          });
+        activeThinkingStepId = null;
         await runStreamWithModel(backupModel);
       } else {
         throw primaryErr;
@@ -239,18 +297,36 @@ export async function executeAgentStream(
     throw err;
   }
 
-  // Ensure any dangling active thinking step is closed
-  if (activeThinkingStepId) {
-    const activeThinking = steps.find((s) => s.id === activeThinkingStepId);
-    if (activeThinking && activeThinking.status === 'active') {
-      activeThinking.status = 'completed';
-      activeThinking.durationMs = Math.max(1000, Date.now() - activeThinking.timestamp);
-      onEvent({
-        type: 'step_update',
-        stepId: activeThinking.id,
-        status: 'completed',
-        durationMs: activeThinking.durationMs,
-      });
+  // Ensure any dangling active steps (thinking or tool calls) are cleanly finalized
+  for (const step of steps) {
+    if (step.status === 'active') {
+      if (step.type === 'thinking') {
+        step.status = 'completed';
+        step.durationMs = Math.max(1000, Date.now() - step.timestamp);
+        onEvent({
+          type: 'step_update',
+          stepId: step.id,
+          status: 'completed',
+          durationMs: step.durationMs,
+        });
+      } else if (step.type === 'tool') {
+        step.status = step.toolResult ? 'completed' : 'error';
+        step.durationMs = Math.max(1000, Date.now() - step.timestamp);
+        if (!step.toolResult) {
+          step.toolResult = {
+            success: false,
+            error: 'Tool execution was interrupted or timed out',
+          };
+        }
+        onEvent({
+          type: 'step_update',
+          stepId: step.id,
+          status: step.status,
+          durationMs: step.durationMs,
+          toolArgs: step.toolArgs,
+          toolResult: step.toolResult,
+        });
+      }
     }
   }
 

@@ -152,10 +152,15 @@ export function AgentProcessTimeline({
                   );
                 }
 
-                const isActive = step.status === 'active';
-                const isStepError = step.status === 'error';
+                const isActive = step.status === 'active' && !isCompleted;
+                const isStepError = step.status === 'error' || (step.status === 'active' && isCompleted);
                 const isDetailsOpen = Boolean(expandedDetailsIds[step.id]);
-                const hasToolData = Boolean(step.toolArgs || step.toolResult);
+                const effectiveToolResult =
+                  step.toolResult ??
+                  (isStepError
+                    ? { success: false, error: APP_CONTENT.process.results.errorTitle }
+                    : undefined);
+                const hasToolData = Boolean(step.toolArgs || effectiveToolResult);
 
                 const displayInfo = getToolDisplayInfo(step.toolName, step.toolArgs);
                 const ToolIcon = displayInfo.icon;
@@ -214,7 +219,7 @@ export function AgentProcessTimeline({
                               <ToolResultCard
                                 toolName={step.toolName}
                                 toolArgs={step.toolArgs}
-                                toolResult={step.toolResult}
+                                toolResult={effectiveToolResult}
                               />
                             </div>
                           </motion.div>

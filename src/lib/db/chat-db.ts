@@ -31,9 +31,22 @@ export function normalizeMessageSteps(
   _fallbackThinkingLabel: string
 ): AgentExecutionStep[] {
   if (message.steps && message.steps.length > 0) {
-    return message.steps.filter(
-      (s) => s.type !== 'thinking' || Boolean(s.reasoningText?.trim())
-    );
+    return message.steps
+      .filter((s) => s.type !== 'thinking' || Boolean(s.reasoningText?.trim()))
+      .map((s) => {
+        // Guard against any step stuck in 'active' from prior interruptions or errors
+        if (s.status === 'active') {
+          return {
+            ...s,
+            status: s.toolResult ? ('completed' as const) : ('error' as const),
+            toolResult: s.toolResult ?? {
+              success: false,
+              error: 'Tool execution was interrupted or failed',
+            },
+          };
+        }
+        return s;
+      });
   }
   if (message.toolCalls && message.toolCalls.length > 0) {
     return message.toolCalls.map((t, idx) => ({

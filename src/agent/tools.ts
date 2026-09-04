@@ -40,7 +40,7 @@ export function buildAgentTools(customAdapter?: IBinanceAgentAdapter) {
       description: AGENT_TOOL_DESCRIPTIONS.getOrderBook,
       inputSchema: z.object({
         symbol: z.string().describe('Trading pair symbol in uppercase (e.g. SOLUSDT, BTCUSDT)'),
-        limit: z.number().int().min(5).max(100).default(20).describe('Depth levels to retrieve (default 20)'),
+        limit: z.coerce.number().int().min(1).max(100).default(20).describe('Depth levels to retrieve (default 20)'),
       }),
       execute: async ({ symbol, limit }) => {
         try {
@@ -85,8 +85,14 @@ export function buildAgentTools(customAdapter?: IBinanceAgentAdapter) {
       description: AGENT_TOOL_DESCRIPTIONS.getKlines,
       inputSchema: z.object({
         symbol: z.string().describe('Trading pair symbol in uppercase (e.g. SOLUSDT)'),
-        interval: z.enum(['1m', '5m', '15m', '1h', '4h', '1d']).default('15m').describe('Candlestick timeframe interval'),
-        limit: z.number().int().min(10).max(100).default(30).describe('Number of candlestick periods to fetch'),
+        interval: z
+          .preprocess(
+            (val) => (typeof val === 'string' ? val.toLowerCase() : val),
+            z.enum(['1m', '5m', '15m', '1h', '4h', '1d'])
+          )
+          .default('15m')
+          .describe('Candlestick timeframe interval'),
+        limit: z.coerce.number().int().min(1).max(100).default(30).describe('Number of candlestick periods to fetch'),
       }),
       execute: async ({ symbol, interval, limit }) => {
         try {
