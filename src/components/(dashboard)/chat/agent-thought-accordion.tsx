@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence, type Variants } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Brain, ChevronDown, Loader2, Sparkles } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
+import { accordionVariants } from '@/constants/animation';
 import { MarkdownView } from '../markdown-view';
 import type { AgentExecutionStep } from '@/agent';
 
@@ -11,26 +12,6 @@ interface AgentThoughtAccordionProps {
   step: AgentExecutionStep;
   isStreaming?: boolean;
 }
-
-// Reusable smooth spring/bezier curves matching the process timeline and tool cards
-const accordionVariants: Variants = {
-  collapsed: {
-    height: 0,
-    opacity: 0,
-    transition: {
-      height: { duration: 0.22, ease: [0.16, 1, 0.3, 1] },
-      opacity: { duration: 0.18, ease: 'easeOut' },
-    },
-  },
-  expanded: {
-    height: 'auto',
-    opacity: 1,
-    transition: {
-      height: { duration: 0.26, ease: [0.16, 1, 0.3, 1] },
-      opacity: { duration: 0.2, delay: 0.03, ease: 'easeIn' },
-    },
-  },
-};
 
 /**
  * Dedicated Thought Accordion rendering a single reasoning phase with MarkdownView.

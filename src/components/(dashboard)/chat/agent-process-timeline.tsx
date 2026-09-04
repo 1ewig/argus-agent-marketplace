@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence, type Variants } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronDown,
   Loader2,
@@ -13,6 +13,7 @@ import { getToolDisplayInfo, ToolResultCard } from './tool-result-card';
 import { AgentThoughtAccordion } from './agent-thought-accordion';
 import { MarkdownView } from '../markdown-view';
 import { APP_CONTENT } from '@/constants/content';
+import { accordionVariants } from '@/constants/animation';
 import type { AgentExecutionStep } from '@/agent';
 
 interface AgentProcessTimelineProps {
@@ -22,26 +23,6 @@ interface AgentProcessTimelineProps {
   workedDurationMs?: number;
   startedAt?: number;
 }
-
-// Reusable smooth spring/bezier curves for accordions
-const accordionVariants: Variants = {
-  collapsed: {
-    height: 0,
-    opacity: 0,
-    transition: {
-      height: { duration: 0.22, ease: [0.16, 1, 0.3, 1] },
-      opacity: { duration: 0.18, ease: 'easeOut' },
-    },
-  },
-  expanded: {
-    height: 'auto',
-    opacity: 1,
-    transition: {
-      height: { duration: 0.26, ease: [0.16, 1, 0.3, 1] },
-      opacity: { duration: 0.2, delay: 0.03, ease: 'easeIn' },
-    },
-  },
-};
 
 export function AgentProcessTimeline({
   steps,

@@ -1,46 +1,18 @@
 'use client';
 
 import React, { useRef } from 'react';
-import { motion, AnimatePresence, type Variants } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Send, RefreshCw, Plus, ArrowUpRight } from 'lucide-react';
 import { ArgusIcon } from '../argus-icon';
 import { APP_CONTENT } from '@/constants/content';
+import {
+  emptyStateContainerVariants,
+  emptyStateItemVariants,
+} from '@/constants/animation';
 import { useAgentChat } from '@/hooks';
 import { ChatMessage } from './chat-message';
 import { ChatSessionsMenu } from './chat-sessions-menu';
 import type { ExecutionMode } from '@/lib/types';
-
-// Subtle, soft stagger animations for the empty conversation state
-const emptyStateContainerVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.05,
-      delayChildren: 0.02,
-    },
-  },
-  exit: {
-    opacity: 0,
-    y: -6,
-    transition: {
-      duration: 0.16,
-      ease: 'easeOut',
-    },
-  },
-};
-
-const emptyStateItemVariants: Variants = {
-  hidden: { opacity: 0, y: 8 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.28,
-      ease: [0.16, 1, 0.3, 1],
-    },
-  },
-};
 
 interface ChatWindowProps {
   mode?: ExecutionMode;
