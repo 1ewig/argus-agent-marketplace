@@ -12,7 +12,6 @@ import {
 } from '@/constants/animation';
 import { useAgentChat } from '@/hooks';
 import { ChatMessage } from './chat-message';
-import { ChatHeader } from './chat-header';
 import { ChatInput, type ChatInputHandle } from './chat-input';
 import type { ExecutionMode } from '@/lib/types';
 
@@ -25,28 +24,13 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
 
   const {
     activeConversationId,
-    currentTitle,
-    conversations,
     messages,
     activeStreamMessage,
     isLoading,
     errorNotice,
-    isMenuOpen,
-    handleToggleMenu,
-    editingId,
-    editTitle,
-    setEditTitle,
     messagesEndRef,
     scrollContainerRef,
     handleScroll,
-    menuRef,
-    handleNewSession,
-    isNewChatDisabled,
-    handleSelectSession,
-    handleStartRename,
-    handleSaveRename,
-    handleCancelRename,
-    handleDeleteSession,
     handleSend,
   } = useAgentChat({ mode });
 
@@ -56,26 +40,6 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
 
   return (
     <div className="flex flex-col h-full bg-theme-bg-surface border border-theme-border-subtle rounded-2xl overflow-hidden shadow-xs">
-      {/* Dedicated Chat Header Bar */}
-      <ChatHeader
-        currentTitle={currentTitle}
-        conversations={conversations}
-        activeConversationId={activeConversationId}
-        isMenuOpen={isMenuOpen}
-        menuRef={menuRef}
-        editingId={editingId}
-        editTitle={editTitle}
-        setEditTitle={setEditTitle}
-        onToggleMenu={handleToggleMenu}
-        onSelectSession={handleSelectSession}
-        onStartRename={handleStartRename}
-        onSaveRename={handleSaveRename}
-        onCancelRename={handleCancelRename}
-        onDeleteSession={handleDeleteSession}
-        onNewSession={handleNewSession}
-        isNewSessionDisabled={isNewChatDisabled}
-      />
-
       {/* Messages Scroll Area */}
       <div
         ref={scrollContainerRef}

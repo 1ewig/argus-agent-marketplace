@@ -51,13 +51,13 @@ To ensure robust analysis and protect against faulty inputs, Argus incorporates 
 ### 5. 100% Live Public Feeds (Zero API Keys or KYC Required)
 Argus queries production Binance REST APIs (`api.binance.com` and `fapi.binance.com`) for **100% real, live market data** across all market analysis tools. Anyone can run and evaluate real-time analytics, liquidity depth checks, and derivative sentiment immediately out of the box with zero deposit, API keys, KYC, or private credentials required.
 
-### 7. Unified "Worked for # seconds" Process Timeline
+### 6. Unified "Worked for # seconds" Process Timeline
 * **Single Collapsible Group:** All agent execution steps (reasoning blocks, tool invocations, and formatted tool results) are cleanly bundled inside an overarching accordion.
 * **Live Elapsed Timer:** Real-time counter updates dynamically during execution (`Working (4s)`) before finalizing to elapsed duration (`Worked for 4 seconds`).
 * **Smart Auto-Collapse:** Automatically collapses once the final answer arrives, preserving a clean reading flow while keeping the entire execution history one click away.
 * **Smooth Framer Motion Transitions:** Jitter-free accordion mechanics, smooth empty chat state transitions, and unified dropdown menu animations defined in `src/constants/animation.ts`.
 
-### 8. Inspectable Visual Cards (Zero Raw JSON Dumps)
+### 7. Inspectable Visual Cards (Zero Raw JSON Dumps)
 Sub-accordions in the process timeline render purpose-built visual cards for each tool with zero technical clutter or raw JSON:
 * **Order Book Depth Card:** Split side-by-side Buy (Bids) and Sell (Asks) panels with volume depth fill bars, mid-market price, spread percentage, and crypto quantity formatting that avoids truncating fractional amounts.
 * **Recent Trades Card:** Public tape stream displaying fill price, quantity, execution timestamp, and a calculated taker buyer vs. seller volume ratio bar.
@@ -66,9 +66,19 @@ Sub-accordions in the process timeline render purpose-built visual cards for eac
 * **Candlestick Chart Card:** Visual candlestick chart rendering for historical kline intervals.
 * **24h Market Stats Card:** 24h high/low range, price change percentage, and trading volume metrics.
 
-### 9. Local-First Session Management
-* Powered by **Dexie IndexedDB** for private, client-side conversation persistence.
-* Supports creating new chats, switching between saved conversations, and inline chat renaming without page reloads.
+### 8. Local-First Session Persistence & Guardrails
+* **Dexie IndexedDB Integration:** Client-side persistence for conversations, messages, and execution telemetry with zero third-party telemetry tracking.
+* **Zustand Store Persistence (`argus-session-store`):** The active conversation ID, workspace stage view (`Agent Chat` vs `Trading Chart`), and sidebar collapse state are persisted in browser storage, surviving full page refreshes.
+* **Empty Chat Guard:** New chat creation is intelligently disabled when the currently selected chat is already empty (zero messages), preventing ghost chat clutter.
+* **Smart Session Reuse:** If an unused empty conversation already exists elsewhere in the database, requesting a new chat automatically navigates to it rather than spawning duplicate empty threads.
+* **Self-Healing Storage Recovery:** On application load, persisted IDs are validated against IndexedDB; if storage was cleared or records removed, the store safely falls back to the most recent chat or default conversation.
+* **Full Session Control:** Fast conversation switching, inline title renaming, and deletion with custom confirmation modals.
+
+### 9. Modular Left Sidebar & Tactile Ergonomics
+* **Collapsible Layout:** Smooth spring-animated sidebar expanding from 68px icon rail to 280px full navigation drawer.
+* **Mathematical Icon Centering:** Standardized 40px square slots (`w-10 h-10 rounded-xl`) ensuring pixel-perfect centering when collapsed.
+* **Tactile Spring Feedback:** Unified `tapScalePill` and `tapScaleIcon` micro-interactions without flexbox layout snapping or jitter.
+* **Integrated Theme Switcher:** Instant zero-flash toggle between Light and Dark themes, respecting system preferences and design tokens.
 
 ---
 
@@ -77,6 +87,7 @@ Sub-accordions in the process timeline render purpose-built visual cards for eac
 * **Framework:** Next.js 16 (Turbopack, App Router, React 19)
 * **Runtime & Package Manager:** Bun (`bun@1.4.0+`) exclusively
 * **Language & Tooling:** TypeScript 7 (native Go compiler), Oxlint (`oxlint@1.81.0+`)
+* **State Management:** Zustand v5 with selective `persist` middleware
 * **Styling & Motion:** Tailwind CSS v4 with Neo-Minimalist Architectural design tokens configured in `globals.css` and Framer Motion animations
 * **Agent Engine:** Vercel AI SDK (`ai@7`, `@ai-sdk/groq`, `@ai-sdk/fireworks`)
 * **Client Database:** Dexie IndexedDB (`dexie`, `dexie-react-hooks`)
@@ -88,43 +99,45 @@ Sub-accordions in the process timeline render purpose-built visual cards for eac
 
 ```
 src/
+├── agent/                # Core AI agent engine
+│   ├── engine.ts         # Multi-step streaming loop with rate-limit failover & tool error handling
+│   ├── prepare-invocation.ts # Model binding, tool configuration, and dynamic prompt assembly
+│   ├── prompts.ts        # System prompts, tool descriptions, and formatting guidelines
+│   ├── providers.ts      # Multi-provider model factories (Groq & Fireworks AI) with failover
+│   ├── title-stream-filter.ts # Stream interceptor preventing raw XML tag leakage
+│   ├── tools.ts          # Binance MCP tool definitions with Zod schemas & sanitization
+│   └── types.ts          # Agent result, step, and stream event interfaces
 ├── app/                  # Route boundaries, page layouts, and SSE API endpoints
 │   ├── api/agent/chat/   # Server-Sent Events (SSE) streaming endpoint
 │   ├── globals.css       # 15 theme tokens, typography, and spacing variables
-│   └── page.tsx          # Single-page trading interface with environment toggle & chat
+│   ├── layout.tsx        # App root layout with theme script injection
+│   └── page.tsx          # Main dashboard view orchestrating sidebar and central stage
 ├── components/           # Presentation UI components
-│   └── (dashboard)/
-│       ├── cards/        # AccountPortfolioCard, ActiveTradesCard, DailyMarketCard
-│       ├── chat/         # ChatWindow, ChatMessage, ProcessTimeline, ToolResultCard, SessionsMenu
-│       ├── argus-icon.tsx# Brand SVG icon
-│       ├── market-chart-view.tsx # High-fidelity candlestick market chart
-│       ├── stage-view-switcher.tsx # Agent Chat vs Trading Chart toggle
-│       ├── top-nav-bar.tsx # Architectural top bar with search and status
-│       └── markdown-view.tsx # Custom GFM renderer with styled tables & code blocks
+│   ├── (dashboard)/
+│   │   ├── chat/         # ChatClient, ChatInput, ChatMessage, ProcessTimeline, ToolResultCard
+│   │   ├── markdown-view.tsx     # Custom GFM renderer with styled tables & syntax blocks
+│   │   ├── market-chart-view.tsx # High-fidelity candlestick market chart
+│   │   └── stage-view-switcher.tsx # Agent Chat vs Trading Chart view switch
+│   ├── common/           # Reusable UI primitives (ConfirmDialog, ArgusIcon, AgentLoader)
+│   ├── sidebar/          # Modular sidebar components (Header, NewChat, NavViews, SessionList, ThemeToggle)
+│   └── left-sidebar.tsx  # Left sidebar orchestrator
 ├── constants/            # Centralized UI copy, tool labels, and animation variants
-│   ├── animation.ts      # Unified Framer Motion accordion, dropdown, and entrance variants
+│   ├── animation.ts      # Unified Framer Motion accordion, dropdown, and tactile tap variants
 │   └── content.ts        # Centralized UI dictionary text, tool badges, and placeholders
-├── hooks/                # Custom React hooks (useAgentChat, useExecutionMode)
+├── hooks/                # Custom React hooks (useAgentChat, useChatSessions, useChatScroll, useTheme)
 ├── lib/
 │   ├── agents/           # Client-side SSE stream transport and chat history helpers
-│   ├── binance-mcp/      # Production REST client and paper wallet sandbox
+│   ├── binance-mcp/      # Production REST client and simulated sandbox adapters
 │   │   ├── index.ts      # Adapter provider & singleton exports
 │   │   ├── public-api-client.ts # Live Binance REST caller with unified error extraction
 │   │   ├── simulated-wallet.ts  # In-memory paper wallet with idempotency & PERCENT_PRICE rules
 │   │   ├── simulated-adapter.ts # Adapter orchestrating live REST data & paper wallet
 │   │   └── types.ts      # Binance tool interfaces & Zod schemas
 │   ├── db/               # Dexie IndexedDB schema, queries, and step normalizers
-│   ├── risk-engine/      # Deterministic mathematical risk evaluation functions
 │   ├── types/            # Shared domain types and Zod runtime schemas
 │   └── utils.ts          # Pure utility helpers
-└── agent/                # Core AI agent engine
-    ├── engine.ts         # Multi-step streaming loop with rate-limit failover & tool error handling
-    ├── prepare-invocation.ts # Model binding, tool configuration, and dynamic prompt assembly
-    ├── providers.ts      # Multi-provider model factories (Groq & Fireworks AI) with failover
-    ├── title-stream-filter.ts # Stream interceptor preventing raw XML tag leakage
-    ├── tools.ts          # Binance MCP tool definitions with Zod schemas & sanitization
-    ├── prompts.ts        # System prompts, tool descriptions, and formatting guidelines
-    └── types.ts          # Agent result, step, and stream event interfaces
+└── stores/
+    └── app-store.ts      # Zustand global store with localStorage persistence
 ```
 
 ---
@@ -133,11 +146,12 @@ src/
 
 Argus follows strict engineering rules defined in [`AGENTS.md`](./AGENTS.md):
 1. **Zero Hardcoded Design Tokens:** All colors, font sizes, weights, and spacing use strict CSS variables (`--theme-*`, `--text-*`, `--spacing-*`).
-2. **Zero Hardcoded UI Text:** User-facing strings and error messages reside in centralized constants.
+2. **Zero Hardcoded UI Text:** User-facing strings and error messages reside in centralized constants (`src/constants/content.ts`).
 3. **Bun Only:** All scripts, dependencies, and tools are run via `bun` (`bun add`, `bun run dev`, `bun x tsc`).
 4. **TS7 & Oxlint:** Clean type checking (`bun x tsc --noEmit`) and linting (`bun run lint`) with 0 errors and 0 warnings.
 5. **Human Language:** Conversational, approachable tone with zero military or robotic fluff.
 6. **Parallel Execution:** Tools and file operations are batched concurrently in single operations.
+7. **Zero Fake Market Data:** Always query authentic Binance endpoints; never fall back to synthetic prices.
 
 ---
 

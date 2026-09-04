@@ -5,7 +5,6 @@
  * - Work process timeline accordion (AgentProcessTimeline)
  * - Thought reasoning accordion (AgentThoughtAccordion)
  * - Tool invocation detail drawers (ToolResultCard drawer)
- * - Session dropdown popover menu (ChatSessionsMenu)
  * - Empty chat state staggered cascade (ChatClient)
  */
 
@@ -43,7 +42,7 @@ export const accordionVariants: Variants = {
 };
 
 /**
- * Soft, subtle entrance and exit animation for popover dropdown menus (e.g. ChatSessionsMenu)
+ * Soft, subtle entrance and exit animation for popover dropdown menus
  * Uses a gentle scale (0.98 -> 1) and 6px vertical translation anchored to transform-origin top-right.
  */
 export const dropdownMenuVariants: Variants = {
