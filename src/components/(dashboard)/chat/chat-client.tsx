@@ -126,7 +126,7 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className={`relative z-10 flex-1 overflow-y-auto overscroll-y-contain [will-change:scroll-position] [transform:translateZ(0)] px-spacing-md sm:px-spacing-lg py-spacing-md min-h-0 custom-scrollbar ${
+        className={`relative z-10 flex-1 overflow-y-auto overscroll-y-contain [will-change:scroll-position] [transform:translateZ(0)] px-spacing-md sm:px-spacing-lg pt-spacing-md pb-spacing-lg min-h-0 custom-scrollbar ${
           isChatEmpty ? 'pointer-events-none select-none opacity-0' : 'opacity-100'
         }`}
       >
@@ -164,12 +164,15 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
 
       {/* Persistent Bottom Dock Input (remains mounted across active chats to prevent flicker) */}
       {!isChatEmpty && (
-        <ChatInput
-          ref={chatInputRef}
-          isLoading={isLoading}
-          onSend={handleSend}
-          onStop={handleStop}
-        />
+        <div className="relative z-20 w-full bg-gradient-to-t from-theme-bg-base via-theme-bg-base/95 to-transparent pt-3 pb-spacing-md px-spacing-md sm:px-spacing-lg shrink-0">
+          <ChatInput
+            ref={chatInputRef}
+            isLoading={isLoading}
+            onSend={handleSend}
+            onStop={handleStop}
+            containerClassName="w-full p-0 bg-transparent"
+          />
+        </div>
       )}
     </div>
   );

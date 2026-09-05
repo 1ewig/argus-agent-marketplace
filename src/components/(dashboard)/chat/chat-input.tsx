@@ -56,23 +56,26 @@ export const ChatInput = memo(
   ) {
     const [text, setText] = useState('');
     const [isComposing, setIsComposing] = useState(false);
+    const [isMultiLine, setIsMultiLine] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-    // Auto-resize logic with zero-jank measurement
+    // Auto-resize logic with zero-jank measurement and dynamic geometry tracking
     const resizeTextarea = useCallback(() => {
       const el = textareaRef.current;
       if (!el) return;
 
-      // Reset to calculate natural scrollHeight
+      // Temporarily reset height to auto to measure actual scrollHeight
       el.style.height = 'auto';
 
       const scrollHeight = el.scrollHeight;
-      const targetHeight = Math.min(scrollHeight, maxHeight);
+      const targetHeight = Math.min(Math.max(scrollHeight, 38), maxHeight);
 
       el.style.height = `${targetHeight}px`;
-      // Only show scrollbars once the max height ceiling is exceeded
       el.style.overflowY = scrollHeight > maxHeight ? 'auto' : 'hidden';
-    }, [maxHeight]);
+
+      // Mark multi-line when height exceeds single-line threshold (~44px)
+      setIsMultiLine(scrollHeight > 46 || text.includes('\n'));
+    }, [maxHeight, text]);
 
     useLayoutEffect(() => {
       resizeTextarea();
@@ -106,8 +109,10 @@ export const ChatInput = memo(
         blur: () => textareaRef.current?.blur(),
         clear: () => {
           setText('');
+          setIsMultiLine(false);
           if (textareaRef.current) {
             textareaRef.current.style.height = 'auto';
+            textareaRef.current.style.overflowY = 'hidden';
           }
         },
       }),
@@ -119,8 +124,10 @@ export const ChatInput = memo(
       if (!trimmed || isLoading || disabled) return;
 
       setText('');
+      setIsMultiLine(false);
       if (textareaRef.current) {
         textareaRef.current.style.height = 'auto';
+        textareaRef.current.style.overflowY = 'hidden';
       }
       void onSend(trimmed);
     }, [text, isLoading, disabled, onSend]);
@@ -143,7 +150,9 @@ export const ChatInput = memo(
     return (
       <div className={containerClassName ?? 'p-spacing-md pt-0 bg-theme-bg-base shrink-0'}>
         <div
-          className={`${className ?? 'max-w-3xl'} mx-auto w-full relative flex items-center gap-2 bg-theme-bg-surface/90 hover:bg-theme-bg-surface border border-theme-border-subtle hover:border-theme-border-strong focus-within:border-theme-border-strong rounded-3xl sm:rounded-full pl-4 pr-1.5 py-1.5 focus-within:ring-2 focus-within:ring-theme-brand-binance/20 shadow-xs transition-all backdrop-blur-xl`}
+          className={`${className ?? 'max-w-3xl'} mx-auto w-full relative flex items-end gap-2 bg-theme-bg-surface/95 hover:bg-theme-bg-surface border border-theme-border-subtle hover:border-theme-border-strong focus-within:border-theme-border-strong ${
+            isMultiLine ? 'rounded-2xl py-2 pl-4 pr-2' : 'rounded-full py-1.5 pl-4 pr-1.5'
+          } focus-within:ring-2 focus-within:ring-theme-brand-binance/20 shadow-xs transition-all duration-150 backdrop-blur-xl`}
         >
           {/* Text Area */}
           <textarea
@@ -158,7 +167,7 @@ export const ChatInput = memo(
             onPaste={handlePaste}
             onCompositionStart={() => setIsComposing(true)}
             onCompositionEnd={() => setIsComposing(false)}
-            className="flex-1 resize-none bg-transparent text-sm leading-6 text-theme-text-primary placeholder:text-theme-text-muted focus:outline-hidden py-1.5 custom-scrollbar min-h-[38px]"
+            className="flex-1 resize-none bg-transparent text-sm leading-relaxed text-theme-text-primary placeholder:text-theme-text-muted focus:outline-hidden py-1 custom-scrollbar min-h-[34px] max-h-[160px]"
             style={{ maxHeight: `${maxHeight}px` }}
           />
 
@@ -174,7 +183,7 @@ export const ChatInput = memo(
                 ? APP_CONTENT.chat.stopButton
                 : APP_CONTENT.chat.sendButton
             }
-            className={`flex items-center justify-center size-8 rounded-full transition-all shadow-xs select-none ${
+            className={`flex items-center justify-center size-8 rounded-full transition-all shadow-xs select-none shrink-0 mb-0.5 ${
               isLoading
                 ? 'bg-theme-text-primary text-theme-bg-base hover:opacity-90 active:scale-95 cursor-pointer'
                 : isButtonDisabled
