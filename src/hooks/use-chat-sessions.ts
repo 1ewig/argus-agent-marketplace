@@ -5,10 +5,12 @@ import { APP_CONTENT } from '@/constants/content';
 import { useAppStore } from '@/stores/app-store';
 import {
   ensureDefaultConversation,
+  ensureDefaultGlobalConversation,
   getConversation,
   getConversationMessageCount,
   listConversations,
   DEFAULT_CONVERSATION_SYMBOL,
+  GLOBAL_WORKSPACE_SYMBOL,
   createConversation,
   deleteConversation,
   renameConversation,
@@ -33,8 +35,8 @@ export interface SymbolWorkspaceGroup {
  */
 export function parseSymbolAssets(symbol: string): { baseAsset: string; quoteAsset: string } {
   const upper = (symbol || DEFAULT_CONVERSATION_SYMBOL).toUpperCase();
-  if (upper === 'GLOBAL') {
-    return { baseAsset: 'GLOBAL', quoteAsset: '' };
+  if (upper === GLOBAL_WORKSPACE_SYMBOL) {
+    return { baseAsset: GLOBAL_WORKSPACE_SYMBOL, quoteAsset: '' };
   }
   if (upper.endsWith('USDT')) {
     return { baseAsset: upper.slice(0, -4), quoteAsset: 'USDT' };
@@ -86,6 +88,9 @@ export function useChatSessions() {
       const store = useAppStore.getState();
       const activeId = store.activeConversationId;
       const currentSymbol = (store.selectedSymbol || DEFAULT_CONVERSATION_SYMBOL).toUpperCase();
+
+      // Guarantee permanent default conversation for Global Market exists
+      await ensureDefaultGlobalConversation();
 
       // 1. Check if active conversation exists in Dexie
       if (activeId) {
@@ -162,7 +167,7 @@ export function useChatSessions() {
 
     const groups: SymbolWorkspaceGroup[] = [];
     for (const [sym, convs] of groupsMap.entries()) {
-      const isGlobal = sym === 'GLOBAL';
+      const isGlobal = sym === GLOBAL_WORKSPACE_SYMBOL;
       const { baseAsset, quoteAsset } = parseSymbolAssets(sym);
       const sortedConvs = [...convs].sort(
         (a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0)
@@ -181,11 +186,25 @@ export function useChatSessions() {
       });
     }
 
-    return groups.sort((a, b) => {
+    const sortedGroups = groups.sort((a, b) => {
       if (a.isGlobal && !b.isGlobal) return -1;
       if (!a.isGlobal && b.isGlobal) return 1;
       return b.latestTimestamp - a.latestTimestamp;
     });
+
+    // Guarantee the permanent Global Market group is always at the top
+    if (!sortedGroups.some((g) => g.isGlobal)) {
+      sortedGroups.unshift({
+        symbol: GLOBAL_WORKSPACE_SYMBOL,
+        baseAsset: GLOBAL_WORKSPACE_SYMBOL,
+        quoteAsset: '',
+        conversations: [],
+        latestTimestamp: 0,
+        isGlobal: true,
+      });
+    }
+
+    return sortedGroups;
   }, [conversations]);
 
   // Click-outside listener for sessions overflow menu
@@ -309,22 +328,43 @@ export function useChatSessions() {
       e?.stopPropagation();
       await deleteConversation(id);
       clearMessagesCache(id);
+
+      // Query fresh conversations from database to avoid stale React closures
+      let freshConvs = await listConversations();
+
+      // If all chats in GLOBAL were deleted, guarantee a fresh default one is restored
+      const hasGlobal = freshConvs.some(
+        (c) => (c.symbol || '').toUpperCase() === GLOBAL_WORKSPACE_SYMBOL
+      );
+      if (!hasGlobal) {
+        const restoredGlobal = await ensureDefaultGlobalConversation();
+        freshConvs = [restoredGlobal, ...freshConvs];
+      }
+
       if (activeConversationId === id) {
-        const remaining = conversations.filter((c) => c.id !== id);
-        if (remaining.length > 0) {
-          const nextConv = remaining[0];
+        // Prefer staying within the current workspace if another conversation exists
+        const currentWorkspace = (selectedSymbol || DEFAULT_CONVERSATION_SYMBOL).toUpperCase();
+        const sameWorkspaceConv = freshConvs.find(
+          (c) => (c.symbol || DEFAULT_CONVERSATION_SYMBOL).toUpperCase() === currentWorkspace
+        );
+
+        if (sameWorkspaceConv) {
+          setActiveConversationId(sameWorkspaceConv.id);
+        } else if (freshConvs.length > 0) {
+          const nextConv = freshConvs[0];
           setActiveConversationId(nextConv.id);
           if (nextConv.symbol) {
-            setSelectedSymbol(nextConv.symbol);
+            setSelectedSymbol(nextConv.symbol.toUpperCase());
           }
         } else {
+          // Absolute fallback if database is completely empty
           const targetSymbol = selectedSymbol || DEFAULT_CONVERSATION_SYMBOL;
           const newConv = await createConversation(undefined, targetSymbol);
           setActiveConversationId(newConv.id);
         }
       }
     },
-    [activeConversationId, conversations, selectedSymbol, setActiveConversationId, setSelectedSymbol]
+    [activeConversationId, selectedSymbol, setActiveConversationId, setSelectedSymbol]
   );
 
   // Switch symbol workspace: opens existing conversation in that group or creates a new one
@@ -349,6 +389,9 @@ export function useChatSessions() {
           (a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0)
         );
         setActiveConversationId(sorted[0].id);
+      } else if (targetSymbol === GLOBAL_WORKSPACE_SYMBOL) {
+        const globalConv = await ensureDefaultGlobalConversation();
+        setActiveConversationId(globalConv.id);
       } else {
         const newConv = await createConversation(undefined, targetSymbol);
         setActiveConversationId(newConv.id);
@@ -362,17 +405,17 @@ export function useChatSessions() {
     ]
   );
 
-  const isGlobalActive = (selectedSymbol || '').toUpperCase() === 'GLOBAL';
+  const isGlobalActive = (selectedSymbol || '').toUpperCase() === GLOBAL_WORKSPACE_SYMBOL;
 
   // Open or switch to the Global Workspace
   const handleSelectGlobalWorkspace = useCallback(async () => {
-    await handleSelectSymbolWorkspace('GLOBAL');
+    await handleSelectSymbolWorkspace(GLOBAL_WORKSPACE_SYMBOL);
   }, [handleSelectSymbolWorkspace]);
 
   // Return from Global Workspace back to the last active symbol workspace
   const handleReturnToSymbolWorkspace = useCallback(async () => {
     const target =
-      lastActiveSymbol && lastActiveSymbol.toUpperCase() !== 'GLOBAL'
+      lastActiveSymbol && lastActiveSymbol.toUpperCase() !== GLOBAL_WORKSPACE_SYMBOL
         ? lastActiveSymbol
         : DEFAULT_CONVERSATION_SYMBOL;
     await handleSelectSymbolWorkspace(target);

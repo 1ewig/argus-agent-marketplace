@@ -157,6 +157,47 @@ export async function ensureDefaultConversation(symbol: string = DEFAULT_CONVERS
   return defaultConv;
 }
 
+export const DEFAULT_GLOBAL_CONVERSATION_ID = 'default_global';
+
+/**
+ * Ensures a permanent default conversation exists for the Global Workspace ('GLOBAL').
+ */
+export async function ensureDefaultGlobalConversation(): Promise<ConversationRecord> {
+  if (typeof window === 'undefined') {
+    return {
+      id: DEFAULT_GLOBAL_CONVERSATION_ID,
+      title: 'New Chat',
+      symbol: GLOBAL_WORKSPACE_SYMBOL,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    };
+  }
+
+  const existing = await db.conversations.get(DEFAULT_GLOBAL_CONVERSATION_ID);
+  if (existing) {
+    return existing;
+  }
+
+  const allConvs = await db.conversations.toArray();
+  const existingGlobal = allConvs.find(
+    (c) => (c.symbol || '').toUpperCase() === GLOBAL_WORKSPACE_SYMBOL
+  );
+  if (existingGlobal) {
+    return existingGlobal;
+  }
+
+  const defaultConv: ConversationRecord = {
+    id: DEFAULT_GLOBAL_CONVERSATION_ID,
+    title: 'New Chat',
+    symbol: GLOBAL_WORKSPACE_SYMBOL,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  };
+
+  await db.conversations.put(defaultConv);
+  return defaultConv;
+}
+
 /**
  * Creates a new conversation session
  */
