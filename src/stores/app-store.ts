@@ -30,10 +30,14 @@ export interface AppState {
   errorNotice: string | null;
   setErrorNotice: (error: string | null) => void;
 
-  // Sidebar Collapsed State
+  // Sidebar Collapsed State (Persisted in localStorage)
   isSidebarCollapsed: boolean;
   setIsSidebarCollapsed: (collapsed: boolean) => void;
   toggleSidebar: () => void;
+
+  // Hydration state tracking
+  _hasHydrated: boolean;
+  setHasHydrated: (hasHydrated: boolean) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -69,9 +73,16 @@ export const useAppStore = create<AppState>()(
       isSidebarCollapsed: false,
       setIsSidebarCollapsed: (isSidebarCollapsed) => set({ isSidebarCollapsed }),
       toggleSidebar: () => set((state) => ({ isSidebarCollapsed: !state.isSidebarCollapsed })),
+
+      // Hydration state
+      _hasHydrated: false,
+      setHasHydrated: (_hasHydrated) => set({ _hasHydrated }),
     }),
     {
       name: 'argus-session-store',
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
       partialize: (state) => ({
         activeConversationId: state.activeConversationId,
         stageView: state.stageView,
@@ -80,4 +91,3 @@ export const useAppStore = create<AppState>()(
     }
   )
 );
-

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useSyncExternalStore } from 'react';
 import { motion } from 'framer-motion';
 import { ConfirmDialog } from '@/components/common/confirm-dialog';
 import { APP_CONTENT } from '@/constants/content';
@@ -16,6 +16,8 @@ import {
   SidebarThemeToggle,
 } from './sidebar';
 
+const noopSubscribe = () => () => {};
+
 /**
  * LeftSidebar Orchestrator Component
  *
@@ -28,6 +30,11 @@ export function LeftSidebar() {
   const setStageView = useAppStore((state) => state.setStageView);
   const isSidebarCollapsed = useAppStore((state) => state.isSidebarCollapsed);
   const toggleSidebar = useAppStore((state) => state.toggleSidebar);
+  const hasMounted = useSyncExternalStore(
+    noopSubscribe,
+    () => true,
+    () => false
+  );
 
   const {
     conversations,
@@ -90,7 +97,7 @@ export function LeftSidebar() {
       <motion.aside
         initial={false}
         animate={{ width: isSidebarCollapsed ? 68 : 280 }}
-        transition={sidebarSpringTransition}
+        transition={hasMounted ? sidebarSpringTransition : { duration: 0 }}
         className="h-full bg-theme-bg-surface border-r border-theme-border-subtle flex flex-col shrink-0 select-none z-30 overflow-hidden relative"
       >
         {/* 1. Top Header & Brand */}
