@@ -86,6 +86,7 @@ export interface AgentOptions {
   maxTokens?: number;
   isFirstTurn?: boolean;
   systemDirective?: string;
+  abortSignal?: AbortSignal;
 }
 
 /**

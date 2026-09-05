@@ -47,10 +47,21 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
       {/* Gemini-Style Atmospheric Ambient Depth Glow */}
       <div
         aria-hidden="true"
-        className={`pointer-events-none absolute inset-0 ambient-glow-gemini transition-opacity duration-150 ${
+        className={`pointer-events-none absolute inset-0 ambient-glow-gemini transition-opacity duration-300 ${
           isChatEmpty ? 'opacity-90' : 'opacity-30'
         }`}
       />
+
+      {/* Lightweight Dynamic Luminous Glow (Zero blur filters, pure GPU compositor breathing) */}
+      {isChatEmpty && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 overflow-hidden z-0"
+        >
+          {/* Radial depth gradient fill with pure CSS compositor opacity breathing */}
+          <div className="absolute inset-0 chat-empty-glow animate-glow-breathe" />
+        </div>
+      )}
 
       {/* Empty State Overlay (instant unmount when switching to established conversation — no exit fade) */}
       {isChatEmpty && (
@@ -76,11 +87,6 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
               <h3 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-theme-text-primary tracking-tight font-sans leading-tight">
                 {APP_CONTENT.chat.emptyTitle}
               </h3>
-
-              {/* Supporting Subtitle */}
-              <p className="text-xs sm:text-sm text-theme-text-secondary max-w-md mx-auto leading-relaxed mt-2">
-                {APP_CONTENT.chat.emptySubtitle}
-              </p>
             </motion.div>
 
             {/* Hero Input */}

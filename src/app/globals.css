@@ -245,6 +245,31 @@ button,
   );
 }
 
+/* Luminous Glow Gradient for Empty Chat State (Zero blur filters for ultra-low GPU overhead) */
+.chat-empty-glow {
+  background:
+    radial-gradient(
+      ellipse 60% 42% at 50% 32%,
+      color-mix(in srgb, var(--theme-brand-binance) 12%, transparent) 0%,
+      color-mix(in srgb, var(--theme-brand-accent) 5%, transparent) 45%,
+      transparent 70%
+    );
+}
+
+@keyframes glow-breathe {
+  0%, 100% {
+    opacity: 0.65;
+  }
+  50% {
+    opacity: 0.95;
+  }
+}
+
+.animate-glow-breathe {
+  animation: glow-breathe 8s ease-in-out infinite;
+  will-change: opacity;
+}
+
 body {
   background: var(--theme-bg-base);
   color: var(--theme-text-primary);

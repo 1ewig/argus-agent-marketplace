@@ -18,7 +18,7 @@ export async function executeAgentStream(
   options: AgentOptions,
   onEvent: (event: AgentStreamEvent) => void
 ): Promise<AgentResult> {
-  const { maxSteps = 5, mode = 'simulation', symbol } = options;
+  const { maxSteps = 5, mode = 'simulation', symbol, abortSignal } = options;
   const {
     model,
     backupModel,
@@ -49,6 +49,7 @@ export async function executeAgentStream(
     ...(messages ? { messages } : { prompt: currentUserPrompt }),
     tools,
     maxTokens,
+    abortSignal,
     stopWhen: isStepCount(maxSteps),
     experimental_transform: smoothStream({
       delayInMs: 15,
@@ -263,6 +264,9 @@ export async function executeAgentStream(
     try {
       await runStreamWithModel(model);
     } catch (primaryErr) {
+      if (abortSignal?.aborted) {
+        throw primaryErr;
+      }
       if (accumulatedText.length === 0 && backupModel) {
         console.warn('Primary model error, failing over to backup model:', primaryErr);
         // Cleanly mark any dangling active steps from the failed primary attempt

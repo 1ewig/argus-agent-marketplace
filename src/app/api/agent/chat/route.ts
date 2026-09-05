@@ -37,10 +37,15 @@ export async function POST(req: Request) {
               apiKey,
               history,
               isFirstTurn,
+              abortSignal: req.signal,
             },
             sendEvent
           );
         } catch (err: unknown) {
+          // If the client aborted the connection, silently terminate without pushing error events
+          if (req.signal.aborted) {
+            return;
+          }
           const errMsg = err instanceof Error ? err.message : 'Internal agent execution error';
           sendEvent({ type: 'error', message: errMsg });
         } finally {

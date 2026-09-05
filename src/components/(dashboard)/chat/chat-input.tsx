@@ -55,6 +55,7 @@ export const ChatInput = memo(
     ref
   ) {
     const [text, setText] = useState('');
+    const [isFocused, setIsFocused] = useState(false);
     const [isComposing, setIsComposing] = useState(false);
     const [isMultiLine, setIsMultiLine] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -141,8 +142,13 @@ export const ChatInput = memo(
     };
 
     const handlePaste = () => {
-      // Give React microtask queue a tick to digest pasted payload before recalculating
       requestAnimationFrame(resizeTextarea);
+    };
+
+    const handleContainerClick = (e: React.MouseEvent<HTMLDivElement>) => {
+      // Don't divert focus if the user clicked the action button
+      if ((e.target as HTMLElement).closest('button')) return;
+      textareaRef.current?.focus();
     };
 
     const isButtonDisabled = (!text.trim() && !isLoading) || disabled;
@@ -150,9 +156,12 @@ export const ChatInput = memo(
     return (
       <div className={containerClassName ?? 'px-spacing-md pb-spacing-lg sm:pb-spacing-xl bg-theme-bg-base shrink-0'}>
         <div
-          className={`${className ?? 'max-w-3xl'} mx-auto w-full relative flex items-end gap-2 bg-theme-bg-surface/95 hover:bg-theme-bg-surface border border-theme-border-subtle hover:border-theme-border-strong focus-within:border-theme-border-strong ${
-            isMultiLine ? 'rounded-2xl py-2 pl-4 pr-2' : 'rounded-full py-1.5 pl-4 pr-1.5'
-          } focus-within:ring-2 focus-within:ring-theme-brand-binance/20 shadow-xs transition-all duration-150 backdrop-blur-xl`}
+          onClick={handleContainerClick}
+          className={`${className ?? 'max-w-3xl'} mx-auto w-full relative flex items-end gap-2 bg-theme-bg-surface/95 hover:bg-theme-bg-surface border cursor-text ${isFocused
+              ? 'border-theme-brand-binance ring-2 ring-theme-brand-binance/30'
+              : 'border-theme-border-subtle hover:border-theme-border-strong'
+            } focus-within:border-theme-brand-binance focus-within:ring-2 focus-within:ring-theme-brand-binance/30 ${isMultiLine ? 'rounded-2xl py-2 pl-4 pr-2' : 'rounded-full py-1.5 pl-4 pr-1.5'
+            } shadow-xs transition-all duration-150 backdrop-blur-xl`}
         >
           {/* Text Area */}
           <textarea
@@ -162,12 +171,14 @@ export const ChatInput = memo(
             disabled={disabled}
             autoFocus={autoFocus}
             placeholder={placeholder}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={handleKeyDown}
             onPaste={handlePaste}
             onCompositionStart={() => setIsComposing(true)}
             onCompositionEnd={() => setIsComposing(false)}
-            className="flex-1 resize-none bg-transparent text-sm leading-relaxed text-theme-text-primary placeholder:text-theme-text-muted focus:outline-hidden py-1 custom-scrollbar min-h-[34px] max-h-[160px]"
+            className="flex-1 resize-none bg-transparent text-sm leading-relaxed text-theme-text-primary placeholder:text-theme-text-muted outline-none focus:outline-none focus-visible:outline-none focus:ring-0 py-1 custom-scrollbar min-h-[34px] max-h-[160px]"
             style={{ maxHeight: `${maxHeight}px` }}
           />
 
@@ -183,13 +194,12 @@ export const ChatInput = memo(
                 ? APP_CONTENT.chat.stopButton
                 : APP_CONTENT.chat.sendButton
             }
-            className={`flex items-center justify-center size-8 rounded-full transition-all shadow-xs select-none shrink-0 mb-0.5 ${
-              isLoading
+            className={`flex items-center justify-center size-8 rounded-full transition-all shadow-xs select-none shrink-0 mb-0.5 ${isLoading
                 ? 'bg-theme-text-primary text-theme-bg-base hover:opacity-90 active:scale-95 cursor-pointer'
                 : isButtonDisabled
                   ? 'bg-theme-bg-elevated text-theme-text-muted opacity-40 cursor-not-allowed'
                   : 'bg-theme-brand-binance text-theme-bg-overlay hover:brightness-105 active:brightness-95 cursor-pointer'
-            }`}
+              }`}
           >
             <AnimatePresence mode="wait" initial={false}>
               {isLoading ? (
