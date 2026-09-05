@@ -79,6 +79,18 @@ export function getEnvironmentDirective(_mode?: string): string {
 - **Transparency**: When asked about trading or capabilities, explain that you provide real-time market data analysis, liquidity depth evaluation, and derivative sentiment directly from live Binance public feeds.`;
 }
 
+/**
+ * Directive informing the agent of the active symbol workspace context.
+ * Directs the agent to default to the workspace symbol while allowing flexible queries on any other symbol.
+ */
+export function getWorkspaceSymbolDirective(symbol: string): string {
+  const clean = symbol.toUpperCase().trim();
+  return `### Active Symbol Workspace: #${clean}
+- You are currently operating inside the **#${clean}** trading workspace.
+- **Contextual Default**: When the user asks market questions without explicitly naming a coin or pair (e.g. "what is the price?", "inspect the order book", "show 24h stats", "is it pumping or dumping?", "check funding rate", "any breaking news?"), ALWAYS default your tool executions and analysis to **#${clean}**.
+- **Cross-Market Flexibility**: You are NEVER restricted exclusively to this workspace symbol. The user can inquire about ANY other cryptocurrency, token, or trading pair at any moment (e.g. asking about ETH, SOL, DOGE, or PEPE while in the #${clean} workspace). When another symbol is explicitly mentioned or requested, seamlessly analyze that requested symbol instead.`;
+}
+
 export const AGENT_TOOL_DESCRIPTIONS = {
   getTickerPrice: 'Fetch the real-time ticker price for a Binance trading pair (e.g. SOLUSDT, BTCUSDT, ETHUSDT). MUST be called before stating or reporting the price of any symbol.',
   getOrderBook: 'Fetch the live order book depth (top bids and asks) to evaluate liquidity and compute slippage. MUST be called before reporting order book state or depth.',

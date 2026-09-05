@@ -142,6 +142,8 @@ export const APP_CONTENT = {
     errorMessageTitle: 'Error',
     newSessionGreeting: (title: string) =>
       `Started a new chat for **${title}**. How can I help you today?`,
+    workspaceBadge: 'WORKSPACE',
+    switchSymbolTooltip: 'Click to switch market workspace (⌘K)',
   },
   sessions: {
     menuTitle: 'Conversations',

@@ -11,7 +11,6 @@ import { useChatSessions } from '@/hooks/use-chat-sessions';
 import {
   SidebarHeader,
   SidebarNewChat,
-  SidebarSymbolSearchButton,
   SidebarNavViews,
   SidebarSessionList,
   SidebarThemeToggle,
@@ -111,11 +110,6 @@ export function LeftSidebar() {
           isCollapsed={isSidebarCollapsed}
           onNewChat={handleNewChatClick}
           disabled={isNewChatDisabled}
-        />
-
-        {/* 2.1 Symbol Search Action */}
-        <SidebarSymbolSearchButton
-          isCollapsed={isSidebarCollapsed}
         />
 
         {/* 3. Workspace Views Navigation */}

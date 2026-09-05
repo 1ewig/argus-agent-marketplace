@@ -4,6 +4,7 @@ import {
   ARGUS_SYSTEM_PROMPT,
   FIRST_TURN_SESSION_TITLE_DIRECTIVE,
   getEnvironmentDirective,
+  getWorkspaceSymbolDirective,
 } from './prompts';
 import type { AgentOptions } from './types';
 
@@ -41,11 +42,14 @@ export function prepareAgentInvocation(options: AgentOptions): PreparedAgentInvo
   const backupModel = getBackupAgentModel(backupModelName, apiKey);
 
   const currentUserPrompt = symbol
-    ? `[Pair Context: ${symbol.toUpperCase()}]\nUser: ${prompt}`
+    ? `[Active Workspace: #${symbol.toUpperCase()}]\nUser: ${prompt}`
     : prompt;
 
   const effectiveIsFirstTurn = isFirstTurn ?? (!history || history.length === 0);
   const directives: string[] = [getEnvironmentDirective(mode)];
+  if (symbol) {
+    directives.push(getWorkspaceSymbolDirective(symbol));
+  }
   if (effectiveIsFirstTurn) {
     directives.push(FIRST_TURN_SESSION_TITLE_DIRECTIVE);
   }

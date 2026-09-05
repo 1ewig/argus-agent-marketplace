@@ -71,6 +71,18 @@ export function SymbolSearchModal() {
     return filteredSymbols.slice(0, visibleCount);
   }, [filteredSymbols, visibleCount]);
 
+  // Global hotkey: Cmd+K / Ctrl+K toggles the symbol search modal
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsSymbolSearchOpen(!isSymbolSearchOpen);
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [isSymbolSearchOpen, setIsSymbolSearchOpen]);
+
   // Auto-focus input when modal opens
   useEffect(() => {
     if (isSymbolSearchOpen) {
@@ -166,7 +178,7 @@ export function SymbolSearchModal() {
           role="dialog"
           aria-modal="true"
           aria-labelledby="symbol-search-title"
-          className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 p-spacing-md select-none"
+          className="fixed inset-0 z-50 flex items-center justify-center p-spacing-md select-none"
         >
           {/* Backdrop */}
           <motion.div
