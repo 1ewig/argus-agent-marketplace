@@ -2,18 +2,56 @@ import type { ExaSearchOptions, ExaSearchResultItem } from './types';
 
 const EXA_API_URL = 'https://api.exa.ai/search';
 
+const NAVIGATION_CHROME_PATTERNS = [
+  /^skip to (main )?content/i,
+  /^menu$/i,
+  /^sign in/i,
+  /^log in/i,
+  /^subscribe/i,
+  /^cookie (policy|settings|notice)/i,
+  /^all rights reserved/i,
+  /^terms (of service|& conditions)/i,
+  /^privacy policy/i,
+];
+
+/**
+ * Strips navigation chrome, dedupes identical sentences, and removes empty snippets.
+ */
+function sanitizeHighlights(rawHighlights?: string[]): string[] {
+  if (!rawHighlights || !Array.isArray(rawHighlights)) return [];
+  const seen = new Set<string>();
+  const cleaned: string[] = [];
+
+  for (const h of rawHighlights) {
+    if (typeof h !== 'string') continue;
+    const trimmed = h.trim();
+    if (!trimmed || trimmed.length < 15) continue;
+    const isChrome = NAVIGATION_CHROME_PATTERNS.some((p) => p.test(trimmed));
+    if (isChrome) continue;
+
+    const normalized = trimmed.toLowerCase();
+    if (!seen.has(normalized)) {
+      seen.add(normalized);
+      cleaned.push(trimmed);
+    }
+  }
+
+  return cleaned;
+}
+
 /**
  * Executes an intelligent semantic web search or crypto news query via the Exa AI REST API.
  * Uses search mode 'auto' with customizable category, date ranges, domain scoping, and token-optimized highlights.
  * 
  * @param options - Configurable search parameters with robust defaults
- * @returns Clean, structured search results
+ * @returns Clean, structured search results with diagnostic warnings
  */
 export async function searchExa(options: ExaSearchOptions): Promise<{
   query: string;
   results: ExaSearchResultItem[];
   totalResults: number;
   category: string;
+  warning?: string;
 }> {
   const {
     query,
@@ -110,14 +148,26 @@ export async function searchExa(options: ExaSearchOptions): Promise<{
     publishedDate: item.publishedDate,
     author: item.author,
     text: item.text,
-    highlights: item.highlights,
+    highlights: sanitizeHighlights(item.highlights),
     summary: item.summary,
   }));
+
+  let warning: string | undefined;
+  if (results.length === 0) {
+    if (includeDomains && includeDomains.length > 0) {
+      warning = `No articles found matching the restricted domain filter (${includeDomains.join(', ')}).`;
+    } else if (startPublishedDate || endPublishedDate) {
+      warning = 'No articles found within the specified publication date range.';
+    } else {
+      warning = 'No recent articles or news catalysts found for this query.';
+    }
+  }
 
   return {
     query,
     category,
     results,
     totalResults: results.length,
+    warning,
   };
 }

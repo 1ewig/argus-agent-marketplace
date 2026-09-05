@@ -310,7 +310,19 @@ export function buildAgentTools() {
         highlightsPerUrl = 2,
       }) => {
         try {
-          const searchQuery = symbol ? `${symbol} crypto ${query}` : query;
+          let cleanSymbol: string | undefined;
+          if (symbol) {
+            try {
+              cleanSymbol = normalizeSymbol(symbol);
+            } catch {
+              const sanitized = symbol.replace(/[^a-zA-Z0-9]/g, '').trim().toUpperCase();
+              if (sanitized && sanitized.length <= 10) {
+                cleanSymbol = sanitized;
+              }
+            }
+          }
+
+          const searchQuery = cleanSymbol ? `${cleanSymbol} crypto ${query}` : query;
           const searchRes = await searchExa({
             query: searchQuery,
             type: 'auto',
@@ -327,8 +339,9 @@ export function buildAgentTools() {
             success: true,
             query: searchQuery,
             category: searchRes.category,
-            symbol: symbol ? symbol.toUpperCase() : undefined,
+            symbol: cleanSymbol,
             totalResults: searchRes.totalResults,
+            warning: searchRes.warning,
             articles: searchRes.results.map((r) => ({
               id: r.id,
               title: r.title,

@@ -106,7 +106,7 @@ export function CryptoNewsCard({ resultObj }: ToolCardProps) {
         </div>
       ) : (
         <span className="text-theme-text-muted text-xs italic py-1">
-          {res.emptyResult}
+          {typeof resultObj?.warning === 'string' ? resultObj.warning : res.emptyResult}
         </span>
       )}
     </div>
