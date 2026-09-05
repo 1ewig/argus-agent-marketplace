@@ -5,3 +5,4 @@ export * from './use-execution-mode';
 export * from './use-active-timer';
 export * from './use-theme';
 export * from './use-sidebar';
+export * from './use-symbol-search';
