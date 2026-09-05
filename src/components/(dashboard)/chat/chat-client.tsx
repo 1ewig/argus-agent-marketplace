@@ -150,8 +150,8 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
 
           {isLoading && !activeStreamMessage && (
             <div className="flex items-center gap-spacing-sm p-spacing-md bg-theme-bg-elevated rounded-xl border border-theme-border-subtle animate-pulse">
-              <AgentLoader className="size-4 text-theme-brand-binance shrink-0" />
-              <span className="text-xs text-theme-text-secondary font-medium">
+              <AgentLoader className="size-5 text-theme-brand-binance shrink-0" />
+              <span className="text-sm text-theme-text-secondary font-medium">
                 {APP_CONTENT.chat.thinkingText}
               </span>
             </div>

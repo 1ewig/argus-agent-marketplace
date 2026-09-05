@@ -41,9 +41,9 @@ function AgentWorkingDraftIndicator({ startedAt }: { startedAt: number }) {
       variants={draftIndicatorVariants}
       initial="hidden"
       animate="visible"
-      className="flex items-center gap-spacing-xs text-xs text-theme-text-muted py-1"
+      className="flex items-center gap-2 text-xs sm:text-sm font-medium text-theme-text-secondary py-1.5"
     >
-      <AgentLoader className="size-3.5 text-theme-brand-binance shrink-0" />
+      <AgentLoader className="size-4.5 text-theme-brand-binance shrink-0" />
       <span>{APP_CONTENT.process.agentWorking(elapsedSeconds)}</span>
     </motion.div>
   );
