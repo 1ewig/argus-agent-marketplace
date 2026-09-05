@@ -46,6 +46,8 @@ export function parseSymbolAssets(symbol: string): { baseAsset: string; quoteAss
   return { baseAsset: upper, quoteAsset: '' };
 }
 
+let isSessionInitStarted = false;
+
 /**
  * Custom hook managing session list subscriptions, workspace grouping by symbol,
  * active conversation selection, inline renaming, deletion, and cross-workspace sync.
@@ -58,6 +60,7 @@ export function useChatSessions() {
   const activeStreamMessage = useAppStore((state) => state.activeStreamMessage);
   const setActiveStreamMessage = useAppStore((state) => state.setActiveStreamMessage);
   const setErrorNotice = useAppStore((state) => state.setErrorNotice);
+  const hasHydrated = useAppStore((state) => state._hasHydrated);
 
   const activeMessageCount = useConversationMessageCount(activeConversationId);
 
@@ -67,24 +70,33 @@ export function useChatSessions() {
 
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Initialize default conversation record and validate persisted session on client mount
+  // Initialize and validate persisted session ONCE on client mount after store hydration
   useEffect(() => {
-    let isCancelled = false;
+    if (!hasHydrated) return;
+    if (isSessionInitStarted) return;
+    isSessionInitStarted = true;
+
     async function initSession() {
-      const currentSymbol = (useAppStore.getState().selectedSymbol || DEFAULT_CONVERSATION_SYMBOL).toUpperCase();
-      await ensureDefaultConversation(currentSymbol);
-      if (isCancelled) return;
+      const store = useAppStore.getState();
+      const activeId = store.activeConversationId;
+      const currentSymbol = (store.selectedSymbol || DEFAULT_CONVERSATION_SYMBOL).toUpperCase();
 
-      const currentId = useAppStore.getState().activeConversationId;
-      const existing = await getConversation(currentId);
-      if (isCancelled) return;
+      // 1. Check if active conversation exists in Dexie
+      if (activeId) {
+        const activeConv = await getConversation(activeId);
+        if (activeConv) {
+          // If active conversation has a symbol and store's symbol doesn't match, sync store's symbol
+          if (activeConv.symbol && activeConv.symbol.toUpperCase() !== currentSymbol) {
+            setSelectedSymbol(activeConv.symbol.toUpperCase());
+          }
+          return; // Active conversation and group preserved on refresh!
+        }
+      }
 
-      const existingSymbol = (existing?.symbol || DEFAULT_CONVERSATION_SYMBOL).toUpperCase();
-
-      if (!existing || existingSymbol !== currentSymbol) {
-        const all = await listConversations();
-        if (isCancelled) return;
-        const matching = all.filter(
+      // 2. If activeId doesn't exist, check all conversations in database
+      const allConvs = await listConversations();
+      if (allConvs.length > 0) {
+        const matching = allConvs.filter(
           (c) => (c.symbol || DEFAULT_CONVERSATION_SYMBOL).toUpperCase() === currentSymbol
         );
         if (matching.length > 0) {
@@ -93,19 +105,21 @@ export function useChatSessions() {
           );
           setActiveConversationId(sorted[0].id);
         } else {
-          const newConv = await createConversation(undefined, currentSymbol);
-          if (isCancelled) return;
-          setActiveConversationId(newConv.id);
+          setActiveConversationId(allConvs[0].id);
+          if (allConvs[0].symbol) {
+            setSelectedSymbol(allConvs[0].symbol.toUpperCase());
+          }
         }
+        return;
       }
+
+      // 3. Database is completely empty: initialize first default conversation
+      const defaultConv = await ensureDefaultConversation(currentSymbol);
+      setActiveConversationId(defaultConv.id);
     }
 
     void initSession();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [setActiveConversationId, setSelectedSymbol]);
+  }, [hasHydrated, setActiveConversationId, setSelectedSymbol]);
 
   // Reactive subscription to all conversations
   const conversations = useConversations();
