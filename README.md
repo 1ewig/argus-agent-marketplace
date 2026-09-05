@@ -1,167 +1,81 @@
-# Argus — Trading Assistant for Binance Agent OS
+# Argus — Intelligent Trading Assistant for Binance Agent OS
 
-> **Intelligent, Data-Grounded Trading Assistant & Risk Guardian**  
-> Built for the **Binance Agent OS Mini Hackathon — Track A ($20,000 USDC)**
-
----
-
-## Overview
-
-**Argus** is an approachable, high-performance trading assistant powered by **Binance Agent OS**. Unlike generic chatbots that hallucinate market prices or execute trades blindly, Argus operates directly against real-time Binance spot and perpetual market feeds, live order books, and trade tapes with built-in mathematical risk checks, server-side idempotency, and automatic model failover.
-
-Argus pairs ultra-fast inference with a clean, local-first interactive interface—giving traders clear, actionable insights without unnecessary complexity or robotic theatrics.
+> A fast, approachable crypto trading assistant that pairs real-time Binance exchange feeds with Exa AI web search for grounded market analysis.  
+> Built for the **Binance Agent OS Mini Hackathon (Track A)**.
 
 ---
 
-## Key Capabilities & Architecture
+## Welcome to Argus
 
-### 1. Multi-Provider Inference with Automatic Failover
-* **Selectable Providers (`groq` | `fireworks`):** Switch between inference providers via `INFERENCE_PROVIDER` with automatic cross-provider and cross-model failover.
-* **Groq Models:**
-  * **Primary:** `qwen/qwen3.8-27b` — ultra-fast reasoning, high-fidelity tool-calling, and 128k context window.
-  * **Backup:** `openai/gpt-oss-120b` — automatically activated if the primary model encounters rate limits (HTTP 429) or capacity issues.
-* **Fireworks AI Models:**
-  * **Primary:** `accounts/fireworks/models/glm-5p3-flash` — high-speed reasoning model.
-  * **Backup:** `accounts/fireworks/models/deepseek-v4-flash-0731` — rapid secondary reasoning engine.
-* **Thinking & Reasoning Extraction:** Embedded `<think>` blocks are captured and converted into native reasoning streams via `extractReasoningMiddleware`, with configurable reasoning effort (default: `'low'`).
-* **TPM Protection & Conciseness:** Capped to 6,000 max output tokens per turn (`GROQ_MAX_TOKENS`) with concise system prompts to prevent rate-limit exhaustion.
-* **Fluid Word-by-Word Streaming:** Powered by `smoothStream` (15ms delay, word-level chunking) to deliver a smooth, natural reading experience rather than erratic burst streaming.
+**Argus** is designed to feel like a sharp, insightful colleague who sits at the trading desk next to you. Instead of guessing prices or generating synthetic data, Argus pulls directly from live Binance public market feeds and Exa AI neural web search to give you clear, grounded perspectives on what the market is doing right now.
 
-### 2. Comprehensive Suite of Live Market Tools (Zero Fake Data)
-Argus provides immediate, unauthenticated access to the full suite of public Binance Spot and Perpetual Futures market data endpoints (`api.binance.com` and `fapi.binance.com`). **Zero synthetic fallback prices or mock tickers** — if an invalid symbol is entered, Argus surfaces authentic Binance exchange errors:
-* **`get_ticker_price`:** Real-time spot price tick for any valid pair.
-* **`get_order_book`:** Live bid/ask depth with custom levels (up to 100), computing best bids, best asks, spreads, spread percentages, and depth imbalance ratios.
-* **`get_klines`:** Historical OHLCV candlestick data across standard intervals (`1m`, `5m`, `15m`, `1h`, `4h`, `1d`) with period percentage change calculation.
-* **`get_24h_stats`:** Rolling 24-hour price change percentage, 24h high, low, base volume, quote volume, and weighted average price.
-* **`get_funding_rate`:** Binance Perpetual Futures funding rates, mark price, index price, next funding settlement countdown, and annualized APR.
-* **`get_open_interest`:** Real-time Binance Perpetual Futures open interest contracts and latest settlement timestamp.
-* **`get_average_price`:** 5-minute rolling Volume Weighted Average Price (VWAP) fair value benchmark.
-* **`get_recent_trades`:** Public trade tape prints with timestamps, quantities, and taker buyer vs. seller volume ratio.
-
-### 3. Market Data Guardrails & Universal Symbol Sanitization
-To ensure robust analysis and protect against faulty inputs, Argus incorporates rigorous data handling rules:
-* **Zero Fake / Synthetic Market Data:** If an invalid symbol is passed or an API request fails, authentic Binance errors are surfaced. Prices and market metrics are never fabricated or estimated.
-* **Symbol Sanitization (`normalizeSymbol`):** Automatically cleans quotes (`"BTCUSDT"`), internal separators (`BTC/USDT`, `BTC-USDT`), and lowercase casing (`btcusdt`), enforcing standard alphanumeric quote asset formats (`USDT`, `USDC`, etc.).
-* **Deterministic Calculations:** Order book spread percentages, depth imbalance ratios, candlestick percentage movements, and taker volume flow are computed via pure mathematical functions.
-
-### 4. Single-Turn Parallel Tool Execution
-* Dispatches independent market queries concurrently in a single LLM round-trip.
-* When asking for a coin's status, Argus simultaneously fetches ticker price, 24h market statistics, recent trades, and order book depth—reducing multi-step latency by up to 70%.
-
-### 5. 100% Live Public Feeds (Zero API Keys or KYC Required)
-Argus queries production Binance REST APIs (`api.binance.com` and `fapi.binance.com`) for **100% real, live market data** across all market analysis tools. Anyone can run and evaluate real-time analytics, liquidity depth checks, and derivative sentiment immediately out of the box with zero deposit, API keys, KYC, or private credentials required.
-
-### 6. Unified "Worked for # seconds" Process Timeline
-* **Single Collapsible Group:** All agent execution steps (reasoning blocks, tool invocations, and formatted tool results) are cleanly bundled inside an overarching accordion.
-* **Live Elapsed Timer:** Real-time counter updates dynamically during execution (`Working (4s)`) before finalizing to elapsed duration (`Worked for 4 seconds`).
-* **Smart Auto-Collapse:** Automatically collapses once the final answer arrives, preserving a clean reading flow while keeping the entire execution history one click away.
-* **Smooth Framer Motion Transitions:** Jitter-free accordion mechanics, smooth empty chat state transitions, and unified dropdown menu animations defined in `src/constants/animation.ts`.
-
-### 7. Inspectable Visual Cards (Zero Raw JSON Dumps)
-Sub-accordions in the process timeline render purpose-built visual cards for each tool with zero technical clutter or raw JSON:
-* **Order Book Depth Card:** Split side-by-side Buy (Bids) and Sell (Asks) panels with volume depth fill bars, mid-market price, spread percentage, and crypto quantity formatting that avoids truncating fractional amounts.
-* **Recent Trades Card:** Public tape stream displaying fill price, quantity, execution timestamp, and a calculated taker buyer vs. seller volume ratio bar.
-* **Funding Rate Card:** Displays perpetual contract funding rate, annualized APR, mark price, and countdown to next funding settlement.
-* **Average Price (VWAP) Card:** 5-minute rolling fair value benchmark comparison.
-* **Candlestick Chart Card:** Visual candlestick chart rendering for historical kline intervals.
-* **24h Market Stats Card:** 24h high/low range, price change percentage, and trading volume metrics.
-
-### 8. Local-First Session Persistence & Guardrails
-* **Dexie IndexedDB Integration:** Client-side persistence for conversations, messages, and execution telemetry with zero third-party telemetry tracking.
-* **Zustand Store Persistence (`argus-session-store`):** The active conversation ID, workspace stage view (`Agent Chat` vs `Trading Chart`), and sidebar collapse state are persisted in browser storage, surviving full page refreshes.
-* **Empty Chat Guard:** New chat creation is intelligently disabled when the currently selected chat is already empty (zero messages), preventing ghost chat clutter.
-* **Smart Session Reuse:** If an unused empty conversation already exists elsewhere in the database, requesting a new chat automatically navigates to it rather than spawning duplicate empty threads.
-* **Self-Healing Storage Recovery:** On application load, persisted IDs are validated against IndexedDB; if storage was cleared or records removed, the store safely falls back to the most recent chat or default conversation.
-* **Full Session Control:** Fast conversation switching, inline title renaming, and deletion with custom confirmation modals.
-
-### 9. Modular Left Sidebar & Tactile Ergonomics
-* **Collapsible Layout:** Smooth spring-animated sidebar expanding from 68px icon rail to 280px full navigation drawer.
-* **Mathematical Icon Centering:** Standardized 40px square slots (`w-10 h-10 rounded-xl`) ensuring pixel-perfect centering when collapsed.
-* **Tactile Spring Feedback:** Unified `tapScalePill` and `tapScaleIcon` micro-interactions without flexbox layout snapping or jitter.
-* **Integrated Theme Switcher:** Instant zero-flash toggle between Light and Dark themes, respecting system preferences and design tokens.
+Whether you need a quick 24-hour snapshot of Bitcoin, a look at deep order book liquidity for Solana, or an explanation of why a coin is moving based on breaking news, Argus gathers the data in parallel and gives you a clean, easy-to-read summary.
 
 ---
 
-## Technology Stack
+## What Makes Argus Different
+
+### 1. Real Market Data Only
+Argus never hallucinates, estimates, or makes up prices. Every number, spread percentage, and candlestick metric comes directly from live public Binance Spot and Futures feeds (`api.binance.com` and `fapi.binance.com`). If an invalid pair is entered, Argus tells you upfront rather than guessing.
+
+### 2. Live Crypto News & Catalyst Search (Exa AI)
+When you ask why a token is pumping, dumping, or what upgrades are coming up, Argus uses **Exa AI** to search live crypto news, governance forums, and research papers. It automatically isolates recent articles, pulls key highlights, and presents them in clean, clickable news cards.
+
+### 3. Multi-Provider Inference with Auto-Failover
+* **Selectable Providers:** Easily switch between **Groq** (Qwen 3.8 27B) and **Fireworks AI** (GLM-5p3 Flash).
+* **Automatic Failover:** If your primary model hits a rate limit or capacity spike, Argus seamlessly fails over to the backup model (e.g. GPT-OSS 120B / DeepSeek v4 Flash) so your chat is never interrupted.
+* **Fluid Word-by-Word Streaming:** Powered by Vercel AI SDK's `smoothStream` for a natural reading experience.
+
+### 4. Parallel Tool Execution
+Argus dispatches multiple tools simultaneously in a single turn. Asking *"How is SOL looking and why is it moving?"* concurrently triggers price checks, 24h stats, order book depth, and live news search in parallel—cutting wait times by up to 70%.
+
+### 5. Inspectable Process Timeline (Zero Raw JSON Dumps)
+* **Single Collapsible Group:** All agent thoughts, tool invocations, and live data are organized into an overarching *"Worked for X seconds"* timeline that neatly collapses once your answer arrives.
+* **Custom Financial Cards:** Visual cards for order book depth, recent trade tape flow, funding rates, open interest, VWAP average prices, and news articles with direct links.
+
+### 6. Local-First & Private
+* **Dexie IndexedDB:** Your chat history, session titles, and telemetry are stored entirely on your local device.
+* **Zero Telemetry Tracking:** No third-party data tracking or external databases required.
+
+---
+
+## Available Agent Tools
+
+| Tool | Source | What it Does |
+| :--- | :--- | :--- |
+| **`get_ticker_price`** | Binance Spot | Real-time spot price tick for any trading pair. |
+| **`get_order_book`** | Binance Spot | Live 20-level bid/ask depth, spread %, and depth imbalance ratio. |
+| **`get_klines`** | Binance Spot | Historical candlestick trends across 1m, 5m, 15m, 1h, 4h, and 1d intervals. |
+| **`get_24h_stats`** | Binance Spot | Rolling 24-hour high, low, price change %, and trading volume. |
+| **`get_funding_rate`** | Binance Futures | Perpetual futures funding rate, mark price, APR, and settlement countdown. |
+| **`get_average_price`** | Binance Spot | 5-minute rolling Volume Weighted Average Price (VWAP) benchmark. |
+| **`get_recent_trades`** | Binance Spot | Live trade tape prints with taker buy vs. sell volume ratios. |
+| **`get_open_interest`** | Binance Futures | Real-time perpetual open interest contracts and market positioning. |
+| **`search_crypto_news`** | Exa AI | Live cryptocurrency news, regulatory catalysts, and protocol roadmap updates with date filtering and highlights. |
+
+---
+
+## Tech Stack
 
 * **Framework:** Next.js 16 (Turbopack, App Router, React 19)
 * **Runtime & Package Manager:** Bun (`bun@1.4.0+`) exclusively
-* **Language & Tooling:** TypeScript 7 (native Go compiler), Oxlint (`oxlint@1.81.0+`)
-* **State Management:** Zustand v5 with selective `persist` middleware
-* **Styling & Motion:** Tailwind CSS v4 with Neo-Minimalist Architectural design tokens configured in `globals.css` and Framer Motion animations
-* **Agent Engine:** Vercel AI SDK (`ai@7`, `@ai-sdk/groq`, `@ai-sdk/fireworks`)
-* **Client Database:** Dexie IndexedDB (`dexie`, `dexie-react-hooks`)
-* **Icons:** Lucide React
+* **Language & Tooling:** TypeScript 7 (strict type-checking), Oxlint (`oxlint@1.81.0+`)
+* **AI & Agent Layer:** Vercel AI SDK (`ai@7`, `@ai-sdk/groq`, `@ai-sdk/fireworks`)
+* **Search Engine:** Exa AI REST API (`https://api.exa.ai`)
+* **Local Database:** Dexie IndexedDB (`dexie`, `dexie-react-hooks`)
+* **State Management:** Zustand v5 with local storage persistence
+* **Styling & Motion:** Tailwind CSS v4 with custom design tokens and Framer Motion
 
 ---
 
-## Project Structure
-
-```
-src/
-├── agent/                # Core AI agent engine
-│   ├── engine.ts         # Multi-step streaming loop with rate-limit failover & tool error handling
-│   ├── prepare-invocation.ts # Model binding, tool configuration, and dynamic prompt assembly
-│   ├── prompts.ts        # System prompts, tool descriptions, and formatting guidelines
-│   ├── providers.ts      # Multi-provider model factories (Groq & Fireworks AI) with failover
-│   ├── title-stream-filter.ts # Stream interceptor preventing raw XML tag leakage
-│   ├── tools.ts          # Binance MCP tool definitions with Zod schemas & sanitization
-│   └── types.ts          # Agent result, step, and stream event interfaces
-├── app/                  # Route boundaries, page layouts, and SSE API endpoints
-│   ├── api/agent/chat/   # Server-Sent Events (SSE) streaming endpoint
-│   ├── globals.css       # 15 theme tokens, typography, and spacing variables
-│   ├── layout.tsx        # App root layout with theme script injection
-│   └── page.tsx          # Main dashboard view orchestrating sidebar and central stage
-├── components/           # Presentation UI components
-│   ├── (dashboard)/
-│   │   ├── chat/         # ChatClient, ChatInput, ChatMessage, ProcessTimeline, ToolResultCard
-│   │   ├── markdown-view.tsx     # Custom GFM renderer with styled tables & syntax blocks
-│   │   ├── market-chart-view.tsx # High-fidelity candlestick market chart
-│   │   └── stage-view-switcher.tsx # Agent Chat vs Trading Chart view switch
-│   ├── common/           # Reusable UI primitives (ConfirmDialog, ArgusIcon, AgentLoader)
-│   ├── sidebar/          # Modular sidebar components (Header, NewChat, NavViews, SessionList, ThemeToggle)
-│   └── left-sidebar.tsx  # Left sidebar orchestrator
-├── constants/            # Centralized UI copy, tool labels, and animation variants
-│   ├── animation.ts      # Unified Framer Motion accordion, dropdown, and tactile tap variants
-│   └── content.ts        # Centralized UI dictionary text, tool badges, and placeholders
-├── hooks/                # Custom React hooks (useAgentChat, useChatSessions, useChatScroll, useTheme)
-├── lib/
-│   ├── agents/           # Client-side SSE stream transport and chat history helpers
-│   ├── binance-mcp/      # Production REST client and simulated sandbox adapters
-│   │   ├── index.ts      # Adapter provider & singleton exports
-│   │   ├── public-api-client.ts # Live Binance REST caller with unified error extraction
-│   │   ├── simulated-wallet.ts  # In-memory paper wallet with idempotency & PERCENT_PRICE rules
-│   │   ├── simulated-adapter.ts # Adapter orchestrating live REST data & paper wallet
-│   │   └── types.ts      # Binance tool interfaces & Zod schemas
-│   ├── db/               # Dexie IndexedDB schema, queries, and step normalizers
-│   ├── types/            # Shared domain types and Zod runtime schemas
-│   └── utils.ts          # Pure utility helpers
-└── stores/
-    └── app-store.ts      # Zustand global store with localStorage persistence
-```
-
----
-
-## Engineering & Design Standards
-
-Argus follows strict engineering rules defined in [`AGENTS.md`](./AGENTS.md):
-1. **Zero Hardcoded Design Tokens:** All colors, font sizes, weights, and spacing use strict CSS variables (`--theme-*`, `--text-*`, `--spacing-*`).
-2. **Zero Hardcoded UI Text:** User-facing strings and error messages reside in centralized constants (`src/constants/content.ts`).
-3. **Bun Only:** All scripts, dependencies, and tools are run via `bun` (`bun add`, `bun run dev`, `bun x tsc`).
-4. **TS7 & Oxlint:** Clean type checking (`bun x tsc --noEmit`) and linting (`bun run lint`) with 0 errors and 0 warnings.
-5. **Human Language:** Conversational, approachable tone with zero military or robotic fluff.
-6. **Parallel Execution:** Tools and file operations are batched concurrently in single operations.
-7. **Zero Fake Market Data:** Always query authentic Binance endpoints; never fall back to synthetic prices.
-
----
-
-## Quick Start Guide
+## Quick Start
 
 ### Prerequisites
 * [Bun](https://bun.sh/) `v1.4.0` or higher
-* An API key for [Groq](https://console.groq.com/keys) or [Fireworks AI](https://fireworks.ai/api-keys)
+* An API key from [Groq](https://console.groq.com/keys) or [Fireworks AI](https://fireworks.ai/api-keys)
+* *(Optional)* An API key from [Exa AI](https://dashboard.exa.ai/api-keys) for web news search
 
-### 1. Clone & Install Dependencies
+### 1. Clone & Install
 ```bash
 git clone <repository-url>
 cd argus
@@ -174,37 +88,17 @@ Copy `.env.example` to `.env.local`:
 cp .env.example .env.local
 ```
 
-Configure your credentials in `.env.local`:
+Add your keys in `.env.local`:
 ```env
-# ------------------------------------------------------------------------------
-# 1. Inference Provider ('groq' | 'fireworks')
-# ------------------------------------------------------------------------------
+# Inference Provider ('groq' | 'fireworks')
 INFERENCE_PROVIDER=groq
-
-# --- Groq Provider Configuration ---
 GROQ_API_KEY=gsk_your_groq_api_key_here
-GROQ_MODEL=qwen/qwen3.8-27b
-GROQ_BACKUP_MODEL=openai/gpt-oss-120b
-GROQ_REASONING_EFFORT=low
-GROQ_MAX_TOKENS=6000
 
-# --- Fireworks AI Provider Configuration ---
-FIREWORKS_API_KEY=your_fireworks_api_key_here
-FIREWORKS_MODEL=accounts/fireworks/models/glm-5p3-flash
-FIREWORKS_BACKUP_MODEL=accounts/fireworks/models/deepseek-v4-flash-0731
-FIREWORKS_REASONING_EFFORT=low
-
-# Optional: Automatic cross-provider failover
-BACKUP_INFERENCE_PROVIDER=fireworks
-
-# ------------------------------------------------------------------------------
-# 2. Binance Execution Mode
-# ------------------------------------------------------------------------------
-# Mode: 'simulation' (100% real live Binance market feeds + paper wallet sandbox)
-NEXT_PUBLIC_BINANCE_MODE=simulation
+# Optional: Exa AI for web search & crypto news
+EXA_API_KEY=your_exa_api_key_here
 ```
 
-### 3. Start Development Server
+### 3. Run Development Server
 ```bash
 bun run dev
 ```
@@ -212,10 +106,10 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ### 4. Run Code Quality Checks
 ```bash
-# TypeScript 7 Type Check
+# TypeScript strict check
 bun x tsc --noEmit
 
-# Oxlint Linter
+# Oxlint linter (0 errors, 0 warnings)
 bun run lint
 ```
 
