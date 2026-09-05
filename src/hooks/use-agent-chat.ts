@@ -105,6 +105,7 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
       conversationId: activeConversationId,
       role: 'user',
       content: prompt,
+      symbol: selectedSymbol,
       status: 'success',
       timestamp: getNowTimestamp(),
     };
@@ -122,6 +123,7 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
       conversationId: activeConversationId,
       role: 'assistant',
       content: '',
+      symbol: selectedSymbol,
       status: 'pending',
       steps: [],
       timestamp: getNowTimestamp(),

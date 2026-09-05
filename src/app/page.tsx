@@ -5,8 +5,10 @@ import { MarketChartView } from '@/components/(dashboard)/market-chart-view';
 import { ChatClient } from '@/components/(dashboard)/chat/chat-client';
 import { SymbolSearchModal } from '@/components/modals/symbol-search-modal';
 import { useAppStore } from '@/stores/app-store';
+import { useUrlSymbolSync } from '@/hooks';
 
 export default function Home() {
+  useUrlSymbolSync();
   const executionMode = useAppStore((state) => state.executionMode);
   const stageView = useAppStore((state) => state.stageView);
 

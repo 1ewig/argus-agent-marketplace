@@ -61,7 +61,6 @@ export function useChatSessions() {
   const setErrorNotice = useAppStore((state) => state.setErrorNotice);
 
   const activeMessageCount = useConversationMessageCount(activeConversationId);
-  const isNewChatDisabled = activeMessageCount === 0 && !activeStreamMessage;
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -111,6 +110,19 @@ export function useChatSessions() {
     [conversations, activeConversationId]
   );
   const currentTitle = activeConversation?.title ?? APP_CONTENT.chat.defaultSessionTitle;
+
+  const isActiveConversationInSelectedSymbol = useMemo(() => {
+    if (!activeConversation) return false;
+    const convSymbol = (activeConversation.symbol || DEFAULT_CONVERSATION_SYMBOL).toUpperCase();
+    const currentSymbol = (selectedSymbol || DEFAULT_CONVERSATION_SYMBOL).toUpperCase();
+    return convSymbol === currentSymbol;
+  }, [activeConversation, selectedSymbol]);
+
+  const isNewChatDisabled = Boolean(
+    isActiveConversationInSelectedSymbol &&
+    activeMessageCount === 0 &&
+    !activeStreamMessage
+  );
 
   // Group conversations by symbol workspaces
   const symbolGroups = useMemo<SymbolWorkspaceGroup[]>(() => {

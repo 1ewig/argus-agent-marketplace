@@ -237,9 +237,14 @@ export async function saveStoredMessage(msg: ChatMessageRecord): Promise<string>
   // 2. Touch conversation updatedAt
   const conv = await db.conversations.get(conversationId);
   if (conv) {
-    await db.conversations.update(conversationId, {
+    const count = await db.messages.where('conversationId').equals(conversationId).count();
+    const updates: Partial<ConversationRecord> = {
       updatedAt: Date.now(),
-    });
+    };
+    if (count <= 1 && msg.symbol && conv.symbol !== msg.symbol) {
+      updates.symbol = msg.symbol;
+    }
+    await db.conversations.update(conversationId, updates);
   } else {
     await db.conversations.put({
       id: conversationId,
