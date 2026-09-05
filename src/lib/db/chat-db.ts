@@ -4,6 +4,7 @@ import type { ExecutedToolCall, AgentExecutionStep } from '@/agent';
 export interface ConversationRecord {
   id: string;
   title: string;
+  symbol: string; // e.g. "BTCUSDT", "SOLUSDT"
   createdAt: number;
   updatedAt: number;
 }
@@ -67,6 +68,7 @@ export function normalizeMessageSteps(
  */
 export const MAX_MESSAGES_PER_CONVERSATION = 100;
 export const DEFAULT_CONVERSATION_ID = 'default';
+export const DEFAULT_CONVERSATION_SYMBOL = 'BTCUSDT';
 
 /**
  * Institutional Dexie IndexedDB Database for Argus multi-session chat history,
@@ -100,6 +102,19 @@ export class ArgusDatabase extends Dexie {
         }
       });
     });
+
+    // Schema v3: Symbol workspaces and indexed symbol groups
+    this.version(3).stores({
+      conversations: 'id, symbol, createdAt, updatedAt',
+      messages: 'id, conversationId, symbol, timestamp, role, status',
+    }).upgrade(async (tx) => {
+      const convsTable = tx.table('conversations');
+      await convsTable.toCollection().modify((conv) => {
+        if (!conv.symbol) {
+          conv.symbol = DEFAULT_CONVERSATION_SYMBOL;
+        }
+      });
+    });
   }
 }
 
@@ -109,22 +124,30 @@ export const db = new ArgusDatabase();
 /**
  * Ensures the default conversation exists
  */
-export async function ensureDefaultConversation(): Promise<ConversationRecord> {
+export async function ensureDefaultConversation(symbol: string = DEFAULT_CONVERSATION_SYMBOL): Promise<ConversationRecord> {
   if (typeof window === 'undefined') {
     return {
       id: DEFAULT_CONVERSATION_ID,
       title: 'New Chat',
+      symbol,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
   }
 
   const existing = await db.conversations.get(DEFAULT_CONVERSATION_ID);
-  if (existing) return existing;
+  if (existing) {
+    if (!existing.symbol) {
+      existing.symbol = symbol;
+      await db.conversations.update(DEFAULT_CONVERSATION_ID, { symbol });
+    }
+    return existing;
+  }
 
   const defaultConv: ConversationRecord = {
     id: DEFAULT_CONVERSATION_ID,
     title: 'New Chat',
+    symbol,
     createdAt: Date.now(),
     updatedAt: Date.now(),
   };
@@ -136,12 +159,16 @@ export async function ensureDefaultConversation(): Promise<ConversationRecord> {
 /**
  * Creates a new conversation session
  */
-export async function createConversation(title?: string): Promise<ConversationRecord> {
+export async function createConversation(
+  title?: string,
+  symbol: string = DEFAULT_CONVERSATION_SYMBOL
+): Promise<ConversationRecord> {
   const id = `conv_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
   const now = Date.now();
   const conv: ConversationRecord = {
     id,
     title: title || 'New Chat',
+    symbol,
     createdAt: now,
     updatedAt: now,
   };
@@ -217,6 +244,7 @@ export async function saveStoredMessage(msg: ChatMessageRecord): Promise<string>
     await db.conversations.put({
       id: conversationId,
       title: 'New Chat',
+      symbol: msg.symbol || DEFAULT_CONVERSATION_SYMBOL,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });

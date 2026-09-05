@@ -10,7 +10,6 @@ import { useAppStore } from '@/stores/app-store';
 import { useChatSessions } from '@/hooks/use-chat-sessions';
 import {
   SidebarHeader,
-  SidebarNewChat,
   SidebarNavViews,
   SidebarSessionList,
   SidebarThemeToggle,
@@ -21,13 +20,14 @@ const noopSubscribe = () => () => {};
 /**
  * LeftSidebar Orchestrator Component
  *
- * Coordinates layout width animations, theme toggling, session selection,
+ * Coordinates layout width animations, theme toggling, symbol workspace navigation,
  * and deletion confirmation while delegating presentation to modular subcomponents.
  */
 export function LeftSidebar() {
   const { isDark, toggleTheme } = useTheme();
   const stageView = useAppStore((state) => state.stageView);
   const setStageView = useAppStore((state) => state.setStageView);
+  const selectedSymbol = useAppStore((state) => state.selectedSymbol);
   const { isSidebarCollapsed, toggleSidebar } = useSidebar();
   const hasMounted = useSyncExternalStore(
     noopSubscribe,
@@ -37,6 +37,7 @@ export function LeftSidebar() {
 
   const {
     conversations,
+    symbolGroups,
     activeConversationId,
     editingId,
     editTitle,
@@ -77,18 +78,21 @@ export function LeftSidebar() {
     setDeleteTargetId(null);
   }, []);
 
-  const handleNewChatClick = useCallback(async () => {
-    if (isNewChatDisabled) return;
-    setStageView('agent');
-    await handleNewSession();
-  }, [isNewChatDisabled, setStageView, handleNewSession]);
-
   const handleSelectSessionClick = useCallback(
     (id: string) => {
       setStageView('agent');
       handleSelectSession(id);
     },
     [setStageView, handleSelectSession]
+  );
+
+  const handleNewChatInSymbol = useCallback(
+    async (symbol: string, e: React.MouseEvent) => {
+      e.stopPropagation();
+      setStageView('agent');
+      await handleNewSession(symbol);
+    },
+    [setStageView, handleNewSession]
   );
 
   return (
@@ -105,36 +109,32 @@ export function LeftSidebar() {
           onToggle={toggleSidebar}
         />
 
-        {/* 2. New Chat Primary Action */}
-        <SidebarNewChat
-          isCollapsed={isSidebarCollapsed}
-          onNewChat={handleNewChatClick}
-          disabled={isNewChatDisabled}
-        />
-
-        {/* 3. Workspace Views Navigation */}
+        {/* 2. Workspace Views Navigation */}
         <SidebarNavViews
           isCollapsed={isSidebarCollapsed}
           stageView={stageView}
           onViewSelect={setStageView}
         />
 
-        {/* 4. Conversation Sessions List */}
+        {/* 3. Conversation Symbol Workspaces List */}
         <SidebarSessionList
-          conversations={conversations}
+          groups={symbolGroups}
           activeConversationId={activeConversationId}
+          activeSymbol={selectedSymbol}
           editingId={editingId}
           editTitle={editTitle}
           isCollapsed={isSidebarCollapsed}
+          isNewChatDisabled={isNewChatDisabled}
           onSelectSession={handleSelectSessionClick}
           onStartRename={handleStartRename}
           onSaveRename={handleSaveRename}
           onCancelRename={handleCancelRename}
           onEditTitleChange={setEditTitle}
           onOpenDelete={handleOpenDeleteDialog}
+          onNewChatInSymbol={handleNewChatInSymbol}
         />
 
-        {/* 5. Bottom Theme Toggle Utility */}
+        {/* 4. Bottom Theme Toggle Utility */}
         <SidebarThemeToggle
           isCollapsed={isSidebarCollapsed}
           isDark={isDark}

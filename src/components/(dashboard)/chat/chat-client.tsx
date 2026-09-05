@@ -2,7 +2,7 @@
 
 import React, { useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowUpRight, ChevronDown } from 'lucide-react';
+import { ArrowUpRight, ChevronDown, Plus } from 'lucide-react';
 import { AgentLoader, ArgusIcon } from '@/components/common';
 import { APP_CONTENT } from '@/constants/content';
 import {
@@ -12,7 +12,7 @@ import {
   tapScalePill,
   hoverLiftPill,
 } from '@/constants/animation';
-import { useAgentChat } from '@/hooks';
+import { useAgentChat, useChatSessions } from '@/hooks';
 import { useAppStore } from '@/stores/app-store';
 import { ChatMessage } from './chat-message';
 import { ChatInput, type ChatInputHandle } from './chat-input';
@@ -26,6 +26,7 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
   const chatInputRef = useRef<ChatInputHandle>(null);
   const selectedSymbol = useAppStore((state) => state.selectedSymbol);
   const setIsSymbolSearchOpen = useAppStore((state) => state.setIsSymbolSearchOpen);
+  const { handleNewSession, isNewChatDisabled } = useChatSessions();
 
   const cleanSymbol = (selectedSymbol || 'BTCUSDT').toUpperCase();
 
@@ -50,7 +51,7 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
 
   return (
     <div className="relative flex flex-col h-full w-full bg-theme-bg-base overflow-hidden">
-      {/* 1. Top Bar with Minimal Active Symbol */}
+      {/* 1. Top Bar with Minimal Active Symbol & New Chat Trigger */}
       <div className="relative z-30 h-14 px-spacing-md sm:px-spacing-lg border-b border-theme-border-subtle bg-theme-bg-base/90 backdrop-blur-xs flex items-center justify-between shrink-0">
         <div className="flex items-center">
           {/* Minimal Symbol Dropdown Button with Tactile Press */}
@@ -65,6 +66,31 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
               {cleanSymbol}
             </span>
             <ChevronDown className="size-3.5 text-theme-text-muted group-hover:text-theme-text-primary transition-colors" />
+          </motion.button>
+        </div>
+
+        {/* Right Header Section: New Chat Button */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* New Chat Primary Action Button */}
+          <motion.button
+            type="button"
+            whileTap={isNewChatDisabled ? undefined : tapScalePill}
+            onClick={() => handleNewSession()}
+            disabled={isNewChatDisabled}
+            title={
+              isNewChatDisabled
+                ? APP_CONTENT.chat.newSessionDisabled
+                : APP_CONTENT.chat.newChatTooltip
+            }
+            aria-label={APP_CONTENT.chat.newChatButton}
+            className={`h-8 px-3 rounded-lg text-xs font-bold inline-flex items-center gap-1.5 select-none transition-colors ${
+              isNewChatDisabled
+                ? 'opacity-40 cursor-not-allowed bg-theme-brand-binance text-theme-bg-overlay'
+                : 'bg-theme-brand-binance text-theme-bg-overlay cursor-pointer shadow-2xs hover:brightness-105 active:brightness-95'
+            }`}
+          >
+            <Plus className="size-3.5 stroke-[2.75]" />
+            <span className="font-bold">{APP_CONTENT.chat.newChatButton}</span>
           </motion.button>
         </div>
       </div>
