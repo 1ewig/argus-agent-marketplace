@@ -15,7 +15,7 @@ export interface UseChatScrollOptions {
 
 /**
  * Custom hook managing message list scrolling, auto-scroll detection,
- * and requestAnimationFrame (RAF) throttling to prevent layout thrashing during high-speed SSE streaming.
+ * and user-interrupt handling to prevent fighting the user during active SSE streaming.
  */
 export function useChatScroll({
   activeConversationId,
@@ -28,79 +28,138 @@ export function useChatScroll({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const isAutoScrollEnabledRef = useRef<boolean>(true);
   const rafIdRef = useRef<number | null>(null);
-  const isScrollPendingRef = useRef<boolean>(false);
+  const lastScrollTopRef = useRef<number>(0);
+  const isProgrammaticScrollRef = useRef<boolean>(false);
 
-  // RAF-throttled scroll listener detecting if user manually scrolled up without layout thrashing
-  const handleScroll = useCallback(() => {
-    if (isScrollPendingRef.current) return;
-    isScrollPendingRef.current = true;
-
-    requestAnimationFrame(() => {
-      isScrollPendingRef.current = false;
-      const container = scrollContainerRef.current;
-      if (!container) return;
-      const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
-      // Keep auto-scroll active if within 80px of bottom; lock if scrolled up
-      isAutoScrollEnabledRef.current = distanceFromBottom <= 80;
-    });
-  }, []);
-
-  const scrollToBottom = useCallback((smooth = false) => {
-    isAutoScrollEnabledRef.current = true;
+  // Helper to safely programmatically scroll to bottom
+  const performProgrammaticScroll = useCallback((smooth = false) => {
     const container = scrollContainerRef.current;
-    if (container) {
+    if (!container) {
+      messagesEndRef.current?.scrollIntoView({ behavior: smooth ? 'smooth' : 'instant' });
+      return;
+    }
+
+    const targetTop = container.scrollHeight;
+    if (container.scrollTop !== targetTop) {
+      isProgrammaticScrollRef.current = true;
       if (smooth && container.scrollHeight > container.clientHeight) {
         container.scrollTo({
-          top: container.scrollHeight,
+          top: targetTop,
           behavior: 'smooth',
         });
       } else {
-        container.scrollTop = container.scrollHeight;
+        container.scrollTop = targetTop;
       }
-    } else {
-      messagesEndRef.current?.scrollIntoView({ behavior: smooth ? 'smooth' : 'instant' });
+    }
+    lastScrollTopRef.current = container.scrollTop;
+  }, []);
+
+  // Public scrollToBottom action (e.g. called when user sends a new message)
+  const scrollToBottom = useCallback((smooth = false) => {
+    isAutoScrollEnabledRef.current = true;
+    performProgrammaticScroll(smooth);
+  }, [performProgrammaticScroll]);
+
+  // Handle user scroll events
+  const handleScroll = useCallback(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    // Ignore scroll events dispatched by programmatic auto-scrolling
+    if (isProgrammaticScrollRef.current) {
+      isProgrammaticScrollRef.current = false;
+      lastScrollTopRef.current = container.scrollTop;
+      return;
+    }
+
+    const currentScrollTop = container.scrollTop;
+    const isScrollingUp = currentScrollTop < lastScrollTopRef.current;
+    lastScrollTopRef.current = currentScrollTop;
+
+    const distanceFromBottom = container.scrollHeight - currentScrollTop - container.clientHeight;
+
+    if (isScrollingUp && distanceFromBottom > 20) {
+      // User scrolled up: interrupt auto-scroll immediately!
+      isAutoScrollEnabledRef.current = false;
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current);
+        rafIdRef.current = null;
+      }
+    } else if (distanceFromBottom <= 30) {
+      // User scrolled all the way back down to the bottom: resume auto-scroll
+      isAutoScrollEnabledRef.current = true;
     }
   }, []);
 
-  // Synchronously lock scroll position to bottom before paint when switching conversations or loading messages
-  useIsomorphicLayoutEffect(() => {
-    isAutoScrollEnabledRef.current = true;
-    const container = scrollContainerRef.current;
-    if (container) {
-      container.scrollTop = container.scrollHeight;
-    }
-  }, [activeConversationId, messagesCount]);
-
-  // Guaranteed bottom pinning across layout reflows and dynamic message rendering
+  // Direct user gesture listeners (wheel and touch) for immediate interruption
   useEffect(() => {
-    if (!isAutoScrollEnabledRef.current) return;
-
     const container = scrollContainerRef.current;
-    if (container) {
-      container.scrollTop = container.scrollHeight;
-    }
-    messagesEndRef.current?.scrollIntoView({ behavior: 'instant', block: 'end' });
+    if (!container) return;
 
-    let rafId2: number | null = null;
-    const rafId1 = requestAnimationFrame(() => {
-      if (scrollContainerRef.current && isAutoScrollEnabledRef.current) {
-        scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
-      }
-      rafId2 = requestAnimationFrame(() => {
-        if (scrollContainerRef.current && isAutoScrollEnabledRef.current) {
-          scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+    let touchStartY = 0;
+
+    const handleWheel = (e: WheelEvent) => {
+      if (e.deltaY < 0) {
+        // User actively wheeled up: interrupt auto-scroll instantly
+        isAutoScrollEnabledRef.current = false;
+        if (rafIdRef.current !== null) {
+          cancelAnimationFrame(rafIdRef.current);
+          rafIdRef.current = null;
         }
-      });
-    });
+      } else if (e.deltaY > 0) {
+        const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+        if (distanceFromBottom <= 30) {
+          isAutoScrollEnabledRef.current = true;
+        }
+      }
+    };
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length > 0) {
+        touchStartY = e.touches[0].clientY;
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length > 0) {
+        const currentY = e.touches[0].clientY;
+        // Dragging finger downwards scrolls the content upwards
+        if (currentY > touchStartY + 6) {
+          isAutoScrollEnabledRef.current = false;
+          if (rafIdRef.current !== null) {
+            cancelAnimationFrame(rafIdRef.current);
+            rafIdRef.current = null;
+          }
+        }
+      }
+    };
+
+    container.addEventListener('wheel', handleWheel, { passive: true });
+    container.addEventListener('touchstart', handleTouchStart, { passive: true });
+    container.addEventListener('touchmove', handleTouchMove, { passive: true });
 
     return () => {
-      cancelAnimationFrame(rafId1);
-      if (rafId2 !== null) cancelAnimationFrame(rafId2);
+      container.removeEventListener('wheel', handleWheel);
+      container.removeEventListener('touchstart', handleTouchStart);
+      container.removeEventListener('touchmove', handleTouchMove);
     };
-  }, [activeConversationId, messagesCount]);
+  }, []);
 
-  // RAF-throttled scroll during active streaming — eliminates forced smooth reflow thrashing
+  // Synchronously lock scroll to bottom on conversation switch
+  useIsomorphicLayoutEffect(() => {
+    isAutoScrollEnabledRef.current = true;
+    performProgrammaticScroll(false);
+  }, [activeConversationId, performProgrammaticScroll]);
+
+  // Keep scroll at bottom on initial message load or when conversation messages update
   useEffect(() => {
+    if (!isAutoScrollEnabledRef.current) return;
+    performProgrammaticScroll(false);
+  }, [activeConversationId, messagesCount, performProgrammaticScroll]);
+
+  // RAF-throttled auto-scroll during active streaming — halts immediately when interrupted
+  useEffect(() => {
+    // If user has interrupted auto-scroll, do NOT pull down
     if (!isAutoScrollEnabledRef.current) return;
 
     if (rafIdRef.current !== null) {
@@ -110,12 +169,7 @@ export function useChatScroll({
     rafIdRef.current = requestAnimationFrame(() => {
       rafIdRef.current = null;
       if (!isAutoScrollEnabledRef.current) return;
-
-      if (scrollContainerRef.current) {
-        scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
-      } else {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
-      }
+      performProgrammaticScroll(false);
     });
 
     return () => {
@@ -124,7 +178,7 @@ export function useChatScroll({
         rafIdRef.current = null;
       }
     };
-  }, [streamStepCount, streamContentLength, isLoading]);
+  }, [streamStepCount, streamContentLength, isLoading, performProgrammaticScroll]);
 
   return {
     messagesEndRef,
