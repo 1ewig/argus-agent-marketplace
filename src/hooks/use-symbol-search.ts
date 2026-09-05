@@ -3,6 +3,11 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAppStore } from '@/stores/app-store';
+import {
+  listConversations,
+  createConversation,
+  DEFAULT_CONVERSATION_SYMBOL,
+} from '@/lib/db';
 import type { BinanceSymbolItem } from '@/app/api/binance/symbols/route';
 
 export interface SymbolsApiResponse {
@@ -45,6 +50,9 @@ export function useSymbolSearch(): UseSymbolSearchResult {
   const setIsSymbolSearchOpen = useAppStore((state) => state.setIsSymbolSearchOpen);
   const selectedSymbol = useAppStore((state) => state.selectedSymbol);
   const setSelectedSymbol = useAppStore((state) => state.setSelectedSymbol);
+  const setActiveConversationId = useAppStore((state) => state.setActiveConversationId);
+  const setActiveStreamMessage = useAppStore((state) => state.setActiveStreamMessage);
+  const setErrorNotice = useAppStore((state) => state.setErrorNotice);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -124,11 +132,42 @@ export function useSymbolSearch(): UseSymbolSearchResult {
   }, [setIsSymbolSearchOpen]);
 
   const handleSelect = useCallback(
-    (symbol: string) => {
-      setSelectedSymbol(symbol);
+    async (rawSymbol: string) => {
+      const targetSymbol = (rawSymbol || DEFAULT_CONVERSATION_SYMBOL).toUpperCase();
+
+      setErrorNotice(null);
+      setActiveStreamMessage(null);
+      setSelectedSymbol(targetSymbol);
       handleClose();
+
+      try {
+        const allConvs = await listConversations();
+        const matching = allConvs.filter(
+          (c) => (c.symbol || DEFAULT_CONVERSATION_SYMBOL).toUpperCase() === targetSymbol
+        );
+
+        if (matching.length > 0) {
+          // Open the most recently active chat for this symbol
+          const sorted = [...matching].sort(
+            (a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0)
+          );
+          setActiveConversationId(sorted[0].id);
+        } else {
+          // Group doesn't exist yet: create new chat for this symbol
+          const newConv = await createConversation(undefined, targetSymbol);
+          setActiveConversationId(newConv.id);
+        }
+      } catch {
+        // Fallback safely
+      }
     },
-    [setSelectedSymbol, handleClose]
+    [
+      setSelectedSymbol,
+      setActiveConversationId,
+      setActiveStreamMessage,
+      setErrorNotice,
+      handleClose,
+    ]
   );
 
   const handleSearchChange = useCallback((val: string) => {

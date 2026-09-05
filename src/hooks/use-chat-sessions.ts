@@ -8,7 +8,6 @@ import {
   getConversation,
   getConversationMessageCount,
   listConversations,
-  DEFAULT_CONVERSATION_ID,
   DEFAULT_CONVERSATION_SYMBOL,
   createConversation,
   deleteConversation,
@@ -72,7 +71,7 @@ export function useChatSessions() {
   useEffect(() => {
     let isCancelled = false;
     async function initSession() {
-      const currentSymbol = useAppStore.getState().selectedSymbol || DEFAULT_CONVERSATION_SYMBOL;
+      const currentSymbol = (useAppStore.getState().selectedSymbol || DEFAULT_CONVERSATION_SYMBOL).toUpperCase();
       await ensureDefaultConversation(currentSymbol);
       if (isCancelled) return;
 
@@ -80,17 +79,24 @@ export function useChatSessions() {
       const existing = await getConversation(currentId);
       if (isCancelled) return;
 
-      if (!existing) {
+      const existingSymbol = (existing?.symbol || DEFAULT_CONVERSATION_SYMBOL).toUpperCase();
+
+      if (!existing || existingSymbol !== currentSymbol) {
         const all = await listConversations();
         if (isCancelled) return;
-        const fallback = all[0];
-        const fallbackId = fallback?.id ?? DEFAULT_CONVERSATION_ID;
-        setActiveConversationId(fallbackId);
-        if (fallback?.symbol) {
-          setSelectedSymbol(fallback.symbol);
+        const matching = all.filter(
+          (c) => (c.symbol || DEFAULT_CONVERSATION_SYMBOL).toUpperCase() === currentSymbol
+        );
+        if (matching.length > 0) {
+          const sorted = [...matching].sort(
+            (a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0)
+          );
+          setActiveConversationId(sorted[0].id);
+        } else {
+          const newConv = await createConversation(undefined, currentSymbol);
+          if (isCancelled) return;
+          setActiveConversationId(newConv.id);
         }
-      } else if (existing.symbol && existing.symbol !== useAppStore.getState().selectedSymbol) {
-        setSelectedSymbol(existing.symbol);
       }
     }
 
@@ -295,6 +301,41 @@ export function useChatSessions() {
     [activeConversationId, conversations, selectedSymbol, setActiveConversationId, setSelectedSymbol]
   );
 
+  // Switch symbol workspace: opens existing conversation in that group or creates a new one
+  const handleSelectSymbolWorkspace = useCallback(
+    async (targetSymbolRaw: string) => {
+      const targetSymbol = (targetSymbolRaw || DEFAULT_CONVERSATION_SYMBOL).toUpperCase();
+
+      setErrorNotice(null);
+      setIsMenuOpen(false);
+      setEditingId(null);
+      setActiveStreamMessage(null);
+
+      setSelectedSymbol(targetSymbol);
+
+      const all = await listConversations();
+      const matching = all.filter(
+        (c) => (c.symbol || DEFAULT_CONVERSATION_SYMBOL).toUpperCase() === targetSymbol
+      );
+
+      if (matching.length > 0) {
+        const sorted = [...matching].sort(
+          (a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0)
+        );
+        setActiveConversationId(sorted[0].id);
+      } else {
+        const newConv = await createConversation(undefined, targetSymbol);
+        setActiveConversationId(newConv.id);
+      }
+    },
+    [
+      setErrorNotice,
+      setActiveStreamMessage,
+      setSelectedSymbol,
+      setActiveConversationId,
+    ]
+  );
+
   return {
     activeConversationId,
     activeConversation,
@@ -311,6 +352,7 @@ export function useChatSessions() {
     handleToggleMenu,
     handleNewSession,
     handleSelectSession,
+    handleSelectSymbolWorkspace,
     handleStartRename,
     handleSaveRename,
     handleCancelRename,

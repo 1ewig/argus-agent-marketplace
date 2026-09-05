@@ -47,8 +47,6 @@ export function LeftSidebar() {
     handleSaveRename,
     handleCancelRename,
     handleDeleteSession,
-    handleNewSession,
-    isNewChatDisabled,
   } = useChatSessions();
 
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
@@ -86,15 +84,6 @@ export function LeftSidebar() {
     [setStageView, handleSelectSession]
   );
 
-  const handleNewChatInSymbol = useCallback(
-    async (symbol: string, e: React.MouseEvent) => {
-      e.stopPropagation();
-      setStageView('agent');
-      await handleNewSession(symbol);
-    },
-    [setStageView, handleNewSession]
-  );
-
   return (
     <>
       <motion.aside
@@ -124,14 +113,12 @@ export function LeftSidebar() {
           editingId={editingId}
           editTitle={editTitle}
           isCollapsed={isSidebarCollapsed}
-          isNewChatDisabled={isNewChatDisabled}
           onSelectSession={handleSelectSessionClick}
           onStartRename={handleStartRename}
           onSaveRename={handleSaveRename}
           onCancelRename={handleCancelRename}
           onEditTitleChange={setEditTitle}
           onOpenDelete={handleOpenDeleteDialog}
-          onNewChatInSymbol={handleNewChatInSymbol}
         />
 
         {/* 4. Bottom Theme Toggle Utility */}

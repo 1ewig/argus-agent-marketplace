@@ -14,14 +14,12 @@ interface SidebarSessionListProps {
   editingId: string | null;
   editTitle: string;
   isCollapsed: boolean;
-  isNewChatDisabled: boolean;
   onSelectSession: (id: string) => void;
   onStartRename: (id: string, title: string, e: React.MouseEvent) => void;
   onSaveRename: (id: string, e?: React.FormEvent | React.MouseEvent) => void;
   onCancelRename: () => void;
   onEditTitleChange: (value: string) => void;
   onOpenDelete: (id: string, e: React.MouseEvent) => void;
-  onNewChatInSymbol: (symbol: string, e: React.MouseEvent) => void;
 }
 
 export function SidebarSessionList({
@@ -31,22 +29,21 @@ export function SidebarSessionList({
   editingId,
   editTitle,
   isCollapsed,
-  isNewChatDisabled,
   onSelectSession,
   onStartRename,
   onSaveRename,
   onCancelRename,
   onEditTitleChange,
   onOpenDelete,
-  onNewChatInSymbol,
 }: SidebarSessionListProps) {
-  // Store collapsed state per symbol (defaults to expanded)
+  // Store manually collapsed state per non-active symbol (defaults to expanded)
   const [collapsedSymbols, setCollapsedSymbols] = useState<Record<string, boolean>>({});
 
   const handleToggleGroup = (symbol: string) => {
+    const upper = symbol.toUpperCase();
     setCollapsedSymbols((prev) => ({
       ...prev,
-      [symbol]: !prev[symbol],
+      [upper]: !prev[upper],
     }));
   };
 
@@ -85,7 +82,9 @@ export function SidebarSessionList({
           </motion.div>
         ) : (
           groups.map((group) => {
-            const isGroupExpanded = !collapsedSymbols[group.symbol];
+            const isGroupActive = group.symbol.toUpperCase() === (activeSymbol || '').toUpperCase();
+            // Active symbol group is always expanded; other groups respect user collapsed state
+            const isGroupExpanded = isGroupActive || !collapsedSymbols[group.symbol.toUpperCase()];
             return (
               <SidebarWorkspaceGroup
                 key={group.symbol}
@@ -97,14 +96,12 @@ export function SidebarSessionList({
                 editingId={editingId}
                 editTitle={editTitle}
                 isCollapsed={isCollapsed}
-                isNewChatDisabled={isNewChatDisabled}
                 onSelectSession={onSelectSession}
                 onStartRename={onStartRename}
                 onSaveRename={onSaveRename}
                 onCancelRename={onCancelRename}
                 onEditTitleChange={onEditTitleChange}
                 onOpenDelete={onOpenDelete}
-                onNewChatInSymbol={onNewChatInSymbol}
               />
             );
           })
