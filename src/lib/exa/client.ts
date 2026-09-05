@@ -3,15 +3,27 @@ import type { ExaSearchOptions, ExaSearchResultItem } from './types';
 const EXA_API_URL = 'https://api.exa.ai/search';
 
 const NAVIGATION_CHROME_PATTERNS = [
-  /^skip to (main )?content/i,
+  /^skip to (main |page )?content/i,
+  /^skip to (navigation|search|footer|sections)/i,
   /^menu$/i,
   /^sign in/i,
   /^log in/i,
   /^subscribe/i,
-  /^cookie (policy|settings|notice)/i,
+  /^watch live/i,
+  /^listen live/i,
+  /^live tv/i,
+  /^markets/i,
+  /^cookie (policy|settings|notice|consent)/i,
   /^all rights reserved/i,
-  /^terms (of service|& conditions)/i,
+  /^terms (of service|& conditions|of use)/i,
   /^privacy policy/i,
+  /^advertisement/i,
+  /^sponsored content/i,
+  /^share this article/i,
+  /^related articles/i,
+  /^trending now/i,
+  /^read more:/i,
+  /^follow us on/i,
 ];
 
 /**
@@ -24,8 +36,8 @@ function sanitizeHighlights(rawHighlights?: string[]): string[] {
 
   for (const h of rawHighlights) {
     if (typeof h !== 'string') continue;
-    const trimmed = h.trim();
-    if (!trimmed || trimmed.length < 15) continue;
+    const trimmed = h.trim().replace(/^["'`\s]+|["'`\s]+$/g, '');
+    if (!trimmed || trimmed.length < 20) continue;
     const isChrome = NAVIGATION_CHROME_PATTERNS.some((p) => p.test(trimmed));
     if (isChrome) continue;
 

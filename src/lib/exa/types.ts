@@ -77,9 +77,11 @@ export const ExaSearchInputSchema = z
     symbol: z
       .string()
       .trim()
+      .min(2, 'Symbol must be at least 2 characters')
       .max(20, 'Symbol cannot exceed 20 characters')
+      .regex(/^[A-Za-z0-9/_-]+$/, 'Trading symbol must be alphanumeric (e.g. SOL, BTC, ETH, SOLUSDT)')
       .optional()
-      .describe('Optional trading symbol context (e.g. SOL, BTC, ETH)'),
+      .describe('Optional trading symbol context (e.g. SOL, BTC, ETH, SOLUSDT)'),
     category: z
       .enum(['news', 'company', 'financial report', 'research paper', 'general'])
       .default('news')
