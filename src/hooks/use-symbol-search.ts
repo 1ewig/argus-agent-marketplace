@@ -61,7 +61,8 @@ export function useSymbolSearch(): UseSymbolSearchResult {
       if (!res.ok) throw new Error('Failed to fetch trading symbols');
       return res.json();
     },
-    staleTime: 1000 * 60 * 60,
+    staleTime: 1000 * 60 * 60, // 1 hour fresh
+    gcTime: 1000 * 60 * 60 * 24, // 24 hours client memory retention
     enabled: isSymbolSearchOpen,
   });
 
