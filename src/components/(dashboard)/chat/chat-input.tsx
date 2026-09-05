@@ -33,6 +33,7 @@ export interface ChatInputProps {
   autoFocus?: boolean;
   disabled?: boolean;
   maxHeight?: number; // default 160px (~6-7 lines)
+  showAura?: boolean;
 }
 
 /**
@@ -51,6 +52,7 @@ export const ChatInput = memo(
       autoFocus = false,
       disabled = false,
       maxHeight = 160,
+      showAura = false,
     },
     ref
   ) {
@@ -155,14 +157,42 @@ export const ChatInput = memo(
 
     return (
       <div className={containerClassName ?? 'px-spacing-md pb-spacing-lg sm:pb-spacing-xl bg-theme-bg-base shrink-0'}>
-        <div
-          onClick={handleContainerClick}
-          className={`${className ?? 'max-w-3xl'} mx-auto w-full relative flex items-end gap-2 bg-theme-bg-surface/95 hover:bg-theme-bg-surface border cursor-text ${isFocused
-              ? 'border-theme-brand-binance ring-2 ring-theme-brand-binance/30'
-              : 'border-theme-border-subtle hover:border-theme-border-strong'
-            } focus-within:border-theme-brand-binance focus-within:ring-2 focus-within:ring-theme-brand-binance/30 ${isMultiLine ? 'rounded-2xl py-2 pl-4 pr-2' : 'rounded-full py-1.5 pl-4 pr-1.5'
+        <div className={`relative mx-auto w-full ${className ?? 'max-w-3xl'}`}>
+          {showAura && (
+            <>
+              <div
+                aria-hidden="true"
+                className={`chat-input-aura-glow-container ${isFocused ? 'is-focused' : ''}`}
+              >
+                <div className="chat-input-aura-glow-spinner" />
+              </div>
+              <div
+                aria-hidden="true"
+                className={`chat-input-aura-border-container ${isFocused ? 'is-focused' : ''}`}
+              >
+                <div className="chat-input-aura-border-spinner" />
+              </div>
+            </>
+          )}
+
+          <div
+            onClick={handleContainerClick}
+            className={`w-full relative z-2 flex items-end gap-2 bg-theme-bg-surface/95 hover:bg-theme-bg-surface cursor-text ${
+              showAura
+                ? 'rounded-2xl py-2.5 pl-4 pr-2 border border-theme-border-subtle/70'
+                : isMultiLine
+                  ? `rounded-2xl py-2 pl-4 pr-2 border ${
+                      isFocused
+                        ? 'border-theme-brand-binance ring-2 ring-theme-brand-binance/30'
+                        : 'border-theme-border-subtle hover:border-theme-border-strong'
+                    } focus-within:border-theme-brand-binance focus-within:ring-2 focus-within:ring-theme-brand-binance/30`
+                  : `rounded-full py-1.5 pl-4 pr-1.5 border ${
+                      isFocused
+                        ? 'border-theme-brand-binance ring-2 ring-theme-brand-binance/30'
+                        : 'border-theme-border-subtle hover:border-theme-border-strong'
+                    } focus-within:border-theme-brand-binance focus-within:ring-2 focus-within:ring-theme-brand-binance/30`
             } shadow-xs transition-all duration-150 backdrop-blur-xl`}
-        >
+          >
           {/* Text Area */}
           <textarea
             ref={textareaRef}
@@ -228,6 +258,7 @@ export const ChatInput = memo(
           </motion.button>
         </div>
       </div>
-    );
-  })
+    </div>
+  );
+})
 );

@@ -93,6 +93,20 @@ export const emptyStateContainerVariants: Variants = {
 };
 
 /**
+ * Smooth entrance fade-in animation for the empty state background luminous glow.
+ */
+export const emptyStateGlowVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      duration: 0.6,
+      ease: EASING_ARCHITECTURAL,
+    },
+  },
+};
+
+/**
  * Gentle vertical entry for individual empty-state suggestion items.
  */
 export const emptyStateItemVariants: Variants = {

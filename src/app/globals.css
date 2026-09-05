@@ -270,6 +270,99 @@ button,
   will-change: opacity;
 }
 
+@keyframes aura-spin {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+/* ==========================================================================
+   Gemini AI Studio-Style Dual-Point Orbiting Input Aura & Gradient Border
+   Two diametrically opposed subtle light sources (0° and 180°) orbiting
+   around the obsidian input container.
+   ========================================================================== */
+.chat-input-aura-glow-container {
+  position: absolute;
+  inset: -3px;
+  border-radius: 1.15rem;
+  overflow: hidden;
+  filter: blur(12px);
+  opacity: 0.45;
+  pointer-events: none;
+  z-index: 0;
+  transition: opacity 0.4s ease, filter 0.4s ease;
+}
+
+.chat-input-aura-glow-container.is-focused {
+  opacity: 0.75;
+  filter: blur(16px);
+}
+
+.chat-input-aura-glow-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 250%;
+  aspect-ratio: 1 / 1;
+  transform-origin: center center;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    color-mix(in srgb, var(--theme-status-info) 50%, transparent) 14deg,
+    transparent 28deg,
+    transparent 180deg,
+    color-mix(in srgb, var(--theme-brand-binance) 55%, transparent) 194deg,
+    transparent 208deg,
+    transparent 360deg
+  );
+  animation: aura-spin 16s linear infinite;
+  will-change: transform;
+}
+
+.chat-input-aura-border-container {
+  position: absolute;
+  inset: 0;
+  border-radius: 1rem;
+  padding: 1.25px;
+  overflow: hidden;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 3;
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
+}
+
+.chat-input-aura-border-container.is-focused {
+  opacity: 1;
+}
+
+.chat-input-aura-border-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 250%;
+  aspect-ratio: 1 / 1;
+  transform-origin: center center;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    color-mix(in srgb, var(--theme-status-info) 90%, transparent) 12deg,
+    transparent 24deg,
+    transparent 180deg,
+    color-mix(in srgb, var(--theme-brand-binance) 95%, transparent) 192deg,
+    transparent 204deg,
+    transparent 360deg
+  );
+  animation: aura-spin 16s linear infinite;
+  will-change: transform;
+}
+
 body {
   background: var(--theme-bg-base);
   color: var(--theme-text-primary);

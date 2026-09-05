@@ -7,6 +7,7 @@ import { AgentLoader, ArgusIcon } from '@/components/common';
 import { APP_CONTENT } from '@/constants/content';
 import {
   emptyStateContainerVariants,
+  emptyStateGlowVariants,
   emptyStateItemVariants,
   tapScalePill,
   hoverLiftPill,
@@ -47,20 +48,24 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
       {/* Gemini-Style Atmospheric Ambient Depth Glow */}
       <div
         aria-hidden="true"
-        className={`pointer-events-none absolute inset-0 ambient-glow-gemini transition-opacity duration-300 ${
+        className={`pointer-events-none absolute inset-0 ambient-glow-gemini transition-opacity duration-500 ease-out ${
           isChatEmpty ? 'opacity-90' : 'opacity-30'
         }`}
       />
 
       {/* Lightweight Dynamic Luminous Glow (Zero blur filters, pure GPU compositor breathing) */}
       {isChatEmpty && (
-        <div
+        <motion.div
+          key="chat-empty-glow"
+          variants={emptyStateGlowVariants}
+          initial="hidden"
+          animate="visible"
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 overflow-hidden z-0"
         >
           {/* Radial depth gradient fill with pure CSS compositor opacity breathing */}
           <div className="absolute inset-0 chat-empty-glow animate-glow-breathe" />
-        </div>
+        </motion.div>
       )}
 
       {/* Empty State Overlay (instant unmount when switching to established conversation — no exit fade) */}
@@ -103,6 +108,7 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
                 className="max-w-2xl"
                 containerClassName="w-full p-0 bg-transparent shrink-0"
                 autoFocus
+                showAura={true}
               />
             </motion.div>
 
