@@ -13,7 +13,13 @@ import {
   type ChatMessageRecord,
 } from '@/lib/db';
 import { prepareConversationHistory, streamAgentChat } from '@/lib/agents';
-import type { AgentResult, AgentExecutionStep } from '@/agent';
+import {
+  FOLLOW_UP_TAG_REGEX,
+  INCOMPLETE_FOLLOW_UP_TAG_REGEX,
+  generateFallbackSessionTitle,
+  type AgentResult,
+  type AgentExecutionStep,
+} from '@/agent';
 import type { ExecutionMode } from '@/lib/types';
 import { useChatSessions } from './use-chat-sessions';
 import { useChatScroll } from './use-chat-scroll';
@@ -135,12 +141,12 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
     let currentSteps: AgentExecutionStep[] = [];
     let currentText = '';
 
-    try {
-      const conversationHistory = prepareConversationHistory(messages);
-      const isFirstTurn = conversationHistory.length === 0;
-      const isGlobal = (selectedSymbol || '').toUpperCase() === 'GLOBAL';
-      const effectiveSymbol = isGlobal ? undefined : selectedSymbol;
+    const conversationHistory = prepareConversationHistory(messages);
+    const isFirstTurn = conversationHistory.length === 0;
+    const isGlobal = (selectedSymbol || '').toUpperCase() === 'GLOBAL';
+    const effectiveSymbol = isGlobal ? undefined : selectedSymbol;
 
+    try {
       const finalResult: AgentResult | null = await streamAgentChat({
         message: prompt,
         mode,
@@ -182,10 +188,12 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
             );
           } else if (event.type === 'text_delta') {
             currentText += event.delta;
-            // Strip any complete or in-progress session_title markup from live markdown display
+            // Strip any complete or in-progress session_title and follow-up markup from live markdown display
             const displayContent = currentText
               .replace(SESSION_TITLE_TAG_REGEX, '')
-              .replace(INCOMPLETE_SESSION_TITLE_TAG_REGEX, '');
+              .replace(INCOMPLETE_SESSION_TITLE_TAG_REGEX, '')
+              .replace(FOLLOW_UP_TAG_REGEX, '')
+              .replace(INCOMPLETE_FOLLOW_UP_TAG_REGEX, '');
             setActiveStreamMessage((prev) =>
               prev ? { ...prev, content: displayContent } : prev
             );
@@ -214,8 +222,14 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
         id: streamMessageId,
         conversationId: activeConversationId,
         role: 'assistant',
-        content: finalResult?.analysis ?? currentText.replace(SESSION_TITLE_TAG_REGEX, '').trim(),
+        content:
+          finalResult?.analysis ??
+          currentText
+            .replace(SESSION_TITLE_TAG_REGEX, '')
+            .replace(FOLLOW_UP_TAG_REGEX, '')
+            .trim(),
         status: 'success',
+        followUpQuestions: finalResult?.followUpQuestions,
         toolCalls: finalResult?.toolCalls,
         steps: finalResult?.steps ?? currentSteps,
         stepCount: finalResult?.stepCount ?? currentSteps.length,
@@ -225,6 +239,22 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
 
       updateCachedMessage(finalMessage);
       await saveStoredMessage(finalMessage);
+
+      // Ensure conversation title is updated on first turn if still a default title
+      const resolvedTitle =
+        finalResult?.sessionTitle ||
+        (isFirstTurn ? generateFallbackSessionTitle(prompt, effectiveSymbol) : undefined);
+
+      if (resolvedTitle) {
+        const convRecord = await getConversation(activeConversationId);
+        const isDefaultTitle =
+          !convRecord ||
+          (APP_CONTENT.chat.defaultSessionTitles as readonly string[]).includes(convRecord.title);
+
+        if (isDefaultTitle) {
+          await renameConversation(activeConversationId, resolvedTitle);
+        }
+      }
     } catch (err: unknown) {
       const isAborted =
         (err instanceof DOMException && err.name === 'AbortError') ||
@@ -237,7 +267,10 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
             id: streamMessageId,
             conversationId: activeConversationId,
             role: 'assistant',
-            content: currentText.replace(SESSION_TITLE_TAG_REGEX, '').trim(),
+            content: currentText
+              .replace(SESSION_TITLE_TAG_REGEX, '')
+              .replace(FOLLOW_UP_TAG_REGEX, '')
+              .trim(),
             status: 'success',
             steps: currentSteps,
             stepCount: currentSteps.length,
@@ -245,6 +278,20 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
           };
           updateCachedMessage(stoppedMessage);
           await saveStoredMessage(stoppedMessage);
+        }
+
+        if (isFirstTurn) {
+          const convRecord = await getConversation(activeConversationId);
+          const isDefaultTitle =
+            !convRecord ||
+            (APP_CONTENT.chat.defaultSessionTitles as readonly string[]).includes(convRecord.title);
+
+          if (isDefaultTitle) {
+            await renameConversation(
+              activeConversationId,
+              generateFallbackSessionTitle(prompt, effectiveSymbol)
+            );
+          }
         }
         return;
       }

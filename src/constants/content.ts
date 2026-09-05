@@ -161,6 +161,18 @@ export const APP_CONTENT = {
     globalWorkspaceBadge: 'GLOBAL',
     globalWorkspaceSubtitle: 'Macro market research, cross-token analysis, and news uncoupled from any single symbol.',
     switchSymbolTooltip: 'Click to switch market workspace (⌘K)',
+    followUpsTitle: 'Suggested Follow-ups',
+    followUpAriaLabel: (question: string) => `Ask follow-up: ${question}`,
+    fallbackFollowUps: (symbol: string) => [
+      `Check ${symbol} order book depth and bid/ask liquidity walls`,
+      `Inspect ${symbol} perpetual funding rate and long/short ratio`,
+      `Search latest crypto news and catalysts affecting ${symbol}`,
+    ],
+    globalFallbackFollowUps: [
+      'What are the top crypto gainers and biggest volume movers today across Binance?',
+      'Compare perpetual futures funding rates across BTC, ETH, and SOL',
+      'Search latest crypto regulatory news and macroeconomic market sentiment',
+    ],
   },
   sessions: {
     menuTitle: 'Conversations',

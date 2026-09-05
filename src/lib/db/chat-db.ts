@@ -16,6 +16,7 @@ export interface ChatMessageRecord {
   content: string;
   symbol?: string;
   status?: 'success' | 'error' | 'pending';
+  followUpQuestions?: string[];
   toolCalls?: ExecutedToolCall[];
   steps?: AgentExecutionStep[];
   stepCount?: number;

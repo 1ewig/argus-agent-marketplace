@@ -96,6 +96,7 @@ export interface AgentResult {
   symbol?: string;
   sessionTitle?: string;
   analysis: string;
+  followUpQuestions?: string[];
   toolCalls: ExecutedToolCall[];
   steps: AgentExecutionStep[];
   stepCount: number;

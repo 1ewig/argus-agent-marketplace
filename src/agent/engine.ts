@@ -1,6 +1,7 @@
 import { generateText, streamText, isStepCount, smoothStream } from 'ai';
 import { prepareAgentInvocation } from './prepare-invocation';
 import { SessionTitleStreamFilter, extractSessionTitle } from './title-stream-filter';
+import { extractFollowUpQuestions } from './follow-up-extractor';
 import { APP_CONTENT } from '@/constants/content';
 import type {
   AgentOptions,
@@ -334,12 +335,20 @@ export async function executeAgentStream(
     }
   }
 
-  // Flush any remaining buffer in the title filter
-  titleFilter.flush();
+  const effectiveIsFirstTurn =
+    options.isFirstTurn ?? (!options.history || options.history.length === 0);
 
-  const { sessionTitle, cleanedText } = extractSessionTitle(
+  const { sessionTitle, cleanedText: textWithoutTitle } = extractSessionTitle(
     accumulatedText,
-    titleFilter.getEmittedTitle()
+    titleFilter.getEmittedTitle(),
+    options.prompt,
+    symbol,
+    effectiveIsFirstTurn
+  );
+
+  const { followUpQuestions, cleanedText } = extractFollowUpQuestions(
+    textWithoutTitle,
+    symbol
   );
 
   const workedDurationMs = Math.max(1000, Date.now() - startTime);
@@ -352,6 +361,7 @@ export async function executeAgentStream(
     symbol: symbol?.toUpperCase(),
     sessionTitle,
     analysis: cleanedText,
+    followUpQuestions,
     toolCalls: executedToolCalls,
     steps: prunedSteps,
     stepCount: prunedSteps.length,
@@ -416,8 +426,17 @@ export async function executeAgent(options: AgentOptions): Promise<AgentResult> 
     .filter((t): t is string => typeof t === 'string' && t.trim().length > 0)
     .join('\n');
   const candidateText = `${stepTexts}\n${text}`;
+  const effectiveIsFirstTurn =
+    options.isFirstTurn ?? (!options.history || options.history.length === 0);
 
-  const { sessionTitle, cleanedText } = extractSessionTitle(candidateText);
+  const { sessionTitle, cleanedText: textWithoutTitle } = extractSessionTitle(
+    candidateText,
+    undefined,
+    options.prompt,
+    symbol,
+    effectiveIsFirstTurn
+  );
+  const { followUpQuestions, cleanedText } = extractFollowUpQuestions(textWithoutTitle, symbol);
 
   const executedToolCalls: ExecutedToolCall[] = [];
   const executionSteps: AgentExecutionStep[] = [];
@@ -465,6 +484,7 @@ export async function executeAgent(options: AgentOptions): Promise<AgentResult> 
     symbol: symbol?.toUpperCase(),
     sessionTitle,
     analysis: cleanedText,
+    followUpQuestions,
     toolCalls: executedToolCalls,
     steps: executionSteps,
     stepCount: executionSteps.length,

@@ -9,3 +9,5 @@ export * from './prompts';
 export * from './providers';
 export * from './tools';
 export * from './engine';
+export * from './follow-up-extractor';
+export * from './title-stream-filter';

@@ -2,10 +2,15 @@
 
 import React, { memo } from 'react';
 import { motion } from 'framer-motion';
-import { User, AlertCircle } from 'lucide-react';
+import { User, AlertCircle, Sparkles, ArrowUpRight } from 'lucide-react';
 import { AgentLoader, ArgusIcon } from '@/components/common';
 import { APP_CONTENT } from '@/constants/content';
-import { draftIndicatorVariants, messageEntranceVariants } from '@/constants/animation';
+import {
+  draftIndicatorVariants,
+  messageEntranceVariants,
+  hoverLiftPill,
+  tapScalePill,
+} from '@/constants/animation';
 import { MarkdownView } from '../markdown-view';
 import { AgentWorkGroup } from './agent-work-group';
 import { AgentProcessTimeline } from './agent-process-timeline';
@@ -18,6 +23,7 @@ export interface ChatMessageData {
   role: 'user' | 'assistant';
   content: string;
   status?: 'success' | 'error' | 'pending';
+  followUpQuestions?: string[];
   toolCalls?: ExecutedToolCall[];
   steps?: AgentExecutionStep[];
   stepCount?: number;
@@ -29,6 +35,8 @@ interface ChatMessageProps {
   message: ChatMessageData;
   isStreaming?: boolean;
   animateEntrance?: boolean;
+  isLatestAssistantMessage?: boolean;
+  onSelectFollowUp?: (question: string) => void;
 }
 
 /**
@@ -58,6 +66,8 @@ export const ChatMessage = memo(function ChatMessage({
   message,
   isStreaming = false,
   animateEntrance = false,
+  isLatestAssistantMessage = false,
+  onSelectFollowUp,
 }: ChatMessageProps) {
   const isUser = message.role === 'user';
   const isError = message.status === 'error';
@@ -163,6 +173,40 @@ export const ChatMessage = memo(function ChatMessage({
             }
           >
             <MarkdownView content={message.content} />
+          </motion.div>
+        )}
+
+        {/* Suggested Next Steps / Follow-up Questions (Only on latest completed assistant message) */}
+        {!isStreaming && isLatestAssistantMessage && message.followUpQuestions && message.followUpQuestions.length > 0 && (
+          <motion.div
+            variants={messageEntranceVariants}
+            initial={shouldAnimate ? 'hidden' : false}
+            animate="visible"
+            className="flex flex-col gap-2 pt-2 pb-1"
+          >
+            <div className="flex items-center gap-1.5 px-0.5">
+              <Sparkles className="size-3 text-theme-brand-binance shrink-0" />
+              <span className="text-2xs font-bold uppercase tracking-wider text-theme-text-muted">
+                {APP_CONTENT.chat.followUpsTitle}
+              </span>
+            </div>
+            <div className="flex flex-col sm:flex-row flex-wrap gap-2">
+              {message.followUpQuestions.map((question, idx) => (
+                <motion.button
+                  key={`${message.id}_fu_${idx}`}
+                  type="button"
+                  whileHover={hoverLiftPill}
+                  whileTap={tapScalePill}
+                  onClick={() => onSelectFollowUp?.(question)}
+                  title={question}
+                  aria-label={APP_CONTENT.chat.followUpAriaLabel(question)}
+                  className="group inline-flex items-center justify-between gap-2 px-3.5 py-2 rounded-xl bg-theme-bg-surface/90 hover:bg-theme-bg-surface active:bg-theme-bg-elevated border border-theme-border-subtle hover:border-theme-border-strong text-theme-text-secondary hover:text-theme-text-primary text-xs font-medium cursor-pointer transition-colors shadow-2xs select-none backdrop-blur-xs text-left max-w-full"
+                >
+                  <span className="line-clamp-1 leading-snug">{question}</span>
+                  <ArrowUpRight className="size-3 text-theme-text-muted group-hover:text-theme-brand-binance group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-150 shrink-0" />
+                </motion.button>
+              ))}
+            </div>
           </motion.div>
         )}
 

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowUpRight, ChevronDown, Plus, Globe } from 'lucide-react';
 import { AgentLoader, ArgusIcon } from '@/components/common';
@@ -49,6 +49,17 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
   }, []);
 
   const isChatEmpty = !isMessagesLoading && messages.length === 0 && !activeStreamMessage;
+
+  // Identify the latest completed assistant message to host interactive follow-up chips
+  const lastAssistantMessageId = useMemo(() => {
+    if (activeStreamMessage) return null;
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].role === 'assistant' && messages[i].status === 'success') {
+        return messages[i].id;
+      }
+    }
+    return null;
+  }, [messages, activeStreamMessage]);
 
   return (
     <div className="relative flex flex-col h-full w-full bg-theme-bg-base overflow-hidden">
@@ -213,6 +224,8 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
                 key={msg.id}
                 message={msg}
                 animateEntrance={index === messages.length - 1 && isLoading}
+                isLatestAssistantMessage={msg.id === lastAssistantMessageId}
+                onSelectFollowUp={handleSend}
               />
             ))}
 
