@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { MarketChartView } from '@/components/(dashboard)/market-chart-view';
-import { ChatClient } from '@/components/(dashboard)/chat/chat-client';
+import { ChatClient } from '@/components/(dashboard)/chat-client';
 import { SymbolSearchModal } from '@/components/modals/symbol-search-modal';
 import { useAppStore } from '@/stores/app-store';
 import { useUrlSymbolSync } from '@/hooks';
