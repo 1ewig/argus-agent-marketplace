@@ -109,7 +109,7 @@ export const ChatMessage = memo(function ChatMessage({
       variants={messageEntranceVariants}
       initial={shouldAnimate ? 'hidden' : false}
       animate="visible"
-      className="flex items-start gap-spacing-sm w-full max-w-[95%] py-1"
+      className="flex items-start gap-spacing-sm w-full py-1"
     >
       {/* Brand Monogram Icon */}
       <div className="size-8 rounded-xl bg-theme-bg-elevated border border-theme-border-subtle flex items-center justify-center shrink-0 shadow-2xs">
@@ -143,17 +143,17 @@ export const ChatMessage = memo(function ChatMessage({
           />
         )}
 
-        {/* Main Response Markdown Container */}
+        {/* Main Response Markdown (Frameless directly on page canvas) */}
         {message.content && (
           <motion.div
             variants={messageEntranceVariants}
             initial={shouldAnimate ? 'hidden' : false}
             animate="visible"
-            className={`p-4 sm:p-5 rounded-2xl rounded-tl-xs shadow-2xs border text-sm leading-relaxed transition-colors ${
+            className={
               isError
-                ? 'bg-theme-bg-surface border-theme-status-danger text-theme-status-danger'
-                : 'bg-theme-bg-surface border-theme-border-subtle text-theme-text-primary'
-            }`}
+                ? 'p-4 rounded-xl border border-theme-status-danger bg-theme-bg-surface text-theme-status-danger text-sm leading-relaxed'
+                : 'text-theme-text-primary text-sm leading-relaxed pt-1 pb-1 px-0.5'
+            }
           >
             <MarkdownView content={message.content} />
           </motion.div>
