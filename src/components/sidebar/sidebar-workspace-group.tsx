@@ -109,15 +109,25 @@ export function SidebarWorkspaceGroup({
         {/* Anchored Left Slot: Centered size-10 in Collapsed (matching Agent & Chart), size-6 Chevron in Expanded */}
         <div className={`${isCollapsed ? 'size-10' : 'size-6'} flex items-center justify-center shrink-0`}>
           {isCollapsed ? (
-            <div
-              className={`size-6 rounded-md flex items-center justify-center font-mono text-[9px] font-bold tracking-tight uppercase border transition-colors ${
-                isCurrentActiveGroup
-                  ? 'bg-theme-brand-binance/10 border-theme-brand-binance/50 text-theme-brand-binance'
-                  : 'bg-theme-bg-surface border-theme-border-subtle text-theme-text-muted group-hover:border-theme-border-hover group-hover:text-theme-text-primary'
-              }`}
-            >
-              {isGlobal ? <Globe className="size-3.5" /> : group.baseAsset.slice(0, 3)}
-            </div>
+            isGlobal ? (
+              <Globe
+                className={`size-4 transition-colors ${
+                  isCurrentActiveGroup
+                    ? 'text-theme-brand-binance'
+                    : 'text-theme-text-muted group-hover:text-theme-text-primary'
+                }`}
+              />
+            ) : (
+              <span
+                className={`font-mono text-[10px] font-bold tracking-tight uppercase transition-colors ${
+                  isCurrentActiveGroup
+                    ? 'text-theme-brand-binance'
+                    : 'text-theme-text-muted group-hover:text-theme-text-primary'
+                }`}
+              >
+                {group.baseAsset.slice(0, 3)}
+              </span>
+            )
           ) : (
             <motion.div
               animate={{ rotate: isExpanded ? 90 : 0 }}
