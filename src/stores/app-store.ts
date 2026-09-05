@@ -80,7 +80,8 @@ export const useAppStore = create<AppState>()(
 
       // Selected Workspace Symbol
       selectedSymbol: 'BTCUSDT',
-      setSelectedSymbol: (selectedSymbol) => set({ selectedSymbol }),
+      setSelectedSymbol: (selectedSymbol) =>
+        set((state) => (state.selectedSymbol === selectedSymbol ? state : { selectedSymbol })),
 
       // Symbol Search Modal State
       isSymbolSearchOpen: false,

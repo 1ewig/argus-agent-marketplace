@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { useAppStore } from '@/stores/app-store';
 import { DEFAULT_CONVERSATION_SYMBOL } from '@/lib/db';
 
@@ -13,10 +13,8 @@ const VALID_SYMBOL_REGEX = /^[A-Z0-9]{2,12}$/;
  */
 export function useUrlSymbolSync() {
   const selectedSymbol = useAppStore((state) => state.selectedSymbol);
-  const setSelectedSymbol = useAppStore((state) => state.setSelectedSymbol);
-  const isInitialMount = useRef(true);
 
-  // 1. Initial Mount: Read ?symbol= from URL or push current symbol
+  // 1. Initial Mount: Read ?symbol= from URL ONCE on client mount
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
@@ -25,24 +23,23 @@ export function useUrlSymbolSync() {
       const urlSymbol = url.searchParams.get(SYMBOL_PARAM)?.trim().toUpperCase();
 
       if (urlSymbol && VALID_SYMBOL_REGEX.test(urlSymbol)) {
-        if (urlSymbol !== selectedSymbol) {
-          setSelectedSymbol(urlSymbol);
+        const currentStoreSymbol = useAppStore.getState().selectedSymbol;
+        if (urlSymbol !== currentStoreSymbol) {
+          useAppStore.getState().setSelectedSymbol(urlSymbol);
         }
       } else {
-        // Populate URL with current default/persisted symbol
-        const current = selectedSymbol || DEFAULT_CONVERSATION_SYMBOL;
+        const current = useAppStore.getState().selectedSymbol || DEFAULT_CONVERSATION_SYMBOL;
         url.searchParams.set(SYMBOL_PARAM, current);
         window.history.replaceState(null, '', url.toString());
       }
     } catch {
-      // Safe fallback if URL parsing fails in non-standard environment
+      // Safe fallback if URL parsing fails
     }
-    isInitialMount.current = false;
-  }, [selectedSymbol, setSelectedSymbol]);
+  }, []);
 
-  // 2. React to selectedSymbol state changes and update URL
+  // 2. React to selectedSymbol state changes and update URL only
   useEffect(() => {
-    if (typeof window === 'undefined' || isInitialMount.current) return;
+    if (typeof window === 'undefined') return;
 
     try {
       const cleanSymbol = (selectedSymbol || DEFAULT_CONVERSATION_SYMBOL).toUpperCase();
@@ -68,8 +65,9 @@ export function useUrlSymbolSync() {
         const urlSymbol = url.searchParams.get(SYMBOL_PARAM)?.trim().toUpperCase();
 
         if (urlSymbol && VALID_SYMBOL_REGEX.test(urlSymbol)) {
-          if (urlSymbol !== useAppStore.getState().selectedSymbol) {
-            setSelectedSymbol(urlSymbol);
+          const currentStoreSymbol = useAppStore.getState().selectedSymbol;
+          if (urlSymbol !== currentStoreSymbol) {
+            useAppStore.getState().setSelectedSymbol(urlSymbol);
           }
         }
       } catch {
@@ -81,5 +79,5 @@ export function useUrlSymbolSync() {
     return () => {
       window.removeEventListener('popstate', handlePopState);
     };
-  }, [setSelectedSymbol]);
+  }, []);
 }
