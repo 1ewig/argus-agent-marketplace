@@ -145,7 +145,10 @@ export const ChatMessage = memo(function ChatMessage({
 
         {/* Main Response Markdown Container */}
         {message.content && (
-          <div
+          <motion.div
+            variants={messageEntranceVariants}
+            initial={shouldAnimate ? 'hidden' : false}
+            animate="visible"
             className={`p-4 sm:p-5 rounded-2xl rounded-tl-xs shadow-2xs border text-sm leading-relaxed transition-colors ${
               isError
                 ? 'bg-theme-bg-surface border-theme-status-danger text-theme-status-danger'
@@ -153,7 +156,7 @@ export const ChatMessage = memo(function ChatMessage({
             }`}
           >
             <MarkdownView content={message.content} />
-          </div>
+          </motion.div>
         )}
 
         {/* Live Drafting Indicator at the bottom until the inference ends */}
