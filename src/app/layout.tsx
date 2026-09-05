@@ -22,12 +22,17 @@ export const metadata: Metadata = {
   },
 };
 
-const THEME_SCRIPT = `
+const PRE_HYDRATION_SCRIPT = `
 (function() {
   try {
-    var stored = localStorage.getItem('argus-theme');
-    var theme = stored === 'light' ? 'light' : 'dark';
+    var storedTheme = localStorage.getItem('argus-theme');
+    var theme = storedTheme === 'light' ? 'light' : 'dark';
     document.documentElement.classList.add(theme);
+
+    var storedSidebar = localStorage.getItem('argus-sidebar-collapsed');
+    if (storedSidebar === 'true') {
+      document.documentElement.classList.add('sidebar-collapsed');
+    }
   } catch (e) {
     document.documentElement.classList.add('dark');
   }
@@ -46,7 +51,7 @@ export default function RootLayout({
       className={`${plusJakartaSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: PRE_HYDRATION_SCRIPT }} />
       </head>
       <body className="h-full bg-theme-bg-base flex flex-row overflow-hidden">
         <LeftSidebar />

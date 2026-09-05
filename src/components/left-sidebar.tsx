@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { ConfirmDialog } from '@/components/common/confirm-dialog';
 import { APP_CONTENT } from '@/constants/content';
 import { sidebarSpringTransition } from '@/constants/animation';
-import { useTheme } from '@/hooks';
+import { useTheme, useSidebar } from '@/hooks';
 import { useAppStore } from '@/stores/app-store';
 import { useChatSessions } from '@/hooks/use-chat-sessions';
 import {
@@ -28,8 +28,7 @@ export function LeftSidebar() {
   const { isDark, toggleTheme } = useTheme();
   const stageView = useAppStore((state) => state.stageView);
   const setStageView = useAppStore((state) => state.setStageView);
-  const isSidebarCollapsed = useAppStore((state) => state.isSidebarCollapsed);
-  const toggleSidebar = useAppStore((state) => state.toggleSidebar);
+  const { isSidebarCollapsed, toggleSidebar } = useSidebar();
   const hasMounted = useSyncExternalStore(
     noopSubscribe,
     () => true,
