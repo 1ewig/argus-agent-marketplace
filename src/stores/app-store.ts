@@ -51,6 +51,11 @@ export interface AppState {
   setWorkspaceGroupCollapsed: (symbol: string, collapsed: boolean) => void;
   toggleWorkspaceGroupCollapsed: (symbol: string) => void;
 
+  // Right Market Overview Panel State (Persisted in localStorage)
+  isMarketPanelOpen: boolean;
+  setIsMarketPanelOpen: (open: boolean) => void;
+  toggleMarketPanel: () => void;
+
   // Hydration state tracking
   _hasHydrated: boolean;
   setHasHydrated: (hasHydrated: boolean) => void;
@@ -130,6 +135,12 @@ export const useAppStore = create<AppState>()(
           };
         }),
 
+      // Right Market Overview Panel State (defaults to open)
+      isMarketPanelOpen: true,
+      setIsMarketPanelOpen: (isMarketPanelOpen) => set({ isMarketPanelOpen }),
+      toggleMarketPanel: () =>
+        set((state) => ({ isMarketPanelOpen: !state.isMarketPanelOpen })),
+
       // Hydration state
       _hasHydrated: false,
       setHasHydrated: (_hasHydrated) => set({ _hasHydrated }),
@@ -143,6 +154,7 @@ export const useAppStore = create<AppState>()(
         activeConversationId: state.activeConversationId,
         stageView: state.stageView,
         isSidebarCollapsed: state.isSidebarCollapsed,
+        isMarketPanelOpen: state.isMarketPanelOpen,
         selectedSymbol: state.selectedSymbol,
         lastActiveSymbol: state.lastActiveSymbol,
         collapsedWorkspaceGroups: state.collapsedWorkspaceGroups,

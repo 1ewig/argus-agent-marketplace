@@ -2,7 +2,7 @@
 
 import React, { useRef, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowUpRight, ChevronDown, Plus, Globe } from 'lucide-react';
+import { ArrowUpRight, ChevronDown, Plus, Globe, PanelRightClose, PanelRightOpen } from 'lucide-react';
 import { AgentLoader, ArgusIcon } from '@/components/common';
 import { APP_CONTENT } from '@/constants/content';
 import {
@@ -14,6 +14,7 @@ import {
 } from '@/constants/animation';
 import { useAgentChat, useChatSessions, parseSymbolAssets } from '@/hooks';
 import { useAppStore } from '@/stores/app-store';
+import { MarketPanel } from '@/components/(dashboard)/market-panel';
 import { ChatMessage } from './chat-message';
 import { ChatInput, type ChatInputHandle } from './chat-input';
 import type { ExecutionMode } from '@/lib/types';
@@ -26,6 +27,9 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
   const chatInputRef = useRef<ChatInputHandle>(null);
   const selectedSymbol = useAppStore((state) => state.selectedSymbol);
   const setIsSymbolSearchOpen = useAppStore((state) => state.setIsSymbolSearchOpen);
+  const isMarketPanelOpen = useAppStore((state) => state.isMarketPanelOpen);
+  const toggleMarketPanel = useAppStore((state) => state.toggleMarketPanel);
+  const setIsMarketPanelOpen = useAppStore((state) => state.setIsMarketPanelOpen);
   const { handleNewSession, isNewChatDisabled } = useChatSessions();
 
   const isGlobalWorkspace = (selectedSymbol || '').toUpperCase() === 'GLOBAL';
@@ -98,8 +102,8 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
           </motion.button>
         </div>
 
-        {/* Right Header Section: New Chat Button */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        {/* Right Header Section: New Chat Button & Market Panel Toggle */}
+        <div className="flex items-center gap-2">
           {/* New Chat Primary Action Button */}
           <motion.button
             type="button"
@@ -121,11 +125,41 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
             <Plus className="size-3.5 stroke-[2.75]" />
             <span className="font-bold">{APP_CONTENT.chat.newChatButton}</span>
           </motion.button>
+
+          {/* Collapsible Market Panel Toggle Button */}
+          <motion.button
+            type="button"
+            whileTap={tapScalePill}
+            onClick={toggleMarketPanel}
+            title={
+              isMarketPanelOpen
+                ? APP_CONTENT.marketPanel.collapsePanel
+                : APP_CONTENT.marketPanel.expandPanel
+            }
+            aria-label={
+              isMarketPanelOpen
+                ? APP_CONTENT.marketPanel.collapsePanel
+                : APP_CONTENT.marketPanel.expandPanel
+            }
+            className={`size-8 rounded-lg flex items-center justify-center select-none cursor-pointer transition-colors border ${
+              isMarketPanelOpen
+                ? 'bg-theme-bg-elevated text-theme-brand-binance border-theme-border-subtle shadow-2xs'
+                : 'text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-surface border-transparent hover:border-theme-border-subtle'
+            }`}
+          >
+            {isMarketPanelOpen ? (
+              <PanelRightClose className="size-4" />
+            ) : (
+              <PanelRightOpen className="size-4" />
+            )}
+          </motion.button>
         </div>
       </div>
 
-      {/* 2. Main Chat Stage Body */}
-      <div className="relative flex-1 min-h-0 w-full flex flex-col overflow-hidden">
+      {/* 2. Main Stage Body: Horizontal Flex (Chat Area + Right Market Panel) */}
+      <div className="relative flex-1 min-h-0 w-full flex flex-row overflow-hidden">
+        {/* Chat Column */}
+        <div className="relative flex-1 min-h-0 min-w-0 flex flex-col overflow-hidden">
         {/* Gemini-Style Atmospheric Ambient Depth Glow */}
         <div
           aria-hidden="true"
@@ -269,6 +303,15 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
             />
           </div>
         )}
+        </div>
+
+        {/* Right Collapsible Market Overview Panel */}
+        <MarketPanel
+          isOpen={isMarketPanelOpen}
+          symbol={cleanSymbol}
+          isGlobal={isGlobalWorkspace}
+          onClose={() => setIsMarketPanelOpen(false)}
+        />
       </div>
     </div>
   );
