@@ -78,7 +78,7 @@ export const ChatMessage = memo(function ChatMessage({
         className="flex justify-end items-start gap-spacing-xs w-full py-1"
       >
         <div className="flex flex-col items-end gap-1 max-w-[85%] sm:max-w-[75%]">
-          <div className="bg-theme-bg-elevated text-theme-text-primary px-4 py-3 rounded-2xl rounded-tr-xs shadow-2xs border border-theme-border-subtle text-xs font-medium leading-relaxed break-words select-text">
+          <div className="bg-theme-bg-elevated text-theme-text-primary px-4 py-3 rounded-2xl rounded-tr-xs shadow-2xs border border-theme-border-subtle text-sm font-normal leading-relaxed break-words select-text">
             {message.content}
           </div>
           <span className="text-2xs font-mono text-theme-text-muted px-1">
@@ -118,12 +118,12 @@ export const ChatMessage = memo(function ChatMessage({
 
       <div className="flex-1 flex flex-col gap-spacing-xs min-w-0">
         {/* Header Bar */}
-        <div className="flex items-center gap-spacing-xs text-2xs text-theme-text-muted px-1">
+        <div className="flex items-center gap-spacing-xs text-xs text-theme-text-muted px-1">
           <span className="font-bold text-theme-text-primary tracking-tight">
             {APP_CONTENT.chat.agentRole}
           </span>
           <span>•</span>
-          <span className="font-mono">{formattedTime}</span>
+          <span className="font-mono text-2xs">{formattedTime}</span>
           {isError && (
             <span className="inline-flex items-center gap-1 text-2xs text-theme-status-danger font-semibold ml-1">
               <AlertCircle className="size-3 text-theme-status-danger" />
@@ -146,7 +146,7 @@ export const ChatMessage = memo(function ChatMessage({
         {/* Main Response Markdown Container */}
         {message.content && (
           <div
-            className={`p-4 sm:p-5 rounded-2xl rounded-tl-xs shadow-2xs border text-xs leading-relaxed transition-colors ${
+            className={`p-4 sm:p-5 rounded-2xl rounded-tl-xs shadow-2xs border text-sm leading-relaxed transition-colors ${
               isError
                 ? 'bg-theme-bg-surface border-theme-status-danger text-theme-status-danger'
                 : 'bg-theme-bg-surface border-theme-border-subtle text-theme-text-primary'

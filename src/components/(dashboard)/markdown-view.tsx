@@ -75,27 +75,27 @@ const CodeBlock = memo(function CodeBlock({ language, code, children }: CodeBloc
  */
 const MARKDOWN_COMPONENTS: React.ComponentProps<typeof ReactMarkdown>['components'] = {
   h1: ({ children }) => (
-    <h1 className="text-base sm:text-lg font-extrabold text-theme-text-primary mt-4 mb-2 first:mt-0 tracking-tight font-sans">
+    <h1 className="text-lg sm:text-xl font-extrabold text-theme-text-primary mt-5 mb-2.5 first:mt-0 tracking-tight font-sans">
       {children}
     </h1>
   ),
   h2: ({ children }) => (
-    <h2 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-theme-text-primary mt-3.5 mb-1.5 first:mt-0 border-b border-theme-border-subtle pb-1">
+    <h2 className="text-sm sm:text-base font-bold uppercase tracking-wider text-theme-text-primary mt-4 mb-2 first:mt-0 border-b border-theme-border-subtle pb-1.5">
       {children}
     </h2>
   ),
   h3: ({ children }) => (
-    <h3 className="text-xs font-bold text-theme-text-primary mt-3 mb-1 first:mt-0">
+    <h3 className="text-sm font-bold text-theme-text-primary mt-3.5 mb-1.5 first:mt-0">
       {children}
     </h3>
   ),
   h4: ({ children }) => (
-    <h4 className="text-xs font-semibold text-theme-text-secondary mt-2 mb-1 first:mt-0">
+    <h4 className="text-xs font-bold uppercase tracking-wider text-theme-text-muted mt-2.5 mb-1 first:mt-0">
       {children}
     </h4>
   ),
   p: ({ children }) => (
-    <p className="text-xs text-theme-text-primary leading-relaxed mb-2.5 last:mb-0">
+    <p className="text-sm text-theme-text-primary leading-relaxed mb-3 last:mb-0">
       {children}
     </p>
   ),
@@ -115,12 +115,12 @@ const MARKDOWN_COMPONENTS: React.ComponentProps<typeof ReactMarkdown>['component
     </del>
   ),
   ul: ({ children }) => (
-    <ul className="list-disc list-outside pl-4 my-2 space-y-1 text-xs text-theme-text-secondary marker:text-theme-brand-binance">
+    <ul className="list-disc list-outside pl-4 my-3 space-y-1.5 text-sm text-theme-text-secondary marker:text-theme-brand-binance">
       {children}
     </ul>
   ),
   ol: ({ children }) => (
-    <ol className="list-decimal list-outside pl-4 my-2 space-y-1 text-xs text-theme-text-secondary marker:text-theme-brand-binance">
+    <ol className="list-decimal list-outside pl-4 my-3 space-y-1.5 text-sm text-theme-text-secondary marker:text-theme-brand-binance">
       {children}
     </ol>
   ),
@@ -136,7 +136,7 @@ const MARKDOWN_COMPONENTS: React.ComponentProps<typeof ReactMarkdown>['component
           type="checkbox"
           checked={checked}
           readOnly
-          className="size-3 rounded border-theme-border-subtle text-theme-brand-binance accent-theme-brand-binance mr-1.5 align-middle pointer-events-none"
+          className="size-3.5 rounded border-theme-border-subtle text-theme-brand-binance accent-theme-brand-binance mr-1.5 align-middle pointer-events-none"
           {...props}
         />
       );
@@ -144,12 +144,12 @@ const MARKDOWN_COMPONENTS: React.ComponentProps<typeof ReactMarkdown>['component
     return <input type={type} {...props} />;
   },
   blockquote: ({ children }) => (
-    <blockquote className="border-l-2 border-theme-brand-binance bg-theme-bg-elevated/50 rounded-r-xl px-4 py-2.5 my-3 italic text-theme-text-secondary text-xs shadow-2xs">
+    <blockquote className="border-l-2 border-theme-brand-binance bg-theme-bg-elevated/60 rounded-r-xl px-4 py-3 my-3.5 text-theme-text-primary text-sm shadow-2xs font-normal leading-relaxed">
       {children}
     </blockquote>
   ),
   hr: () => (
-    <hr className="my-3.5 border-t border-theme-border-subtle" />
+    <hr className="my-4 border-t border-theme-border-subtle" />
   ),
   pre: ({ children }) => {
     let codeString = '';
@@ -187,7 +187,7 @@ const MARKDOWN_COMPONENTS: React.ComponentProps<typeof ReactMarkdown>['component
 
     return (
       <code
-        className="bg-theme-bg-elevated text-theme-brand-binance px-1.5 py-0.5 rounded font-mono text-2xs border border-theme-border-subtle font-semibold select-all"
+        className="bg-theme-bg-elevated text-theme-brand-binance px-1.5 py-0.5 rounded font-mono text-xs border border-theme-border-subtle font-semibold select-all"
         {...props}
       >
         {children}
@@ -195,8 +195,8 @@ const MARKDOWN_COMPONENTS: React.ComponentProps<typeof ReactMarkdown>['component
     );
   },
   table: ({ children }) => (
-    <div className="overflow-x-auto my-3 rounded-xl border border-theme-border-subtle shadow-2xs bg-theme-bg-surface">
-      <table className="w-full border-collapse text-2xs font-mono text-left">
+    <div className="overflow-x-auto my-3.5 rounded-xl border border-theme-border-subtle shadow-2xs bg-theme-bg-surface">
+      <table className="w-full border-collapse text-xs font-mono text-left">
         {children}
       </table>
     </div>
@@ -217,12 +217,12 @@ const MARKDOWN_COMPONENTS: React.ComponentProps<typeof ReactMarkdown>['component
     </tr>
   ),
   th: ({ children }) => (
-    <th className="py-2 px-3 font-bold text-2xs uppercase tracking-wider text-theme-text-secondary">
+    <th className="py-2.5 px-3.5 font-bold text-xs uppercase tracking-wider text-theme-text-secondary">
       {children}
     </th>
   ),
   td: ({ children }) => (
-    <td className="py-2 px-3 align-middle text-2xs text-theme-text-primary">
+    <td className="py-2.5 px-3.5 align-middle text-xs text-theme-text-primary">
       {children}
     </td>
   ),
@@ -234,7 +234,7 @@ const MARKDOWN_COMPONENTS: React.ComponentProps<typeof ReactMarkdown>['component
       className="inline-flex items-center gap-0.5 text-theme-brand-binance hover:underline font-medium hover:text-theme-brand-accent transition-colors"
     >
       <span>{children}</span>
-      <ExternalLink className="size-2.5 shrink-0 opacity-70" />
+      <ExternalLink className="size-3 shrink-0 opacity-70" />
     </a>
   ),
 };
@@ -245,7 +245,7 @@ interface MarkdownViewProps {
 
 export const MarkdownView = memo(function MarkdownView({ content }: MarkdownViewProps) {
   return (
-    <div className="w-full text-xs text-theme-text-primary leading-relaxed break-words">
+    <div className="w-full text-sm text-theme-text-primary leading-relaxed break-words">
       <ReactMarkdown
         remarkPlugins={REMARK_PLUGINS}
         components={MARKDOWN_COMPONENTS}
