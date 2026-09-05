@@ -130,6 +130,7 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
                   className="max-w-2xl"
                   containerClassName="w-full p-0 bg-transparent shrink-0"
                   autoFocus
+                  showAura={true}
                 />
               </motion.div>
 
