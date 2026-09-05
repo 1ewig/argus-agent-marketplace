@@ -231,8 +231,12 @@ export const sidebarHorizontalCollapseVariants: Variants = {
       width: { duration: 0.26, ease: EASING_ARCHITECTURAL },
       opacity: { duration: 0.12, ease: 'easeOut' },
     },
+    transitionEnd: {
+      display: 'none',
+    },
   },
   expanded: {
+    display: 'flex',
     opacity: 1,
     width: 'auto',
     transition: {
