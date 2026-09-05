@@ -61,6 +61,18 @@ export function SidebarWorkspaceGroup({
     ? `${group.baseAsset} / ${group.quoteAsset}`
     : group.baseAsset;
 
+  const handleGroupHeaderClick = () => {
+    if (isCollapsed) {
+      const activeInGroup = group.conversations.find((c) => c.id === activeConversationId);
+      const targetId = activeInGroup?.id || group.conversations[0]?.id;
+      if (targetId) {
+        onSelectSession(targetId);
+      }
+    } else {
+      onToggleExpand();
+    }
+  };
+
   return (
     <div className="flex flex-col w-full shrink-0">
       {/* Group Header */}
@@ -68,31 +80,40 @@ export function SidebarWorkspaceGroup({
         whileTap={tapScalePill}
         role="button"
         tabIndex={0}
-        onClick={onToggleExpand}
+        onClick={handleGroupHeaderClick}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
-            onToggleExpand();
+            handleGroupHeaderClick();
           }
         }}
         title={`${pairLabel} (${group.conversations.length})`}
-        className={`group relative h-8 flex items-center rounded-lg text-xs font-semibold cursor-pointer transition-colors select-none overflow-hidden ${isCollapsed ? 'w-10 justify-center mx-auto' : 'w-full px-1.5'
-          } ${isCurrentActiveGroup
-            ? 'text-theme-text-primary hover:bg-theme-bg-elevated/60'
-            : 'text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-elevated/40'
-          }`}
+        className={`group relative flex items-center cursor-pointer transition-colors select-none ${
+          isCollapsed
+            ? 'size-10 justify-center rounded-xl mx-auto'
+            : 'h-8 w-full px-1.5 rounded-md overflow-hidden'
+        } ${
+          isCurrentActiveGroup
+            ? isCollapsed
+              ? 'bg-theme-bg-elevated text-theme-text-primary border border-theme-border-subtle shadow-2xs font-bold'
+              : 'text-theme-text-primary hover:bg-theme-bg-elevated/60'
+            : isCollapsed
+              ? 'text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-elevated/40 border border-transparent'
+              : 'text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-elevated/40'
+        }`}
       >
-        {/* Anchored Left Slot: Monogram or Chevron in expanded */}
-        <div className="size-6 flex items-center justify-center shrink-0">
+        {/* Anchored Left Slot: Centered size-10 in Collapsed (matching Agent & Chart), size-6 Chevron in Expanded */}
+        <div className={`${isCollapsed ? 'size-10' : 'size-6'} flex items-center justify-center shrink-0`}>
           {isCollapsed ? (
-            <span
-              className={`text-2xs font-extrabold px-1 py-0.5 rounded ${isCurrentActiveGroup
-                  ? 'bg-theme-brand-binance/20 text-theme-brand-binance'
-                  : 'bg-theme-bg-elevated text-theme-text-muted'
-                }`}
+            <div
+              className={`size-6 rounded-md flex items-center justify-center font-mono text-[9px] font-bold tracking-tight uppercase border transition-colors ${
+                isCurrentActiveGroup
+                  ? 'bg-theme-brand-binance/10 border-theme-brand-binance/50 text-theme-brand-binance'
+                  : 'bg-theme-bg-surface border-theme-border-subtle text-theme-text-muted group-hover:border-theme-border-hover group-hover:text-theme-text-primary'
+              }`}
             >
               {group.baseAsset.slice(0, 3)}
-            </span>
+            </div>
           ) : (
             <motion.div
               animate={{ rotate: isExpanded ? 90 : 0 }}
@@ -100,8 +121,9 @@ export function SidebarWorkspaceGroup({
               className="flex items-center justify-center"
             >
               <ChevronRight
-                className={`size-3.5 transition-colors duration-150 ${isExpanded ? 'text-theme-text-primary' : 'text-theme-text-muted'
-                  }`}
+                className={`size-3.5 transition-colors duration-150 ${
+                  isExpanded ? 'text-theme-text-primary' : 'text-theme-text-muted'
+                }`}
               />
             </motion.div>
           )}
@@ -130,18 +152,16 @@ export function SidebarWorkspaceGroup({
             )}
           </div>
 
-          {/* Right Section: Count Badge */}
-          <div className="flex items-center gap-1 shrink-0">
-            <span className="text-3xs font-bold px-1.5 py-0.5 rounded-full bg-theme-bg-elevated text-theme-text-muted border border-theme-border-subtle shrink-0">
-              {group.conversations.length}
-            </span>
-          </div>
+          {/* Right Section: Minimal Session Count */}
+          <span className="text-2xs font-mono font-medium text-theme-text-muted tabular-nums shrink-0 pr-0.5">
+            {group.conversations.length}
+          </span>
         </motion.div>
       </motion.div>
 
       {/* Group Conversations List (Accordion Body) */}
       <AnimatePresence initial={false}>
-        {(!isCollapsed ? isExpanded : true) && (
+        {!isCollapsed && isExpanded && (
           <motion.div
             key={`workspace-body-${group.symbol}`}
             initial={{ height: 0, opacity: 0 }}
@@ -150,11 +170,8 @@ export function SidebarWorkspaceGroup({
             transition={accordionTransition}
             className="overflow-hidden"
           >
-            {/* Inner container isolates padding so height collapses to clean 0px */}
-            <div
-              className={`flex flex-col gap-0.5 ${isCollapsed ? 'items-center pt-1' : 'pl-3.5 pr-0.5 pt-0.5 pb-1'
-                }`}
-            >
+            {/* Inner container isolates padding so height collapses smoothly to 0 */}
+            <div className="flex flex-col gap-0.5 pl-3.5 pr-0.5 pt-0.5 pb-1">
               {group.conversations.map((conv) => (
                 <SidebarSessionItem
                   key={conv.id}
