@@ -9,6 +9,7 @@ import {
   emptyStateContainerVariants,
   emptyStateItemVariants,
   tapScalePill,
+  hoverLiftPill,
 } from '@/constants/animation';
 import { useAgentChat } from '@/hooks';
 import { ChatMessage } from './chat-message';
@@ -94,15 +95,14 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
                     {APP_CONTENT.chat.quickActions.map((action) => (
                       <motion.button
                         key={action.id}
-                        variants={emptyStateItemVariants}
                         type="button"
-                        whileHover={{ y: -1 }}
+                        whileHover={hoverLiftPill}
                         whileTap={tapScalePill}
                         onClick={() => handleSelectTemplate(action.template)}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-theme-bg-surface/80 hover:bg-theme-bg-surface active:bg-theme-bg-elevated border border-theme-border-subtle hover:border-theme-border-strong active:border-theme-border-strong text-theme-text-secondary hover:text-theme-text-primary text-xs font-medium cursor-pointer transition-all shadow-2xs group select-none backdrop-blur-xs"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-theme-bg-surface/80 hover:bg-theme-bg-surface active:bg-theme-bg-elevated border border-theme-border-subtle hover:border-theme-border-strong active:border-theme-border-strong text-theme-text-secondary hover:text-theme-text-primary text-xs font-medium cursor-pointer transition-colors duration-150 shadow-2xs group select-none backdrop-blur-xs"
                       >
                         <span className="leading-tight">{action.label}</span>
-                        <ArrowUpRight className="size-3 text-theme-text-muted group-hover:text-theme-brand-binance group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0" />
+                        <ArrowUpRight className="size-3 text-theme-text-muted group-hover:text-theme-brand-binance group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-150 shrink-0" />
                       </motion.button>
                     ))}
                   </div>

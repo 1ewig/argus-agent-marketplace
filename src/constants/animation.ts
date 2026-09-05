@@ -176,6 +176,11 @@ export const tapScalePill = {
   transition: { duration: 0.1, ease: 'easeOut' },
 } as const;
 
+export const hoverLiftPill = {
+  y: -1,
+  transition: { duration: 0.15, ease: 'easeOut' },
+} as const;
+
 /**
  * 60fps Spring and Easing parameters for Left Sidebar width collapse and expansion.
  */
