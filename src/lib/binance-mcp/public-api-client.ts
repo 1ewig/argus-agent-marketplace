@@ -310,23 +310,31 @@ export async function getGlobalLongShortAccountRatio(
   return fetchBinancePublic<
     Array<{
       symbol: string;
-      longAccount: string;
-      shortAccount: string;
-      longShortRatio: string;
-      timestamp: number;
+      longAccount?: string;
+      shortAccount?: string;
+      longShortRatio?: string;
+      timestamp?: number;
     }>,
     GlobalLongShortAccountRatioData[]
   >(
     `/futures/data/globalLongShortAccountRatio?symbol=${formatted}&period=${safePeriod}&limit=${safeLimit}`,
     formatted,
     (data) =>
-      data.map((d) => ({
-        symbol: d.symbol,
-        longAccount: parseFloat(d.longAccount),
-        shortAccount: parseFloat(d.shortAccount),
-        longShortRatio: parseFloat(d.longShortRatio),
-        timestamp: Number(d.timestamp),
-      })),
+      data.map((d) => {
+        const rawLong = d.longAccount ?? '0.5';
+        const rawShort = d.shortAccount ?? '0.5';
+        const rawRatio = d.longShortRatio ?? '1.0';
+        const parsedLong = parseFloat(rawLong);
+        const parsedShort = parseFloat(rawShort);
+        const parsedRatio = parseFloat(rawRatio);
+        return {
+          symbol: d.symbol,
+          longAccount: Number.isFinite(parsedLong) ? parsedLong : 0.5,
+          shortAccount: Number.isFinite(parsedShort) ? parsedShort : 0.5,
+          longShortRatio: Number.isFinite(parsedRatio) ? parsedRatio : 1.0,
+          timestamp: Number(d.timestamp || Date.now()),
+        };
+      }),
     { revalidateSeconds: 15, isFutures: true }
   );
 }
@@ -346,23 +354,33 @@ export async function getTopLongShortPositionRatio(
   return fetchBinancePublic<
     Array<{
       symbol: string;
-      longPosition: string;
-      shortPosition: string;
-      longShortRatio: string;
-      timestamp: number;
+      longAccount?: string;
+      longPosition?: string;
+      shortAccount?: string;
+      shortPosition?: string;
+      longShortRatio?: string;
+      timestamp?: number;
     }>,
     TopLongShortPositionRatioData[]
   >(
     `/futures/data/topLongShortPositionRatio?symbol=${formatted}&period=${safePeriod}&limit=${safeLimit}`,
     formatted,
     (data) =>
-      data.map((d) => ({
-        symbol: d.symbol,
-        longPosition: parseFloat(d.longPosition),
-        shortPosition: parseFloat(d.shortPosition),
-        longShortRatio: parseFloat(d.longShortRatio),
-        timestamp: Number(d.timestamp),
-      })),
+      data.map((d) => {
+        const rawLong = d.longPosition ?? d.longAccount ?? '0.5';
+        const rawShort = d.shortPosition ?? d.shortAccount ?? '0.5';
+        const rawRatio = d.longShortRatio ?? '1.0';
+        const parsedLong = parseFloat(rawLong);
+        const parsedShort = parseFloat(rawShort);
+        const parsedRatio = parseFloat(rawRatio);
+        return {
+          symbol: d.symbol,
+          longPosition: Number.isFinite(parsedLong) ? parsedLong : 0.5,
+          shortPosition: Number.isFinite(parsedShort) ? parsedShort : 0.5,
+          longShortRatio: Number.isFinite(parsedRatio) ? parsedRatio : 1.0,
+          timestamp: Number(d.timestamp || Date.now()),
+        };
+      }),
     { revalidateSeconds: 15, isFutures: true }
   );
 }

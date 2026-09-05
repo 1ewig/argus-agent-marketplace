@@ -318,9 +318,12 @@ export function buildAgentTools() {
         try {
           const history = await getGlobalLongShortAccountRatio(symbol.toUpperCase(), period, limit);
           const latest = history[history.length - 1];
-          const longPercent = latest ? +(latest.longAccount * 100).toFixed(1) : 50;
-          const shortPercent = latest ? +(latest.shortAccount * 100).toFixed(1) : 50;
-          const ratio = latest ? latest.longShortRatio : 1.0;
+          const rawLong = latest ? latest.longAccount * 100 : 50;
+          const rawShort = latest ? latest.shortAccount * 100 : 50;
+          const rawRatio = latest ? latest.longShortRatio : 1.0;
+          const longPercent = Number.isFinite(rawLong) ? +rawLong.toFixed(1) : 50;
+          const shortPercent = Number.isFinite(rawShort) ? +rawShort.toFixed(1) : 50;
+          const ratio = Number.isFinite(rawRatio) ? +rawRatio.toFixed(2) : 1.0;
           const sentiment = ratio > 1.1 ? 'bullish' : ratio < 0.9 ? 'bearish' : 'neutral';
 
           return {
@@ -334,7 +337,7 @@ export function buildAgentTools() {
               sentiment,
               latestTimestamp: latest?.timestamp ?? Date.now(),
             },
-            history,
+            history: history.slice(-5),
           };
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : 'Failed to retrieve global long/short account ratio';
@@ -367,9 +370,12 @@ export function buildAgentTools() {
         try {
           const history = await getTopLongShortPositionRatio(symbol.toUpperCase(), period, limit);
           const latest = history[history.length - 1];
-          const longPercent = latest ? +(latest.longPosition * 100).toFixed(1) : 50;
-          const shortPercent = latest ? +(latest.shortPosition * 100).toFixed(1) : 50;
-          const ratio = latest ? latest.longShortRatio : 1.0;
+          const rawLong = latest ? latest.longPosition * 100 : 50;
+          const rawShort = latest ? latest.shortPosition * 100 : 50;
+          const rawRatio = latest ? latest.longShortRatio : 1.0;
+          const longPercent = Number.isFinite(rawLong) ? +rawLong.toFixed(1) : 50;
+          const shortPercent = Number.isFinite(rawShort) ? +rawShort.toFixed(1) : 50;
+          const ratio = Number.isFinite(rawRatio) ? +rawRatio.toFixed(2) : 1.0;
           const sentiment = ratio > 1.1 ? 'bullish' : ratio < 0.9 ? 'bearish' : 'neutral';
 
           return {
@@ -383,7 +389,7 @@ export function buildAgentTools() {
               sentiment,
               latestTimestamp: latest?.timestamp ?? Date.now(),
             },
-            history,
+            history: history.slice(-5),
           };
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : 'Failed to retrieve top trader long/short position ratio';

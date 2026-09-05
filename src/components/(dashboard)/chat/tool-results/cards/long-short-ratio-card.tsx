@@ -9,9 +9,13 @@ export function LongShortRatioCard({ resultObj }: ToolCardProps) {
   const symbol = typeof resultObj?.symbol === 'string' ? (resultObj.symbol as string) : undefined;
   const period = typeof resultObj?.period === 'string' ? (resultObj.period as string) : '5m';
 
-  const longPercent = Number(summary?.longPercent ?? 50);
-  const shortPercent = Number(summary?.shortPercent ?? 50);
-  const ratio = Number(summary?.longShortRatio ?? 1.0);
+  const rawLong = Number(summary?.longPercent);
+  const rawShort = Number(summary?.shortPercent);
+  const rawRatio = Number(summary?.longShortRatio);
+
+  const longPercent = Number.isFinite(rawLong) ? Math.min(Math.max(rawLong, 0), 100) : 50;
+  const shortPercent = Number.isFinite(rawShort) ? Math.min(Math.max(rawShort, 0), 100) : 50;
+  const ratio = Number.isFinite(rawRatio) ? rawRatio : 1.0;
   const sentiment = String(summary?.sentiment ?? 'neutral');
 
   const isBullish = sentiment === 'bullish';
