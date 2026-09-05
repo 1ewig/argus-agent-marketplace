@@ -12,7 +12,7 @@ import {
   tapScalePill,
   hoverLiftPill,
 } from '@/constants/animation';
-import { useAgentChat, useChatSessions } from '@/hooks';
+import { useAgentChat, useChatSessions, parseSymbolAssets } from '@/hooks';
 import { useAppStore } from '@/stores/app-store';
 import { ChatMessage } from './chat-message';
 import { ChatInput, type ChatInputHandle } from './chat-input';
@@ -30,6 +30,14 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
 
   const isGlobalWorkspace = (selectedSymbol || '').toUpperCase() === 'GLOBAL';
   const cleanSymbol = (selectedSymbol || 'BTCUSDT').toUpperCase();
+
+  const quickActions = useMemo(() => {
+    if (isGlobalWorkspace) {
+      return APP_CONTENT.chat.globalQuickActions;
+    }
+    const { baseAsset, quoteAsset } = parseSymbolAssets(cleanSymbol);
+    return APP_CONTENT.chat.getSymbolQuickActions(cleanSymbol, baseAsset, quoteAsset);
+  }, [isGlobalWorkspace, cleanSymbol]);
 
   const {
     messages,
@@ -189,12 +197,9 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
                   </span>
                 </div>
                 <div className="flex flex-wrap items-center justify-center gap-2 max-w-xl">
-                  {(isGlobalWorkspace
-                    ? APP_CONTENT.chat.globalQuickActions
-                    : APP_CONTENT.chat.quickActions
-                  ).map((action) => (
+                  {quickActions.map((action) => (
                     <motion.button
-                      key={action.id}
+                      key={`${cleanSymbol}_${action.id}`}
                       type="button"
                       whileHover={hoverLiftPill}
                       whileTap={tapScalePill}

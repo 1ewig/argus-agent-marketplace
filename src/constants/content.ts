@@ -122,20 +122,44 @@ export const APP_CONTENT = {
     emptySubtitle: 'Analyze live order books, check funding rates, and inspect 24h market stats with real-time Binance feeds.',
     quickActionsTitle: 'Quick Actions',
     quickActions: [
-      { id: 'depth', label: 'SOL/USDT Depth', template: 'Check SOLUSDT live price, spread, and order book depth' },
+      { id: 'depth', label: 'BTC/USDT Depth', template: 'Check BTCUSDT live price, spread, and order book depth' },
       { id: 'stats', label: 'BTC 24h Stats', template: 'Show 24h market stats and volume for BTCUSDT' },
-      { id: 'oi', label: 'BTC Open Interest', template: 'Check BTCUSDT live open interest and funding rate' },
+      { id: 'oi', label: 'BTC Funding & OI', template: 'Check BTCUSDT live open interest and funding rate' },
+      { id: 'news', label: 'BTC News & Catalysts', template: 'Search latest crypto news, catalysts, and sentiment for BTC' },
     ],
     globalQuickActions: [
       { id: 'movers', label: 'Top Market Movers', template: 'What are the top crypto gainers and biggest market movers today across Binance?' },
       { id: 'news', label: 'Crypto Macro News', template: 'Search latest crypto macro news, regulatory catalysts, and protocol roadmaps' },
       { id: 'funding', label: 'Funding Comparison', template: 'Compare perpetual futures funding rates and open interest for BTC, ETH, and SOL' },
     ],
+    getSymbolQuickActions: (symbol: string, baseAsset: string, quoteAsset?: string) => [
+      {
+        id: 'depth',
+        label: quoteAsset ? `${baseAsset}/${quoteAsset} Depth` : `${baseAsset} Depth`,
+        template: `Check ${symbol} live price, spread, and order book depth`,
+      },
+      {
+        id: 'stats',
+        label: `${baseAsset} 24h Stats`,
+        template: `Show 24h market stats and volume for ${symbol}`,
+      },
+      {
+        id: 'oi',
+        label: `${baseAsset} Funding & OI`,
+        template: `Check ${symbol} live open interest and funding rate`,
+      },
+      {
+        id: 'news',
+        label: `${baseAsset} News & Catalysts`,
+        template: `Search latest crypto news, catalysts, and sentiment for ${baseAsset}`,
+      },
+    ],
     quickPromptsTitle: 'Quick Actions',
     quickPrompts: [
-      'Check SOLUSDT live price, spread, and order book depth',
+      'Check BTCUSDT live price, spread, and order book depth',
       'Show 24h market stats and volume for BTCUSDT',
       'Check BTCUSDT live open interest and funding rate',
+      'Search latest crypto news, catalysts, and sentiment for BTC',
     ],
     toolCallsLabel: 'Tools used',
     toolCallsCountSuffix: 'tools used',

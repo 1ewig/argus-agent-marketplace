@@ -29,6 +29,8 @@ export interface SymbolWorkspaceGroup {
   isGlobal?: boolean;
 }
 
+const KNOWN_QUOTE_ASSETS = ['USDT', 'USDC', 'FDUSD', 'BUSD', 'EUR', 'TRY', 'BTC', 'ETH', 'BNB'] as const;
+
 /**
  * Splits a standard Binance trading pair (e.g. BTCUSDT) into base and quote assets,
  * or handles the special 'GLOBAL' workspace identifier.
@@ -38,17 +40,10 @@ export function parseSymbolAssets(symbol: string): { baseAsset: string; quoteAss
   if (upper === GLOBAL_WORKSPACE_SYMBOL) {
     return { baseAsset: GLOBAL_WORKSPACE_SYMBOL, quoteAsset: '' };
   }
-  if (upper.endsWith('USDT')) {
-    return { baseAsset: upper.slice(0, -4), quoteAsset: 'USDT' };
-  }
-  if (upper.endsWith('USDC')) {
-    return { baseAsset: upper.slice(0, -4), quoteAsset: 'USDC' };
-  }
-  if (upper.endsWith('BUSD')) {
-    return { baseAsset: upper.slice(0, -4), quoteAsset: 'BUSD' };
-  }
-  if (upper.endsWith('BTC') && upper.length > 3) {
-    return { baseAsset: upper.slice(0, -3), quoteAsset: 'BTC' };
+  for (const quote of KNOWN_QUOTE_ASSETS) {
+    if (upper.endsWith(quote) && upper.length > quote.length) {
+      return { baseAsset: upper.slice(0, -quote.length), quoteAsset: quote };
+    }
   }
   return { baseAsset: upper, quoteAsset: '' };
 }
