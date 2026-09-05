@@ -58,24 +58,27 @@ Every component and module must have one single, clearly defined responsibility:
 
 ```
 src/
-├── app/                  # Route boundaries, page orchestrations, layouts
-├── components/           # Presentation UI components (stateless where possible)
-│   ├── cockpit/          # Visual cockpit elements (trading view chart, strategy cards)
-│   ├── stream/           # Multi-agent visual conversation stream
-│   └── common/           # Reusable UI primitives (buttons, badges, indicators)
-├── constants/            # Centralized UI text, dictionary copies, default configs
+├── agent/                # Modular AI reasoning engine, providers, prompt directives, and AI SDK tools
+├── app/                  # Next.js route boundaries, SSE streaming API routes, layout, globals.css
+├── components/           # Presentation UI components (stateless and decoupled from streaming transport)
+│   ├── (dashboard)/      # Chat console, message bubbles, process timeline, tool cards, chart view
+│   ├── sidebar/          # Modular left sidebar navigation, session items, theme toggle
+│   └── common/           # Reusable UI primitives (loaders, brand icons, confirmation dialogs)
+├── constants/            # Centralized UI copy (content.ts), animation presets (animation.ts)
+├── hooks/                # Specialized reactive hooks (agent chat, sessions, RAF scroll, theme, timer)
 ├── lib/
-│   ├── agents/           # Autonomous agent logic (Analyst, Risk Arbiter, Executor)
-│   ├── binance-mcp/      # Binance Agent OS MCP clients & mock simulation adapters
-│   ├── risk-engine/      # Deterministic mathematical risk calculation functions
-│   ├── x402/             # Machine-to-machine HTTP 402 challenge-response settlement
-│   ├── types/            # Domain TypeScript interfaces and Zod validation schemas
-│   └── utils.ts          # Pure helper utilities
+│   ├── agents/           # Client SSE stream transport & sliding context window preparation
+│   ├── binance-mcp/      # Live Binance Spot and Futures REST clients & market types
+│   ├── db/               # Multi-session Dexie IndexedDB client, schema migrations, and queries
+│   ├── exa/              # Exa AI neural web search client, search options, and result types
+│   ├── types/            # Shared domain TypeScript interfaces and Zod validation schemas
+│   └── utils.ts          # Pure helper utilities (class merging, ID generators, relative time)
+└── stores/               # Client Zustand store with local storage persistence
 ```
 
-* **Data & Validation Layer:** All network inputs, agent messages, MCP payloads, and x402 receipts must be validated at runtime via **Zod schemas**.
-* **Risk Engine:** Mathematical risk evaluations (slippage against order book depth, drawdown percentage, position sizing caps) must be **pure, deterministic TypeScript functions**, entirely decoupled from LLM prompting.
-* **UI Components:** Responsible strictly for visual rendering and user interaction; delegate agent orchestration and business workflows to dedicated controller modules or hooks.
+* **Data & Validation Layer:** All network inputs, agent messages, MCP payloads, and search queries must be validated at runtime via **Zod schemas**.
+* **Reasoning & Tool Layer (`src/agent/`):** Autonomous multi-step tool execution, provider failover, and session title extraction decoupled from UI state.
+* **UI Components (`src/components/`):** Responsible strictly for visual rendering and user interaction; delegate stream orchestration and data persistence to dedicated controller hooks (`src/hooks/`).
 
 ---
 
@@ -109,6 +112,7 @@ src/
 ## 8. Market Data, Tool Safety & Execution Integrity
 
 * **Zero Fake / Synthetic Market Data:** NEVER generate, hardcode, or fall back to synthetic ticker prices, mock order books, or fabricated klines. Binance public REST endpoints (`api.binance.com` and `fapi.binance.com`) are 100% free, live, and unauthenticated. If an invalid pair is passed (e.g. `FAKECOIN`) or an API request fails, ALWAYS surface or re-throw the authentic Binance error (HTTP 400 `Invalid symbol.`). Never silently mask failures with fake numbers.
+* **Exa AI Web Search & Crypto News Integrity:** When fetching live news, catalysts, or project roadmap intelligence via Exa AI (`search_crypto_news`), always enforce search mode `type: 'auto'`, support ISO 8601 date range filtering (`startPublishedDate`), and extract query-guided highlights. Never fabricate news headlines or fallback articles.
 * **Universal Symbol Normalization (`normalizeSymbol`):** All symbol inputs across agent tools, REST callers, and wallet executions MUST be sanitized through `normalizeSymbol()`. Always strip outer quotes (`"BTCUSDT"`, `'BTCUSDT'`), strip delimiters (`BTC/USDT`, `BTC-USDT`), enforce uppercase, and validate standard quote assets (`USDT`, `USDC`, `BTC`, etc.).
 * **Mandatory Server-Side Idempotency:** The trading tool `place_spot_order` MUST accept and forward `clientOrderId` and `newClientOrderId`. The execution engine must deduplicate server-side on `clientOrderId` (and payload fingerprint within a 5-second window) to return the existing fill receipt on retries, permanently preventing account double-fills.
 * **Exchange Price Filter (`PERCENT_PRICE`):** Any LIMIT order must require a positive `price` and enforce sanity check bounds against current market price. Off-book limit prices must be rejected.
@@ -120,6 +124,7 @@ src/
 ## 9. AI Stream Lifecycle & Animation Best Practices
 
 * **Full Stream Event Handling:** In Vercel AI SDK `streamText`, the `fullStream` emits `tool-error` and `tool-output-denied` parts in addition to `tool-result`. Agents must handle `tool-error` to transition timeline steps from `active` to `error`, rather than leaving steps hanging on infinite loading spinners. Ensure any active steps are finalized at the end of the stream or upon failover.
+* **Active Stream State Preservation:** Never prematurely mark in-flight running steps as errors in UI step normalizers while `isStreaming` is active. Preserve the `active` status with spinning gold indicator until the engine emits the definitive `tool-result` or `tool-error` event.
 * **Framer Motion Accordion Jitter Prevention:** NEVER place `gap-*` on a flex parent container of an animated collapsible `<motion.div variants={accordionVariants}>`. Flexbox gap remains rendered during height collapse and snaps upon unmount, causing visible jitter. Spacing must live inside the `overflow-hidden` container. Always use centralized animation tokens in `src/constants/animation.ts`.
 
 
