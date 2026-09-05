@@ -51,7 +51,7 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
   return (
     <div className="relative flex flex-col h-full w-full bg-theme-bg-base overflow-hidden">
       {/* 1. Top Bar with Minimal Active Symbol */}
-      <div className="relative z-30 h-13 px-spacing-md sm:px-spacing-lg border-b border-theme-border-subtle bg-theme-bg-base/90 backdrop-blur-xs flex items-center justify-between shrink-0">
+      <div className="relative z-30 h-14 px-spacing-md sm:px-spacing-lg border-b border-theme-border-subtle bg-theme-bg-base/90 backdrop-blur-xs flex items-center justify-between shrink-0">
         <div className="flex items-center">
           {/* Minimal Symbol Dropdown Button with Tactile Press */}
           <motion.button

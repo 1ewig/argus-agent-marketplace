@@ -25,11 +25,10 @@ export function SidebarHeader({ isCollapsed, onToggle }: SidebarHeaderProps) {
           onMouseEnter={() => setIsLogoHovered(true)}
           onMouseLeave={() => setIsLogoHovered(false)}
           onClick={onToggle}
-          className={`size-10 rounded-xl flex items-center justify-center shrink-0 cursor-pointer transition-colors select-none ${
-            isCollapsed
+          className={`size-10 rounded-xl flex items-center justify-center shrink-0 cursor-pointer transition-colors select-none ${isCollapsed
               ? 'hover:bg-theme-bg-elevated active:bg-theme-bg-elevated/80 text-theme-brand-binance border border-transparent hover:border-theme-border-subtle'
               : 'hover:bg-theme-bg-elevated/60 active:bg-theme-bg-elevated text-theme-brand-binance border border-transparent hover:border-theme-border-subtle'
-          }`}
+            }`}
           title={isCollapsed ? APP_CONTENT.sidebar.expandSidebar : APP_CONTENT.sidebar.brand}
           aria-label={isCollapsed ? APP_CONTENT.sidebar.expandSidebar : APP_CONTENT.sidebar.brand}
         >
@@ -45,9 +44,8 @@ export function SidebarHeader({ isCollapsed, onToggle }: SidebarHeaderProps) {
           initial={false}
           variants={sidebarHorizontalCollapseVariants}
           animate={isCollapsed ? 'collapsed' : 'expanded'}
-          className={`flex flex-col min-w-0 overflow-hidden whitespace-nowrap flex-1 ${
-            isCollapsed ? 'ml-0' : 'ml-2'
-          }`}
+          className={`flex flex-col min-w-0 overflow-hidden whitespace-nowrap flex-1 ${isCollapsed ? 'ml-0' : 'ml-2'
+            }`}
         >
           <span className="text-sm font-extrabold tracking-tight text-theme-text-primary leading-none">
             {APP_CONTENT.sidebar.brand}
