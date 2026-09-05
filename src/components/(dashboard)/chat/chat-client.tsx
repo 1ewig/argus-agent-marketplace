@@ -62,20 +62,25 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
           className="absolute inset-0 flex flex-col items-center justify-center p-spacing-md sm:p-spacing-lg text-center overflow-y-auto pointer-events-auto z-20 custom-scrollbar"
         >
           <div className="my-auto flex flex-col items-center justify-center w-full py-spacing-md max-w-3xl">
-            {/* Category Tag */}
+            {/* Header Stack (Brand Icon Mark, Headline, Subtitle) */}
             <motion.div
               variants={emptyStateItemVariants}
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-theme-brand-binance/10 border border-theme-brand-binance/30 text-theme-brand-binance text-2xs sm:text-xs font-bold uppercase tracking-wider mb-spacing-xs"
+              className="flex flex-col items-center text-center max-w-xl mb-spacing-lg"
             >
-              <ArgusIcon className="size-3.5 text-theme-brand-binance" />
-              <span>{APP_CONTENT.chat.emptyCategory}</span>
-            </motion.div>
+              {/* Brand Icon Mark */}
+              <div className="size-10 rounded-2xl bg-theme-bg-elevated border border-theme-border-subtle flex items-center justify-center mb-3 shadow-2xs">
+                <ArgusIcon className="size-5 text-theme-brand-binance" />
+              </div>
 
-            {/* Practical Utilitarian Headline */}
-            <motion.div variants={emptyStateItemVariants} className="flex flex-col items-center w-full mb-spacing-md">
-              <h3 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-theme-text-primary tracking-tight font-sans leading-tight text-center">
+              {/* Main Headline */}
+              <h3 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-theme-text-primary tracking-tight font-sans leading-tight">
                 {APP_CONTENT.chat.emptyTitle}
               </h3>
+
+              {/* Supporting Subtitle */}
+              <p className="text-xs sm:text-sm text-theme-text-secondary max-w-md mx-auto leading-relaxed mt-2">
+                {APP_CONTENT.chat.emptySubtitle}
+              </p>
             </motion.div>
 
             {/* Hero Input */}
@@ -98,7 +103,7 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
             {/* Quick Action Template Pills (directly below ChatInput) */}
             <motion.div variants={emptyStateItemVariants} className="flex flex-col items-center gap-spacing-xs w-full">
               <div className="flex items-center justify-center mb-0.5">
-                <span className="text-2xs font-semibold uppercase tracking-wider text-theme-text-muted">
+                <span className="text-2xs font-bold uppercase tracking-wider text-theme-text-muted">
                   {APP_CONTENT.chat.quickActionsTitle}
                 </span>
               </div>

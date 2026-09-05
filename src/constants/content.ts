@@ -112,6 +112,7 @@ export const APP_CONTENT = {
     clearButton: 'Clear',
     emptyCategory: 'Binance Market Assistant',
     emptyTitle: 'How can I help you today?',
+    emptySubtitle: 'Analyze live order books, check funding rates, and inspect 24h market stats with real-time Binance feeds.',
     quickActionsTitle: 'Quick Actions',
     quickActions: [
       { id: 'depth', label: 'SOL/USDT Depth', template: 'Check SOLUSDT live price, spread, and order book depth' },
