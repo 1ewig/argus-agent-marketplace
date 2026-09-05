@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { LeftSidebar } from "@/components/left-sidebar";
+import { QueryProvider } from "@/components/providers/query-provider";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta",
@@ -54,10 +55,12 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: PRE_HYDRATION_SCRIPT }} />
       </head>
       <body className="h-full bg-theme-bg-base flex flex-row overflow-hidden">
-        <LeftSidebar />
-        <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden">
-          {children}
-        </div>
+        <QueryProvider>
+          <LeftSidebar />
+          <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden">
+            {children}
+          </div>
+        </QueryProvider>
       </body>
     </html>
   );

@@ -42,6 +42,7 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
   const setActiveStreamMessage = useAppStore((state) => state.setActiveStreamMessage);
   const errorNotice = useAppStore((state) => state.errorNotice);
   const setErrorNotice = useAppStore((state) => state.setErrorNotice);
+  const selectedSymbol = useAppStore((state) => state.selectedSymbol);
 
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -139,6 +140,7 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
       const finalResult: AgentResult | null = await streamAgentChat({
         message: prompt,
         mode,
+        symbol: selectedSymbol,
         history: conversationHistory,
         isFirstTurn,
         signal: controller.signal,
@@ -268,6 +270,7 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
     isLoading,
     activeConversationId,
     mode,
+    selectedSymbol,
     messages,
     scroll,
     setActiveStreamMessage,

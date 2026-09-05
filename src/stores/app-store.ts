@@ -30,6 +30,15 @@ export interface AppState {
   errorNotice: string | null;
   setErrorNotice: (error: string | null) => void;
 
+  // Selected Workspace Symbol (e.g. BTCUSDT, SOLUSDT)
+  selectedSymbol: string;
+  setSelectedSymbol: (symbol: string) => void;
+
+  // Symbol Search Modal State
+  isSymbolSearchOpen: boolean;
+  setIsSymbolSearchOpen: (open: boolean) => void;
+  toggleSymbolSearch: () => void;
+
   // Sidebar Collapsed State (Persisted in localStorage)
   isSidebarCollapsed: boolean;
   setIsSidebarCollapsed: (collapsed: boolean) => void;
@@ -69,6 +78,15 @@ export const useAppStore = create<AppState>()(
       errorNotice: null,
       setErrorNotice: (errorNotice) => set({ errorNotice }),
 
+      // Selected Workspace Symbol
+      selectedSymbol: 'BTCUSDT',
+      setSelectedSymbol: (selectedSymbol) => set({ selectedSymbol }),
+
+      // Symbol Search Modal State
+      isSymbolSearchOpen: false,
+      setIsSymbolSearchOpen: (isSymbolSearchOpen) => set({ isSymbolSearchOpen }),
+      toggleSymbolSearch: () => set((state) => ({ isSymbolSearchOpen: !state.isSymbolSearchOpen })),
+
       // Sidebar Collapsed State
       isSidebarCollapsed: false,
       setIsSidebarCollapsed: (isSidebarCollapsed) => set({ isSidebarCollapsed }),
@@ -87,6 +105,7 @@ export const useAppStore = create<AppState>()(
         activeConversationId: state.activeConversationId,
         stageView: state.stageView,
         isSidebarCollapsed: state.isSidebarCollapsed,
+        selectedSymbol: state.selectedSymbol,
       }),
     }
   )
