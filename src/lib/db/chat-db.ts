@@ -28,14 +28,15 @@ export interface ChatMessageRecord {
  */
 export function normalizeMessageSteps(
   message: Pick<ChatMessageRecord, 'id' | 'steps' | 'toolCalls' | 'timestamp'>,
-  _fallbackThinkingLabel: string
+  _fallbackThinkingLabel: string,
+  isStreaming: boolean = false
 ): AgentExecutionStep[] {
   if (message.steps && message.steps.length > 0) {
     return message.steps
       .filter((s) => s.type !== 'thinking' || Boolean(s.reasoningText?.trim()))
       .map((s) => {
-        // Guard against any step stuck in 'active' from prior interruptions or errors
-        if (s.status === 'active') {
+        // Guard against any step stuck in 'active' from prior interruptions or errors on persisted historical messages
+        if (s.status === 'active' && !isStreaming) {
           return {
             ...s,
             status: s.toolResult ? ('completed' as const) : ('error' as const),
