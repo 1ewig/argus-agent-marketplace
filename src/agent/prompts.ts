@@ -17,8 +17,10 @@ export const ARGUS_SYSTEM_PROMPT = `You are Argus, an intelligent, intuitive, an
 ### 2. Parallel Tool Calling Directive (High Priority)
 - Always prioritize calling tools in PARALLEL within a single turn.
 - When an analysis or query requires multiple data dimensions (e.g., price check + 24h stats + order book depth or candlestick trend), dispatch ALL relevant tools simultaneously in a single API round-trip.
+- When the user asks about news, catalysts, events, sentiment, reasons for price movement, or general background on an asset or market narrative, dispatch \`search_crypto_news\` simultaneously alongside Binance market tools.
 - Example scenarios:
   - "How is SOL looking?" -> Concurrently call get_ticker_price, get_24h_stats, and get_order_book in the same step before writing the answer.
+  - "Why is BTC pumping today?" -> Concurrently call get_ticker_price, get_24h_stats, and search_crypto_news in the same turn.
   - "Detailed market check on BTC" -> Concurrently call get_ticker_price, get_24h_stats, get_klines, and get_order_book.
 - Do NOT chain tool calls sequentially across multiple turns when the tools do not depend on each other's outputs. Fetch everything you need upfront.
 
@@ -86,11 +88,13 @@ export const AGENT_TOOL_DESCRIPTIONS = {
   getAveragePrice: 'Fetch the 5-minute rolling average price (VWAP) for a trading pair to evaluate execution price quality and fair market value.',
   getRecentTrades: 'Fetch recent market trade executions (trade tape) to assess real-time buying vs selling pressure and trade momentum.',
   getOpenInterest: 'Fetch real-time perpetual futures open interest to evaluate market positioning, leverage buildup, and liquidation risk.',
+  searchCryptoNews: 'Search live cryptocurrency news, catalysts, regulatory events, narrative shifts, and market sentiment via Exa AI. Supports optional category focus ("news", "company", "financial report", "research paper"), ISO 8601 date range filters (startPublishedDate/endPublishedDate), and domain restrictions. Call whenever the user asks for news, catalysts, reasons for price movements, or protocol roadmaps.',
 } as const;
 
 export const AGENT_ERROR_MESSAGES = {
   missingGroqApiKey: 'GROQ_API_KEY environment variable is not configured. Please set your Groq API key in .env.local to enable inference.',
   missingFireworksApiKey: 'FIREWORKS_API_KEY environment variable is not configured. Please set your Fireworks API key in .env.local to enable inference.',
+  missingExaApiKey: 'EXA_API_KEY environment variable is not configured. Please set your Exa API key in .env.local to enable web search.',
   symbolRequired: 'A valid trading pair symbol (e.g., SOLUSDT) is required for analysis.',
   inferenceFailed: 'Failed to complete inference. Please verify network connectivity and API quota.',
   toolExecutionFailed: 'An error occurred while executing Binance MCP tool.',

@@ -11,6 +11,7 @@ import {
   getRecentTrades,
   getOpenInterest,
 } from '@/lib/binance-mcp';
+import { searchExa, ExaSearchInputSchema } from '@/lib/exa';
 import { AGENT_TOOL_DESCRIPTIONS } from './prompts';
 
 /**
@@ -262,6 +263,60 @@ export function buildAgentTools() {
           };
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : 'Failed to retrieve open interest';
+          return {
+            success: false,
+            error: message,
+          };
+        }
+      },
+    }),
+
+    search_crypto_news: tool({
+      description: AGENT_TOOL_DESCRIPTIONS.searchCryptoNews,
+      inputSchema: ExaSearchInputSchema,
+      execute: async ({
+        query,
+        symbol,
+        category = 'news',
+        startPublishedDate,
+        endPublishedDate,
+        includeDomains,
+        numResults = 3,
+        includeText = true,
+        highlightsPerUrl = 2,
+      }) => {
+        try {
+          const searchQuery = symbol ? `${symbol} crypto ${query}` : query;
+          const searchRes = await searchExa({
+            query: searchQuery,
+            type: 'auto',
+            numResults,
+            category,
+            startPublishedDate,
+            endPublishedDate,
+            includeDomains,
+            includeText,
+            highlightsPerUrl,
+          });
+
+          return {
+            success: true,
+            query: searchQuery,
+            category: searchRes.category,
+            symbol: symbol ? symbol.toUpperCase() : undefined,
+            totalResults: searchRes.totalResults,
+            articles: searchRes.results.map((r) => ({
+              id: r.id,
+              title: r.title,
+              url: r.url,
+              publishedDate: r.publishedDate,
+              author: r.author,
+              highlights: r.highlights,
+              text: r.text,
+            })),
+          };
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : 'Failed to execute web search';
           return {
             success: false,
             error: message,

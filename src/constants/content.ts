@@ -215,6 +215,8 @@ export const APP_CONTENT = {
         symbol ? `Reading ${symbol} recent trade tape` : 'Reading recent trades',
       get_open_interest: (symbol?: string) =>
         symbol ? `Checking ${symbol} open interest` : 'Checking open interest',
+      search_crypto_news: (symbol?: string) =>
+        symbol ? `Searching latest ${symbol} news & catalysts` : 'Searching crypto news & catalysts',
       default: (name: string) => name.replace(/_/g, ' '),
     },
     results: {
@@ -250,6 +252,11 @@ export const APP_CONTENT = {
       periodChange: 'Period Change',
       latestPrice: 'Latest Price',
       candlesCount: 'Candles Analyzed',
+      newsResults: 'Web News & Catalysts',
+      newsArticlesFound: 'Articles Found',
+      newsSource: 'Source',
+      newsDate: 'Date',
+      newsOpenArticle: 'Read article',
       errorTitle: 'Action Error',
       emptyResult: 'No details available',
       priceHeader: 'Price',
@@ -264,6 +271,7 @@ export const APP_CONTENT = {
       get_average_price: 'get_average_price',
       get_recent_trades: 'get_recent_trades',
       get_open_interest: 'get_open_interest',
+      search_crypto_news: 'search_crypto_news',
     } as Record<string, string>,
   },
 } as const;
