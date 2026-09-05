@@ -2,7 +2,7 @@
 
 import React, { useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowUpRight, ChevronDown, Plus } from 'lucide-react';
+import { ArrowUpRight, ChevronDown, Plus, Globe } from 'lucide-react';
 import { AgentLoader, ArgusIcon } from '@/components/common';
 import { APP_CONTENT } from '@/constants/content';
 import {
@@ -28,6 +28,7 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
   const setIsSymbolSearchOpen = useAppStore((state) => state.setIsSymbolSearchOpen);
   const { handleNewSession, isNewChatDisabled } = useChatSessions();
 
+  const isGlobalWorkspace = (selectedSymbol || '').toUpperCase() === 'GLOBAL';
   const cleanSymbol = (selectedSymbol || 'BTCUSDT').toUpperCase();
 
   const {
@@ -54,7 +55,7 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
       {/* 1. Top Bar with Minimal Active Symbol & New Chat Trigger */}
       <div className="relative z-30 h-14 px-spacing-md sm:px-spacing-lg border-b border-theme-border-subtle bg-theme-bg-base/90 backdrop-blur-xs flex items-center justify-between shrink-0">
         <div className="flex items-center">
-          {/* Minimal Symbol Dropdown Button with Tactile Press */}
+          {/* Minimal Symbol / Workspace Dropdown Button with Tactile Press */}
           <motion.button
             type="button"
             whileTap={tapScalePill}
@@ -62,9 +63,18 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
             title={APP_CONTENT.chat.switchSymbolTooltip}
             className="group inline-flex items-center gap-1.5 px-2.5 py-1.5 -ml-2 rounded-lg text-theme-text-primary hover:bg-theme-bg-surface active:bg-theme-bg-elevated border border-transparent hover:border-theme-border-subtle transition-colors cursor-pointer select-none"
           >
-            <span className="text-xs sm:text-sm font-bold tracking-wider">
-              {cleanSymbol}
-            </span>
+            {isGlobalWorkspace ? (
+              <>
+                <Globe className="size-3.5 text-theme-brand-binance shrink-0" />
+                <span className="text-xs sm:text-sm font-bold tracking-wider">
+                  {APP_CONTENT.chat.globalWorkspaceTitle}
+                </span>
+              </>
+            ) : (
+              <span className="text-xs sm:text-sm font-bold tracking-wider">
+                {cleanSymbol}
+              </span>
+            )}
             <ChevronDown className="size-3.5 text-theme-text-muted group-hover:text-theme-text-primary transition-colors" />
           </motion.button>
         </div>
@@ -168,7 +178,10 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
                   </span>
                 </div>
                 <div className="flex flex-wrap items-center justify-center gap-2 max-w-xl">
-                  {APP_CONTENT.chat.quickActions.map((action) => (
+                  {(isGlobalWorkspace
+                    ? APP_CONTENT.chat.globalQuickActions
+                    : APP_CONTENT.chat.quickActions
+                  ).map((action) => (
                     <motion.button
                       key={action.id}
                       type="button"

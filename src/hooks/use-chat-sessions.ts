@@ -24,13 +24,18 @@ export interface SymbolWorkspaceGroup {
   quoteAsset: string;
   conversations: ConversationRecord[];
   latestTimestamp: number;
+  isGlobal?: boolean;
 }
 
 /**
- * Splits a standard Binance trading pair (e.g. BTCUSDT) into base and quote assets.
+ * Splits a standard Binance trading pair (e.g. BTCUSDT) into base and quote assets,
+ * or handles the special 'GLOBAL' workspace identifier.
  */
 export function parseSymbolAssets(symbol: string): { baseAsset: string; quoteAsset: string } {
   const upper = (symbol || DEFAULT_CONVERSATION_SYMBOL).toUpperCase();
+  if (upper === 'GLOBAL') {
+    return { baseAsset: 'GLOBAL', quoteAsset: '' };
+  }
   if (upper.endsWith('USDT')) {
     return { baseAsset: upper.slice(0, -4), quoteAsset: 'USDT' };
   }
@@ -57,6 +62,7 @@ export function useChatSessions() {
   const setActiveConversationId = useAppStore((state) => state.setActiveConversationId);
   const selectedSymbol = useAppStore((state) => state.selectedSymbol);
   const setSelectedSymbol = useAppStore((state) => state.setSelectedSymbol);
+  const lastActiveSymbol = useAppStore((state) => state.lastActiveSymbol);
   const activeStreamMessage = useAppStore((state) => state.activeStreamMessage);
   const setActiveStreamMessage = useAppStore((state) => state.setActiveStreamMessage);
   const setErrorNotice = useAppStore((state) => state.setErrorNotice);
@@ -156,6 +162,7 @@ export function useChatSessions() {
 
     const groups: SymbolWorkspaceGroup[] = [];
     for (const [sym, convs] of groupsMap.entries()) {
+      const isGlobal = sym === 'GLOBAL';
       const { baseAsset, quoteAsset } = parseSymbolAssets(sym);
       const sortedConvs = [...convs].sort(
         (a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0)
@@ -170,10 +177,15 @@ export function useChatSessions() {
         quoteAsset,
         conversations: sortedConvs,
         latestTimestamp,
+        isGlobal,
       });
     }
 
-    return groups.sort((a, b) => b.latestTimestamp - a.latestTimestamp);
+    return groups.sort((a, b) => {
+      if (a.isGlobal && !b.isGlobal) return -1;
+      if (!a.isGlobal && b.isGlobal) return 1;
+      return b.latestTimestamp - a.latestTimestamp;
+    });
   }, [conversations]);
 
   // Click-outside listener for sessions overflow menu
@@ -350,6 +362,22 @@ export function useChatSessions() {
     ]
   );
 
+  const isGlobalActive = (selectedSymbol || '').toUpperCase() === 'GLOBAL';
+
+  // Open or switch to the Global Workspace
+  const handleSelectGlobalWorkspace = useCallback(async () => {
+    await handleSelectSymbolWorkspace('GLOBAL');
+  }, [handleSelectSymbolWorkspace]);
+
+  // Return from Global Workspace back to the last active symbol workspace
+  const handleReturnToSymbolWorkspace = useCallback(async () => {
+    const target =
+      lastActiveSymbol && lastActiveSymbol.toUpperCase() !== 'GLOBAL'
+        ? lastActiveSymbol
+        : DEFAULT_CONVERSATION_SYMBOL;
+    await handleSelectSymbolWorkspace(target);
+  }, [lastActiveSymbol, handleSelectSymbolWorkspace]);
+
   return {
     activeConversationId,
     activeConversation,
@@ -367,11 +395,14 @@ export function useChatSessions() {
     handleNewSession,
     handleSelectSession,
     handleSelectSymbolWorkspace,
+    handleSelectGlobalWorkspace,
+    handleReturnToSymbolWorkspace,
     handleStartRename,
     handleSaveRename,
     handleCancelRename,
     handleDeleteSession,
     isNewChatDisabled,
     activeMessageCount,
+    isGlobalActive,
   };
 }

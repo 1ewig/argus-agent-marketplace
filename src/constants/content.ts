@@ -15,10 +15,13 @@ export const APP_CONTENT = {
     viewsTitle: 'Workspace Views',
     agentView: 'Agent Chat',
     chartView: 'Trading Chart',
+    globalView: 'Global Workspace',
+    globalViewTooltip: 'Open workspace not tied to any symbol',
     historyTitle: 'Saved Conversations',
     emptyHistory: 'No conversations yet',
     workspaceGroupsTitle: 'Active Workspaces',
     emptyWorkspaces: 'No symbol workspaces yet',
+    globalWorkspaceGroup: 'Global Market',
     newChatInSymbolTooltip: (symbol: string) => `Start new chat in #${symbol}`,
     chatsCount: (count: number) => `${count} ${count === 1 ? 'chat' : 'chats'}`,
     statusOnline: 'Live Binance Feeds',
@@ -123,6 +126,11 @@ export const APP_CONTENT = {
       { id: 'stats', label: 'BTC 24h Stats', template: 'Show 24h market stats and volume for BTCUSDT' },
       { id: 'oi', label: 'BTC Open Interest', template: 'Check BTCUSDT live open interest and funding rate' },
     ],
+    globalQuickActions: [
+      { id: 'movers', label: 'Top Market Movers', template: 'What are the top crypto gainers and biggest market movers today across Binance?' },
+      { id: 'news', label: 'Crypto Macro News', template: 'Search latest crypto macro news, regulatory catalysts, and protocol roadmaps' },
+      { id: 'funding', label: 'Funding Comparison', template: 'Compare perpetual futures funding rates and open interest for BTC, ETH, and SOL' },
+    ],
     quickPromptsTitle: 'Quick Actions',
     quickPrompts: [
       'Check SOLUSDT live price, spread, and order book depth',
@@ -149,6 +157,9 @@ export const APP_CONTENT = {
     newSessionGreeting: (title: string) =>
       `Started a new chat for **${title}**. How can I help you today?`,
     workspaceBadge: 'WORKSPACE',
+    globalWorkspaceTitle: 'Global Market',
+    globalWorkspaceBadge: 'GLOBAL',
+    globalWorkspaceSubtitle: 'Macro market research, cross-token analysis, and news uncoupled from any single symbol.',
     switchSymbolTooltip: 'Click to switch market workspace (⌘K)',
   },
   sessions: {

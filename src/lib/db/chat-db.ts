@@ -69,6 +69,7 @@ export function normalizeMessageSteps(
 export const MAX_MESSAGES_PER_CONVERSATION = 100;
 export const DEFAULT_CONVERSATION_ID = 'default';
 export const DEFAULT_CONVERSATION_SYMBOL = 'BTCUSDT';
+export const GLOBAL_WORKSPACE_SYMBOL = 'GLOBAL';
 
 /**
  * Institutional Dexie IndexedDB Database for Argus multi-session chat history,

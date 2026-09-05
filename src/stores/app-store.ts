@@ -30,9 +30,11 @@ export interface AppState {
   errorNotice: string | null;
   setErrorNotice: (error: string | null) => void;
 
-  // Selected Workspace Symbol (e.g. BTCUSDT, SOLUSDT)
+  // Selected Workspace Symbol (e.g. BTCUSDT, SOLUSDT, or GLOBAL)
   selectedSymbol: string;
   setSelectedSymbol: (symbol: string) => void;
+  lastActiveSymbol: string;
+  setLastActiveSymbol: (symbol: string) => void;
 
   // Symbol Search Modal State
   isSymbolSearchOpen: boolean;
@@ -81,7 +83,16 @@ export const useAppStore = create<AppState>()(
       // Selected Workspace Symbol
       selectedSymbol: 'BTCUSDT',
       setSelectedSymbol: (selectedSymbol) =>
-        set((state) => (state.selectedSymbol === selectedSymbol ? state : { selectedSymbol })),
+        set((state) => {
+          if (state.selectedSymbol === selectedSymbol) return state;
+          const isGlobal = selectedSymbol.toUpperCase() === 'GLOBAL';
+          return {
+            selectedSymbol,
+            lastActiveSymbol: !isGlobal ? selectedSymbol : state.lastActiveSymbol,
+          };
+        }),
+      lastActiveSymbol: 'BTCUSDT',
+      setLastActiveSymbol: (lastActiveSymbol) => set({ lastActiveSymbol }),
 
       // Symbol Search Modal State
       isSymbolSearchOpen: false,
@@ -107,6 +118,7 @@ export const useAppStore = create<AppState>()(
         stageView: state.stageView,
         isSidebarCollapsed: state.isSidebarCollapsed,
         selectedSymbol: state.selectedSymbol,
+        lastActiveSymbol: state.lastActiveSymbol,
       }),
     }
   )

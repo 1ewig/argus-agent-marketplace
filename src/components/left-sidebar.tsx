@@ -47,6 +47,9 @@ export function LeftSidebar() {
     handleSaveRename,
     handleCancelRename,
     handleDeleteSession,
+    isGlobalActive,
+    handleSelectGlobalWorkspace,
+    handleReturnToSymbolWorkspace,
   } = useChatSessions();
 
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
@@ -103,6 +106,9 @@ export function LeftSidebar() {
           isCollapsed={isSidebarCollapsed}
           stageView={stageView}
           onViewSelect={setStageView}
+          isGlobalActive={isGlobalActive}
+          onSelectGlobalWorkspace={handleSelectGlobalWorkspace}
+          onSelectSymbolWorkspace={handleReturnToSymbolWorkspace}
         />
 
         {/* 3. Conversation Symbol Workspaces List */}

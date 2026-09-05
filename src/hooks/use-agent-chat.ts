@@ -138,11 +138,13 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
     try {
       const conversationHistory = prepareConversationHistory(messages);
       const isFirstTurn = conversationHistory.length === 0;
+      const isGlobal = (selectedSymbol || '').toUpperCase() === 'GLOBAL';
+      const effectiveSymbol = isGlobal ? undefined : selectedSymbol;
 
       const finalResult: AgentResult | null = await streamAgentChat({
         message: prompt,
         mode,
-        symbol: selectedSymbol,
+        symbol: effectiveSymbol,
         history: conversationHistory,
         isFirstTurn,
         signal: controller.signal,

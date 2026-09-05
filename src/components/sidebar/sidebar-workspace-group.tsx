@@ -2,7 +2,8 @@
 
 import React from 'react';
 import { motion, AnimatePresence, type Transition } from 'framer-motion';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Globe } from 'lucide-react';
+import { APP_CONTENT } from '@/constants/content';
 import {
   sidebarHorizontalCollapseVariants,
   tapScalePill,
@@ -55,11 +56,14 @@ export function SidebarWorkspaceGroup({
   onEditTitleChange,
   onOpenDelete,
 }: SidebarWorkspaceGroupProps) {
+  const isGlobal = Boolean(group.isGlobal || group.symbol.toUpperCase() === 'GLOBAL');
   const isCurrentActiveGroup =
     group.symbol.toUpperCase() === (activeSymbol || 'BTCUSDT').toUpperCase();
-  const pairLabel = group.quoteAsset
-    ? `${group.baseAsset} / ${group.quoteAsset}`
-    : group.baseAsset;
+  const pairLabel = isGlobal
+    ? APP_CONTENT.sidebar.globalWorkspaceGroup
+    : group.quoteAsset
+      ? `${group.baseAsset} / ${group.quoteAsset}`
+      : group.baseAsset;
 
   const handleGroupHeaderClick = () => {
     if (isCollapsed) {
@@ -112,7 +116,7 @@ export function SidebarWorkspaceGroup({
                   : 'bg-theme-bg-surface border-theme-border-subtle text-theme-text-muted group-hover:border-theme-border-hover group-hover:text-theme-text-primary'
               }`}
             >
-              {group.baseAsset.slice(0, 3)}
+              {isGlobal ? <Globe className="size-3.5" /> : group.baseAsset.slice(0, 3)}
             </div>
           ) : (
             <motion.div
@@ -139,6 +143,13 @@ export function SidebarWorkspaceGroup({
         >
           {/* Pair Label & Active Dot */}
           <div className="flex items-center gap-1.5 min-w-0 flex-1">
+            {isGlobal && (
+              <Globe
+                className={`size-3 shrink-0 ${
+                  isCurrentActiveGroup ? 'text-theme-brand-binance' : 'text-theme-text-muted'
+                }`}
+              />
+            )}
             <span
               className={`text-2xs font-bold uppercase tracking-wide truncate ${isCurrentActiveGroup
                   ? 'text-theme-brand-binance font-extrabold'
