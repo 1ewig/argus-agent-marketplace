@@ -164,7 +164,7 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
 
       {/* Persistent Bottom Dock Input (remains mounted across active chats to prevent flicker) */}
       {!isChatEmpty && (
-        <div className="relative z-20 w-full bg-gradient-to-t from-theme-bg-base via-theme-bg-base/95 to-transparent pt-3 pb-spacing-md px-spacing-md sm:px-spacing-lg shrink-0">
+        <div className="relative z-20 w-full bg-gradient-to-t from-theme-bg-base via-theme-bg-base/95 to-transparent pb-spacing-lg sm:pb-spacing-xl px-spacing-md sm:px-spacing-lg shrink-0">
           <ChatInput
             ref={chatInputRef}
             isLoading={isLoading}

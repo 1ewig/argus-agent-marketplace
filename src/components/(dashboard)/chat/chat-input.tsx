@@ -148,7 +148,7 @@ export const ChatInput = memo(
     const isButtonDisabled = (!text.trim() && !isLoading) || disabled;
 
     return (
-      <div className={containerClassName ?? 'p-spacing-md pt-0 bg-theme-bg-base shrink-0'}>
+      <div className={containerClassName ?? 'px-spacing-md pb-spacing-lg sm:pb-spacing-xl bg-theme-bg-base shrink-0'}>
         <div
           className={`${className ?? 'max-w-3xl'} mx-auto w-full relative flex items-end gap-2 bg-theme-bg-surface/95 hover:bg-theme-bg-surface border border-theme-border-subtle hover:border-theme-border-strong focus-within:border-theme-border-strong ${
             isMultiLine ? 'rounded-2xl py-2 pl-4 pr-2' : 'rounded-full py-1.5 pl-4 pr-1.5'
