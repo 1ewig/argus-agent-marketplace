@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { APP_CONTENT } from '@/constants/content';
 import { sidebarHeadingCollapseVariants } from '@/constants/animation';
+import { useAppStore } from '@/stores/app-store';
 import type { SymbolWorkspaceGroup } from '@/hooks/use-chat-sessions';
 import { SidebarWorkspaceGroup } from './sidebar-workspace-group';
 
@@ -36,15 +37,11 @@ export function SidebarSessionList({
   onEditTitleChange,
   onOpenDelete,
 }: SidebarSessionListProps) {
-  // Store manually collapsed state per non-active symbol (defaults to expanded)
-  const [collapsedSymbols, setCollapsedSymbols] = useState<Record<string, boolean>>({});
+  const collapsedWorkspaceGroups = useAppStore((state) => state.collapsedWorkspaceGroups);
+  const toggleWorkspaceGroupCollapsed = useAppStore((state) => state.toggleWorkspaceGroupCollapsed);
 
   const handleToggleGroup = (symbol: string) => {
-    const upper = symbol.toUpperCase();
-    setCollapsedSymbols((prev) => ({
-      ...prev,
-      [upper]: !prev[upper],
-    }));
+    toggleWorkspaceGroupCollapsed(symbol);
   };
 
   return (
@@ -82,9 +79,9 @@ export function SidebarSessionList({
           </motion.div>
         ) : (
           groups.map((group) => {
-            const isGroupActive = group.symbol.toUpperCase() === (activeSymbol || '').toUpperCase();
-            // Active symbol group is always expanded; other groups respect user collapsed state
-            const isGroupExpanded = isGroupActive || !collapsedSymbols[group.symbol.toUpperCase()];
+            const upper = group.symbol.toUpperCase();
+            // Group collapsed state survives refresh via persisted store (defaults to expanded)
+            const isGroupExpanded = !collapsedWorkspaceGroups[upper];
             return (
               <SidebarWorkspaceGroup
                 key={group.symbol}

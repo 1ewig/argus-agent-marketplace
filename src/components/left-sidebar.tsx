@@ -79,12 +79,18 @@ export function LeftSidebar() {
     setDeleteTargetId(null);
   }, []);
 
+  const setWorkspaceGroupCollapsed = useAppStore((state) => state.setWorkspaceGroupCollapsed);
+
   const handleSelectSessionClick = useCallback(
     (id: string) => {
       setStageView('agent');
+      const targetConv = conversations.find((c) => c.id === id);
+      if (targetConv?.symbol) {
+        setWorkspaceGroupCollapsed(targetConv.symbol, false);
+      }
       handleSelectSession(id);
     },
-    [setStageView, handleSelectSession]
+    [setStageView, conversations, setWorkspaceGroupCollapsed, handleSelectSession]
   );
 
   return (

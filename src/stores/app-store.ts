@@ -46,6 +46,11 @@ export interface AppState {
   setIsSidebarCollapsed: (collapsed: boolean) => void;
   toggleSidebar: () => void;
 
+  // Workspace Groups Collapsed State (Persisted in localStorage)
+  collapsedWorkspaceGroups: Record<string, boolean>;
+  setWorkspaceGroupCollapsed: (symbol: string, collapsed: boolean) => void;
+  toggleWorkspaceGroupCollapsed: (symbol: string) => void;
+
   // Hydration state tracking
   _hasHydrated: boolean;
   setHasHydrated: (hasHydrated: boolean) => void;
@@ -104,6 +109,27 @@ export const useAppStore = create<AppState>()(
       setIsSidebarCollapsed: (isSidebarCollapsed) => set({ isSidebarCollapsed }),
       toggleSidebar: () => set((state) => ({ isSidebarCollapsed: !state.isSidebarCollapsed })),
 
+      // Workspace Groups Collapsed State
+      collapsedWorkspaceGroups: {},
+      setWorkspaceGroupCollapsed: (symbol, collapsed) =>
+        set((state) => ({
+          collapsedWorkspaceGroups: {
+            ...state.collapsedWorkspaceGroups,
+            [symbol.toUpperCase()]: collapsed,
+          },
+        })),
+      toggleWorkspaceGroupCollapsed: (symbol) =>
+        set((state) => {
+          const upper = symbol.toUpperCase();
+          const currentCollapsed = Boolean(state.collapsedWorkspaceGroups[upper]);
+          return {
+            collapsedWorkspaceGroups: {
+              ...state.collapsedWorkspaceGroups,
+              [upper]: !currentCollapsed,
+            },
+          };
+        }),
+
       // Hydration state
       _hasHydrated: false,
       setHasHydrated: (_hasHydrated) => set({ _hasHydrated }),
@@ -119,6 +145,7 @@ export const useAppStore = create<AppState>()(
         isSidebarCollapsed: state.isSidebarCollapsed,
         selectedSymbol: state.selectedSymbol,
         lastActiveSymbol: state.lastActiveSymbol,
+        collapsedWorkspaceGroups: state.collapsedWorkspaceGroups,
       }),
     }
   )
