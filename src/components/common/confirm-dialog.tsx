@@ -59,17 +59,17 @@ export function ConfirmDialog({
   const variantStyles = {
     danger: {
       iconBg: 'bg-theme-status-danger/10 text-theme-status-danger border-theme-status-danger/20',
-      confirmBtn: 'bg-theme-status-danger hover:brightness-105 active:brightness-95 text-theme-text-primary',
+      confirmBtn: 'bg-theme-status-danger hover:brightness-105 active:brightness-95 text-white font-semibold',
       defaultIcon: <Trash2 className="size-4" />,
     },
     warning: {
       iconBg: 'bg-theme-status-warning/10 text-theme-status-warning border-theme-status-warning/20',
-      confirmBtn: 'bg-theme-status-warning hover:brightness-105 active:brightness-95 text-theme-bg-base',
+      confirmBtn: 'bg-theme-status-warning hover:brightness-105 active:brightness-95 text-theme-bg-overlay font-semibold',
       defaultIcon: <AlertTriangle className="size-4" />,
     },
     info: {
       iconBg: 'bg-theme-brand-binance/10 text-theme-brand-binance border-theme-brand-binance/20',
-      confirmBtn: 'bg-theme-brand-binance hover:brightness-105 active:brightness-95 text-theme-text-primary',
+      confirmBtn: 'bg-theme-brand-binance hover:brightness-105 active:brightness-95 text-theme-bg-overlay font-bold',
       defaultIcon: <Info className="size-4" />,
     },
   }[variant];
