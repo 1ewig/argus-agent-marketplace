@@ -14,6 +14,7 @@ import {
   renameConversation,
   useConversations,
   useConversationMessageCount,
+  clearMessagesCache,
 } from '@/lib/db';
 
 /**
@@ -162,6 +163,7 @@ export function useChatSessions() {
   const handleDeleteSession = useCallback(async (id: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
     await deleteConversation(id);
+    clearMessagesCache(id);
     if (activeConversationId === id) {
       const remaining = conversations.filter((c) => c.id !== id);
       if (remaining.length > 0) {

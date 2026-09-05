@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useRef, useEffect } from 'react';
 import { APP_CONTENT } from '@/constants/content';
 import { generateMessageId, getNowTimestamp } from '@/lib/utils';
 import { useAppStore } from '@/stores/app-store';
@@ -8,6 +8,7 @@ import {
   getConversation,
   renameConversation,
   saveStoredMessage,
+  updateCachedMessage,
   useMessages,
   type ChatMessageRecord,
 } from '@/lib/db';
@@ -42,12 +43,24 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
   const errorNotice = useAppStore((state) => state.errorNotice);
   const setErrorNotice = useAppStore((state) => state.setErrorNotice);
 
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Clean up any in-flight streaming requests when hook unmounts
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
+    };
+  }, []);
+
   // 1. Session and menu management
   const sessions = useChatSessions();
   const { activeConversationId } = sessions;
 
   // 2. Reactive query for active conversation messages
-  const messages = useMessages(activeConversationId);
+  const { messages, isMessagesLoading } = useMessages(activeConversationId);
 
   const messagesCount = messages.length;
   const streamStepCount = activeStreamMessage?.steps?.length ?? 0;
@@ -62,12 +75,29 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
     isLoading,
   });
 
+  // User-initiated stop/abort handler
+  const handleStop = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    setIsLoading(false);
+    setActiveStreamMessage(null);
+  }, [setIsLoading, setActiveStreamMessage]);
+
   // 4. Send message with real-time SSE streaming and persistent Dexie transactions
   const handleSend = useCallback(async (textToSend?: string) => {
     const prompt = (textToSend ?? '').trim();
     if (!prompt || isLoading) return;
 
     setErrorNotice(null);
+
+    // Cancel any previous stream before starting a new one
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
 
     const userMessage: ChatMessageRecord = {
       id: generateMessageId('usr'),
@@ -78,7 +108,8 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
       timestamp: getNowTimestamp(),
     };
 
-    // Optimistically persist user prompt to Dexie
+    // Optimistically persist user prompt to Dexie and memory cache
+    updateCachedMessage(userMessage);
     await saveStoredMessage(userMessage);
 
     // Smooth scroll down on user send
@@ -98,18 +129,19 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
     setActiveStreamMessage(initialStreamRecord);
     setIsLoading(true);
 
+    let currentSteps: AgentExecutionStep[] = [];
+    let currentText = '';
+
     try {
       const conversationHistory = prepareConversationHistory(messages);
       const isFirstTurn = conversationHistory.length === 0;
-
-      let currentSteps: AgentExecutionStep[] = [];
-      let currentText = '';
 
       const finalResult: AgentResult | null = await streamAgentChat({
         message: prompt,
         mode,
         history: conversationHistory,
         isFirstTurn,
+        signal: controller.signal,
         onEvent: async (event) => {
           if (event.type === 'step_start') {
             currentSteps = [...currentSteps, event.step];
@@ -185,8 +217,32 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
         timestamp: finalResult?.timestamp ?? getNowTimestamp(),
       };
 
+      updateCachedMessage(finalMessage);
       await saveStoredMessage(finalMessage);
     } catch (err: unknown) {
+      const isAborted =
+        (err instanceof DOMException && err.name === 'AbortError') ||
+        (err instanceof Error && err.name === 'AbortError');
+
+      if (isAborted) {
+        // User stopped generation - preserve partial response if any tokens were produced
+        if (currentText.trim() || currentSteps.length > 0) {
+          const stoppedMessage: ChatMessageRecord = {
+            id: streamMessageId,
+            conversationId: activeConversationId,
+            role: 'assistant',
+            content: currentText.replace(SESSION_TITLE_TAG_REGEX, '').trim(),
+            status: 'success',
+            steps: currentSteps,
+            stepCount: currentSteps.length,
+            timestamp: getNowTimestamp(),
+          };
+          updateCachedMessage(stoppedMessage);
+          await saveStoredMessage(stoppedMessage);
+        }
+        return;
+      }
+
       const msg = err instanceof Error ? err.message : APP_CONTENT.chat.errorNotice;
       setErrorNotice(msg);
 
@@ -199,8 +255,12 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
         status: 'error',
         timestamp: getNowTimestamp(),
       };
+      updateCachedMessage(errorRecord);
       await saveStoredMessage(errorRecord);
     } finally {
+      if (abortControllerRef.current === controller) {
+        abortControllerRef.current = null;
+      }
       setActiveStreamMessage(null);
       setIsLoading(false);
     }
@@ -221,6 +281,7 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
     currentTitle: sessions.currentTitle,
     conversations: sessions.conversations,
     messages,
+    isMessagesLoading,
     activeStreamMessage,
     isLoading,
     errorNotice,
@@ -247,5 +308,6 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
     handleCancelRename: sessions.handleCancelRename,
     handleDeleteSession: sessions.handleDeleteSession,
     handleSend,
+    handleStop,
   };
 }

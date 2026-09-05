@@ -108,6 +108,7 @@ export const APP_CONTENT = {
     subtitle: 'Ask questions, check prices, and inspect order books in real time',
     inputPlaceholder: 'Ask Argus...',
     sendButton: 'Send',
+    stopButton: 'Stop generating',
     clearButton: 'Clear',
     emptyCategory: 'Binance Market Assistant',
     emptyTitle: 'How can I help you today?',

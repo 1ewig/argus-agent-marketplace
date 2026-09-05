@@ -11,7 +11,7 @@ import React, {
   useEffect,
 } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Square, Loader2 } from 'lucide-react';
+import { Send, Square } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
 import { tapScaleIcon } from '@/constants/animation';
 
@@ -143,7 +143,7 @@ export const ChatInput = memo(
     return (
       <div className={containerClassName ?? 'p-spacing-md pt-0 bg-theme-bg-base shrink-0'}>
         <div
-          className={`${className ?? 'max-w-3xl'} mx-auto w-full relative flex items-center gap-2 bg-theme-bg-surface/90 hover:bg-theme-bg-surface border border-theme-border-subtle hover:border-theme-border-strong focus-within:border-theme-border-strong rounded-3xl sm:rounded-full pl-4 pr-1.5 py-1.5 focus-within:ring-2 focus-within:ring-theme-brand-binance/20 shadow-xl shadow-black/30 dark:shadow-black/60 transition-all backdrop-blur-xl`}
+          className={`${className ?? 'max-w-3xl'} mx-auto w-full relative flex items-center gap-2 bg-theme-bg-surface/90 hover:bg-theme-bg-surface border border-theme-border-subtle hover:border-theme-border-strong focus-within:border-theme-border-strong rounded-3xl sm:rounded-full pl-4 pr-1.5 py-1.5 focus-within:ring-2 focus-within:ring-theme-brand-binance/20 shadow-xs transition-all backdrop-blur-xl`}
         >
           {/* Text Area */}
           <textarea
@@ -162,63 +162,51 @@ export const ChatInput = memo(
             style={{ maxHeight: `${maxHeight}px` }}
           />
 
-          {/* Action Button (Send / Stop / Loading) */}
+          {/* Action Button (Send / Stop) */}
           <motion.button
-              type="button"
-              whileHover={!isButtonDisabled ? { scale: 1.06 } : undefined}
-              whileTap={!isButtonDisabled ? tapScaleIcon : undefined}
-              onClick={isLoading && onStop ? onStop : handleSubmit}
-              disabled={isButtonDisabled}
-              aria-label={
-                isLoading
-                  ? onStop
-                    ? 'Stop generating'
-                    : 'Generating response...'
-                  : APP_CONTENT.chat.sendButton
-              }
-              className={`flex items-center justify-center size-8 rounded-full transition-all shadow-xs select-none ${isLoading
-                  ? 'bg-theme-bg-overlay text-theme-text-primary hover:bg-theme-bg-elevated cursor-pointer'
-                  : isButtonDisabled
-                    ? 'bg-theme-bg-elevated text-theme-text-muted opacity-40 cursor-not-allowed'
-                    : 'bg-theme-brand-binance text-theme-bg-overlay hover:brightness-105 active:brightness-95 cursor-pointer'
-                }`}
-            >
-              <AnimatePresence mode="wait" initial={false}>
-                {isLoading ? (
-                  onStop ? (
-                    <motion.div
-                      key="stop"
-                      initial={{ scale: 0.5, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0.5, opacity: 0 }}
-                      transition={{ duration: 0.15 }}
-                    >
-                      <Square className="size-3.5 fill-current" />
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="loading"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.15 }}
-                    >
-                      <Loader2 className="size-3.5 animate-spin" />
-                    </motion.div>
-                  )
-                ) : (
-                  <motion.div
-                    key="send"
-                    initial={{ scale: 0.7, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.7, opacity: 0 }}
-                    transition={{ duration: 0.15 }}
-                  >
-                    <Send className="size-3.5 translate-x-px" />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.button>
+            type="button"
+            whileHover={!isButtonDisabled ? { scale: 1.06 } : undefined}
+            whileTap={!isButtonDisabled ? tapScaleIcon : undefined}
+            onClick={isLoading ? onStop : handleSubmit}
+            disabled={isButtonDisabled}
+            aria-label={
+              isLoading
+                ? APP_CONTENT.chat.stopButton
+                : APP_CONTENT.chat.sendButton
+            }
+            className={`flex items-center justify-center size-8 rounded-full transition-all shadow-xs select-none ${
+              isLoading
+                ? 'bg-theme-text-primary text-theme-bg-base hover:opacity-90 active:scale-95 cursor-pointer'
+                : isButtonDisabled
+                  ? 'bg-theme-bg-elevated text-theme-text-muted opacity-40 cursor-not-allowed'
+                  : 'bg-theme-brand-binance text-theme-bg-overlay hover:brightness-105 active:brightness-95 cursor-pointer'
+            }`}
+          >
+            <AnimatePresence mode="wait" initial={false}>
+              {isLoading ? (
+                <motion.div
+                  key="stop"
+                  initial={{ scale: 0.5, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.5, opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                  className="flex items-center justify-center"
+                >
+                  <Square className="size-3 fill-current" />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="send"
+                  initial={{ scale: 0.7, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.7, opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                >
+                  <Send className="size-3.5 translate-x-px" />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.button>
         </div>
       </div>
     );

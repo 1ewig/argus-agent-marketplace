@@ -1,6 +1,9 @@
 'use client';
 
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useEffect, useLayoutEffect, useCallback } from 'react';
+
+// Safe SSR-compatible layout effect executing before browser paint on client
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 export interface UseChatScrollOptions {
   activeConversationId: string;
@@ -59,25 +62,42 @@ export function useChatScroll({
     }
   }, []);
 
-  // Instant scroll to bottom when switching conversations
-  useEffect(() => {
+  // Synchronously lock scroll position to bottom before paint when switching conversations or loading messages
+  useIsomorphicLayoutEffect(() => {
     isAutoScrollEnabledRef.current = true;
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
-    } else {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.scrollTop = container.scrollHeight;
     }
-  }, [activeConversationId]);
+  }, [activeConversationId, messagesCount]);
 
-  // Instant scroll on message count changes if auto-scroll is active
+  // Guaranteed bottom pinning across layout reflows and dynamic message rendering
   useEffect(() => {
     if (!isAutoScrollEnabledRef.current) return;
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
-    } else {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
+
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.scrollTop = container.scrollHeight;
     }
-  }, [messagesCount]);
+    messagesEndRef.current?.scrollIntoView({ behavior: 'instant', block: 'end' });
+
+    let rafId2: number | null = null;
+    const rafId1 = requestAnimationFrame(() => {
+      if (scrollContainerRef.current && isAutoScrollEnabledRef.current) {
+        scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+      }
+      rafId2 = requestAnimationFrame(() => {
+        if (scrollContainerRef.current && isAutoScrollEnabledRef.current) {
+          scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+        }
+      });
+    });
+
+    return () => {
+      cancelAnimationFrame(rafId1);
+      if (rafId2 !== null) cancelAnimationFrame(rafId2);
+    };
+  }, [activeConversationId, messagesCount]);
 
   // RAF-throttled scroll during active streaming — eliminates forced smooth reflow thrashing
   useEffect(() => {

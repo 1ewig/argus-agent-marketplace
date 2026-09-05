@@ -27,6 +27,7 @@ export interface ChatMessageData {
 interface ChatMessageProps {
   message: ChatMessageData;
   isStreaming?: boolean;
+  animateEntrance?: boolean;
 }
 
 /**
@@ -55,9 +56,12 @@ function AgentWorkingDraftIndicator({ startedAt }: { startedAt: number }) {
 export const ChatMessage = memo(function ChatMessage({
   message,
   isStreaming = false,
+  animateEntrance = false,
 }: ChatMessageProps) {
   const isUser = message.role === 'user';
   const isError = message.status === 'error';
+
+  const shouldAnimate = isStreaming || animateEntrance;
 
   const formattedTime = new Date(message.timestamp).toLocaleTimeString([], {
     hour: '2-digit',
@@ -68,10 +72,10 @@ export const ChatMessage = memo(function ChatMessage({
   if (isUser) {
     return (
       <motion.div
-        initial={{ opacity: 0, y: 8, scale: 0.99 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.24, ease: EASING_ARCHITECTURAL }}
-        className="flex justify-end items-start gap-spacing-xs w-full py-1 [content-visibility:auto] [contain-intrinsic-size:0_60px]"
+        initial={shouldAnimate ? { opacity: 0, y: 6 } : false}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.22, ease: EASING_ARCHITECTURAL }}
+        className="flex justify-end items-start gap-spacing-xs w-full py-1"
       >
         <div className="flex flex-col items-end gap-1 max-w-[85%] sm:max-w-[75%]">
           <div className="bg-theme-bg-elevated text-theme-text-primary px-4 py-3 rounded-2xl rounded-tr-xs shadow-2xs border border-theme-border-subtle text-xs font-medium leading-relaxed break-words select-text">
@@ -102,10 +106,10 @@ export const ChatMessage = memo(function ChatMessage({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8, scale: 0.99 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.28, delay: 0.04, ease: EASING_ARCHITECTURAL }}
-      className="flex items-start gap-spacing-sm w-full max-w-[95%] py-1 [content-visibility:auto] [contain-intrinsic-size:0_100px]"
+      initial={shouldAnimate ? { opacity: 0, y: 6 } : false}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.24, ease: EASING_ARCHITECTURAL }}
+      className="flex items-start gap-spacing-sm w-full max-w-[95%] py-1"
     >
       {/* Brand Monogram Icon */}
       <div className="size-8 rounded-xl bg-theme-bg-elevated border border-theme-border-subtle flex items-center justify-center shrink-0 shadow-2xs">

@@ -90,15 +90,6 @@ export const emptyStateContainerVariants: Variants = {
       delayChildren: 0.02,
     },
   },
-  exit: {
-    opacity: 0,
-    scale: 0.97,
-    pointerEvents: 'none',
-    transition: {
-      duration: 0.16,
-      ease: 'easeOut',
-    },
-  },
 };
 
 /**

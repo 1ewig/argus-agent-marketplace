@@ -9,6 +9,7 @@ export interface StreamAgentChatParams {
   history: ChatHistoryMessage[];
   isFirstTurn: boolean;
   symbol?: string;
+  signal?: AbortSignal;
   onEvent: (event: AgentStreamEvent) => void | Promise<void>;
 }
 
@@ -22,6 +23,7 @@ export async function streamAgentChat({
   history,
   isFirstTurn,
   symbol,
+  signal,
   onEvent,
 }: StreamAgentChatParams): Promise<AgentResult | null> {
   const response = await fetch('/api/agent/chat', {
@@ -36,6 +38,7 @@ export async function streamAgentChat({
       isFirstTurn,
       symbol,
     }),
+    signal,
   });
 
   if (!response.ok || !response.body) {
