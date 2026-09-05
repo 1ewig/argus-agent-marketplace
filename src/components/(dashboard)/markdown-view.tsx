@@ -5,7 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Copy, Check, ExternalLink } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { tapScaleIcon } from '@/constants/animation';
+import { hoverScaleIcon, tapScaleIcon } from '@/constants/animation';
 
 const InsidePreContext = createContext<boolean>(false);
 
@@ -40,7 +40,7 @@ const CodeBlock = memo(function CodeBlock({ language, code, children }: CodeBloc
         </span>
         <motion.button
           type="button"
-          whileHover={{ scale: 1.05 }}
+          whileHover={hoverScaleIcon}
           whileTap={tapScaleIcon}
           onClick={handleCopy}
           aria-label="Copy code"

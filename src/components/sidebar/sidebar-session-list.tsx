@@ -3,7 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { APP_CONTENT } from '@/constants/content';
-import { sidebarSpringTransition } from '@/constants/animation';
+import { sidebarHeadingCollapseVariants } from '@/constants/animation';
 import type { ConversationRecord } from '@/lib/db';
 import { SidebarSessionItem } from './sidebar-session-item';
 
@@ -39,12 +39,8 @@ export function SidebarSessionList({
       {/* Section Heading: Collapses height to 0 */}
       <motion.div
         initial={false}
-        animate={{
-          height: isCollapsed ? 0 : 'auto',
-          opacity: isCollapsed ? 0 : 1,
-          marginBottom: isCollapsed ? 0 : 4,
-        }}
-        transition={sidebarSpringTransition}
+        variants={sidebarHeadingCollapseVariants}
+        animate={isCollapsed ? 'collapsed' : 'expanded'}
         className="overflow-hidden w-full"
       >
         <span className="text-2xs font-bold uppercase tracking-wider text-theme-text-muted px-2 py-0.5 whitespace-nowrap block">

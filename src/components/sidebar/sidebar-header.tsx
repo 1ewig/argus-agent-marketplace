@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { PanelLeftOpen, PanelLeftClose } from 'lucide-react';
 import { ArgusIcon } from '@/components/common';
 import { APP_CONTENT } from '@/constants/content';
-import { sidebarSpringTransition, tapScalePill } from '@/constants/animation';
+import { sidebarHorizontalCollapseVariants, sidebarSpringTransition, tapScalePill } from '@/constants/animation';
 
 interface SidebarHeaderProps {
   isCollapsed: boolean;
@@ -43,13 +43,11 @@ export function SidebarHeader({ isCollapsed, onToggle }: SidebarHeaderProps) {
         {/* Brand Title (Collapses horizontally with zero layout jump) */}
         <motion.div
           initial={false}
-          animate={{
-            opacity: isCollapsed ? 0 : 1,
-            width: isCollapsed ? 0 : 'auto',
-            marginLeft: isCollapsed ? 0 : 8,
-          }}
-          transition={sidebarSpringTransition}
-          className="flex flex-col min-w-0 overflow-hidden whitespace-nowrap flex-1"
+          variants={sidebarHorizontalCollapseVariants}
+          animate={isCollapsed ? 'collapsed' : 'expanded'}
+          className={`flex flex-col min-w-0 overflow-hidden whitespace-nowrap flex-1 ${
+            isCollapsed ? 'ml-0' : 'ml-2'
+          }`}
         >
           <span className="text-sm font-extrabold tracking-tight text-theme-text-primary leading-none">
             {APP_CONTENT.sidebar.brand}

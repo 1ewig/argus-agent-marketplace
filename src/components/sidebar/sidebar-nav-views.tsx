@@ -4,8 +4,12 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Bot, LineChart } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
-import { sidebarSpringTransition, tapScalePill } from '@/constants/animation';
-import type { StageViewMode } from '@/components/(dashboard)/stage-view-switcher';
+import {
+  sidebarHeadingCollapseVariants,
+  sidebarHorizontalCollapseVariants,
+  tapScalePill,
+} from '@/constants/animation';
+import type { StageViewMode } from '@/lib/types';
 
 interface SidebarNavViewsProps {
   isCollapsed: boolean;
@@ -23,12 +27,8 @@ export function SidebarNavViews({
       {/* Section Heading: Collapses height to 0 to prevent awkward whitespace */}
       <motion.div
         initial={false}
-        animate={{
-          height: isCollapsed ? 0 : 'auto',
-          opacity: isCollapsed ? 0 : 1,
-          marginBottom: isCollapsed ? 0 : 2,
-        }}
-        transition={sidebarSpringTransition}
+        variants={sidebarHeadingCollapseVariants}
+        animate={isCollapsed ? 'collapsed' : 'expanded'}
         className="overflow-hidden w-full"
       >
         <span className="text-2xs font-bold uppercase tracking-wider text-theme-text-muted px-2 py-0.5 whitespace-nowrap block">
@@ -60,11 +60,8 @@ export function SidebarNavViews({
 
         <motion.span
           initial={false}
-          animate={{
-            opacity: isCollapsed ? 0 : 1,
-            width: isCollapsed ? 0 : 'auto',
-          }}
-          transition={sidebarSpringTransition}
+          variants={sidebarHorizontalCollapseVariants}
+          animate={isCollapsed ? 'collapsed' : 'expanded'}
           className={`whitespace-nowrap overflow-hidden text-left select-none ${
             isCollapsed ? 'w-0 opacity-0 p-0 pointer-events-none' : 'pr-3'
           }`}
@@ -97,11 +94,8 @@ export function SidebarNavViews({
 
         <motion.span
           initial={false}
-          animate={{
-            opacity: isCollapsed ? 0 : 1,
-            width: isCollapsed ? 0 : 'auto',
-          }}
-          transition={sidebarSpringTransition}
+          variants={sidebarHorizontalCollapseVariants}
+          animate={isCollapsed ? 'collapsed' : 'expanded'}
           className={`whitespace-nowrap overflow-hidden text-left select-none ${
             isCollapsed ? 'w-0 opacity-0 p-0 pointer-events-none' : 'pr-3'
           }`}

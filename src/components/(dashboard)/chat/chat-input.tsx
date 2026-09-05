@@ -13,7 +13,7 @@ import React, {
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Square } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
-import { tapScaleIcon } from '@/constants/animation';
+import { hoverScaleIcon, iconSwapVariants, tapScaleIcon } from '@/constants/animation';
 
 export interface ChatInputHandle {
   setInputText: (text: string) => void;
@@ -165,7 +165,7 @@ export const ChatInput = memo(
           {/* Action Button (Send / Stop) */}
           <motion.button
             type="button"
-            whileHover={!isButtonDisabled ? { scale: 1.06 } : undefined}
+            whileHover={!isButtonDisabled ? hoverScaleIcon : undefined}
             whileTap={!isButtonDisabled ? tapScaleIcon : undefined}
             onClick={isLoading ? onStop : handleSubmit}
             disabled={isButtonDisabled}
@@ -186,10 +186,10 @@ export const ChatInput = memo(
               {isLoading ? (
                 <motion.div
                   key="stop"
-                  initial={{ scale: 0.5, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.5, opacity: 0 }}
-                  transition={{ duration: 0.15 }}
+                  variants={iconSwapVariants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
                   className="flex items-center justify-center"
                 >
                   <Square className="size-3 fill-current" />
@@ -197,10 +197,10 @@ export const ChatInput = memo(
               ) : (
                 <motion.div
                   key="send"
-                  initial={{ scale: 0.7, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.7, opacity: 0 }}
-                  transition={{ duration: 0.15 }}
+                  variants={iconSwapVariants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
                 >
                   <Send className="size-3.5 translate-x-px" />
                 </motion.div>

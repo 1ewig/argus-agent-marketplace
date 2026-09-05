@@ -11,6 +11,11 @@ export type AgentRole = 'orchestrator' | 'analyst' | 'risk_arbiter' | 'executor'
 export type ExecutionMode = 'simulation';
 
 /**
+ * Stage View Mode for dashboard (Agent chat vs Trading chart)
+ */
+export type StageViewMode = 'agent' | 'chart';
+
+/**
  * Argus Operation Mode: Copilot (human approves) vs Autonomous (pure M2M loop)
  */
 export type GuardianMode = 'copilot' | 'autonomous';

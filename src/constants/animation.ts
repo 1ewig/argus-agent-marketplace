@@ -172,6 +172,11 @@ export const hoverLiftPill = {
   transition: { duration: 0.15, ease: 'easeOut' },
 } as const;
 
+export const hoverScaleIcon = {
+  scale: 1.05,
+  transition: { duration: 0.12, ease: 'easeOut' },
+} as const;
+
 /**
  * 60fps Spring and Easing parameters for Left Sidebar width collapse and expansion.
  */
@@ -180,6 +185,12 @@ export const sidebarSpringTransition = {
   stiffness: 380,
   damping: 32,
   mass: 0.8,
+} as const;
+
+export const pillSpringTransition = {
+  type: 'spring',
+  stiffness: 450,
+  damping: 32,
 } as const;
 
 export const sidebarContentVariants: Variants = {
@@ -192,4 +203,69 @@ export const sidebarContentVariants: Variants = {
     transition: { duration: 0.22, delay: 0.06, ease: EASING_ARCHITECTURAL },
   },
 };
+
+/**
+ * Clean width and opacity collapse for sidebar item labels and action containers.
+ */
+export const sidebarHorizontalCollapseVariants: Variants = {
+  collapsed: {
+    opacity: 0,
+    width: 0,
+    transition: sidebarSpringTransition,
+  },
+  expanded: {
+    opacity: 1,
+    width: 'auto',
+    transition: sidebarSpringTransition,
+  },
+};
+
+/**
+ * Height and margin collapse for sidebar group section headings.
+ */
+export const sidebarHeadingCollapseVariants: Variants = {
+  collapsed: {
+    height: 0,
+    opacity: 0,
+    marginBottom: 0,
+    transition: sidebarSpringTransition,
+  },
+  expanded: {
+    height: 'auto',
+    opacity: 1,
+    marginBottom: 4,
+    transition: sidebarSpringTransition,
+  },
+};
+
+/**
+ * Smooth entrance animation for chat message bubbles and active drafting indicators.
+ */
+export const messageEntranceVariants: Variants = {
+  hidden: { opacity: 0, y: 6 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.24, ease: EASING_ARCHITECTURAL },
+  },
+};
+
+export const draftIndicatorVariants: Variants = {
+  hidden: { opacity: 0, y: 4 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.2, ease: EASING_ARCHITECTURAL },
+  },
+};
+
+/**
+ * Icon swap transition for AnimatePresence mode="wait" (e.g. send/stop button).
+ */
+export const iconSwapVariants: Variants = {
+  initial: { scale: 0.6, opacity: 0 },
+  animate: { scale: 1, opacity: 1, transition: { duration: 0.15 } },
+  exit: { scale: 0.6, opacity: 0, transition: { duration: 0.15 } },
+};
+
 

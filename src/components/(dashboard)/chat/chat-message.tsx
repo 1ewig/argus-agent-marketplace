@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { User, AlertCircle } from 'lucide-react';
 import { AgentLoader, ArgusIcon } from '@/components/common';
 import { APP_CONTENT } from '@/constants/content';
-import { EASING_ARCHITECTURAL } from '@/constants/animation';
+import { draftIndicatorVariants, messageEntranceVariants } from '@/constants/animation';
 import { MarkdownView } from '../markdown-view';
 import { AgentProcessTimeline } from './agent-process-timeline';
 import { normalizeMessageSteps } from '@/lib/db';
@@ -38,9 +38,9 @@ function AgentWorkingDraftIndicator({ startedAt }: { startedAt: number }) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 4 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2, ease: EASING_ARCHITECTURAL }}
+      variants={draftIndicatorVariants}
+      initial="hidden"
+      animate="visible"
       className="flex items-center gap-spacing-xs text-xs text-theme-text-muted py-1"
     >
       <AgentLoader className="size-3.5 text-theme-brand-binance shrink-0" />
@@ -72,9 +72,9 @@ export const ChatMessage = memo(function ChatMessage({
   if (isUser) {
     return (
       <motion.div
-        initial={shouldAnimate ? { opacity: 0, y: 6 } : false}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.22, ease: EASING_ARCHITECTURAL }}
+        variants={messageEntranceVariants}
+        initial={shouldAnimate ? 'hidden' : false}
+        animate="visible"
         className="flex justify-end items-start gap-spacing-xs w-full py-1"
       >
         <div className="flex flex-col items-end gap-1 max-w-[85%] sm:max-w-[75%]">
@@ -106,9 +106,9 @@ export const ChatMessage = memo(function ChatMessage({
 
   return (
     <motion.div
-      initial={shouldAnimate ? { opacity: 0, y: 6 } : false}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.24, ease: EASING_ARCHITECTURAL }}
+      variants={messageEntranceVariants}
+      initial={shouldAnimate ? 'hidden' : false}
+      animate="visible"
       className="flex items-start gap-spacing-sm w-full max-w-[95%] py-1"
     >
       {/* Brand Monogram Icon */}

@@ -4,6 +4,7 @@ import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertTriangle, Trash2, Info, X, Loader2 } from 'lucide-react';
 import {
+  hoverScaleIcon,
   modalBackdropVariants,
   modalContentVariants,
   tapScaleIcon,
@@ -117,7 +118,7 @@ export function ConfirmDialog({
 
               <motion.button
                 type="button"
-                whileHover={{ scale: 1.05 }}
+                whileHover={hoverScaleIcon}
                 whileTap={tapScaleIcon}
                 onClick={onCancel}
                 disabled={isLoading}

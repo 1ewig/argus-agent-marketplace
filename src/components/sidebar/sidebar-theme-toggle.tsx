@@ -4,7 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Sun, Moon } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
-import { sidebarSpringTransition, tapScalePill } from '@/constants/animation';
+import { sidebarHorizontalCollapseVariants, tapScalePill } from '@/constants/animation';
 
 interface SidebarThemeToggleProps {
   isCollapsed: boolean;
@@ -41,11 +41,8 @@ export function SidebarThemeToggle({
         {/* Label and Badge Container */}
         <motion.div
           initial={false}
-          animate={{
-            opacity: isCollapsed ? 0 : 1,
-            width: isCollapsed ? 0 : 'auto',
-          }}
-          transition={sidebarSpringTransition}
+          variants={sidebarHorizontalCollapseVariants}
+          animate={isCollapsed ? 'collapsed' : 'expanded'}
           className={`flex-1 flex items-center justify-between min-w-0 overflow-hidden whitespace-nowrap ${
             isCollapsed ? 'w-0 opacity-0 p-0 pointer-events-none' : 'pr-2.5'
           }`}
