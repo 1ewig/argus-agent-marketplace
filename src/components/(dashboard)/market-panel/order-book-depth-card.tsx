@@ -11,7 +11,10 @@ interface OrderBookDepthCardProps {
   status: StreamConnectionStatus;
 }
 
-export function OrderBookDepthCard({ orderBook, status }: OrderBookDepthCardProps) {
+export const OrderBookDepthCard = React.memo(function OrderBookDepthCard({
+  orderBook,
+  status,
+}: OrderBookDepthCardProps) {
   const content = APP_CONTENT.marketPanel;
 
   return (
@@ -161,4 +164,6 @@ export function OrderBookDepthCard({ orderBook, status }: OrderBookDepthCardProp
       )}
     </div>
   );
-}
+});
+
+OrderBookDepthCard.displayName = 'OrderBookDepthCard';

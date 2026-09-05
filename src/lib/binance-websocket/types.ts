@@ -102,3 +102,44 @@ export interface LiveTickerData {
   flashDirection: 'up' | 'down' | null;
   lastUpdated: number;
 }
+
+/**
+ * Raw Mark Price stream message from Binance Futures
+ * e.g. wss://fstream.binance.com/ws/<symbol>@markPrice@1s
+ */
+export interface BinanceRawMarkPriceMessage {
+  e: string; // "markPriceUpdate"
+  E: number; // Event time
+  s: string; // Symbol
+  p: string; // Mark price
+  i: string; // Index price
+  P: string; // Estimated Settle Price
+  r: string; // Funding rate
+  T: number; // Next funding time
+}
+
+/**
+ * Normalized Futures & Funding Rate Sentinel Model
+ */
+export interface LiveFuturesFundingData {
+  symbol: string;
+  markPrice: number;
+  indexPrice: number;
+  fundingRate: number;
+  fundingRatePercent: number;
+  annualizedApr: number;
+  nextFundingTime: number;
+  basis: number;
+  basisPercent: number;
+  isAvailable: boolean;
+  precision: number;
+  lastUpdated: number;
+}
+
+/**
+ * Micro Sparkline Data Point
+ */
+export interface SparklinePoint {
+  time: number;
+  price: number;
+}

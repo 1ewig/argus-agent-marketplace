@@ -6,6 +6,7 @@ import { TrendingUp, TrendingDown, Radio, Loader2 } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
 import { parseSymbolAssets } from '@/hooks/use-chat-sessions';
 import type { LiveTickerData, StreamConnectionStatus } from '@/lib/binance-websocket';
+import { PriceSparkline } from './price-sparkline';
 
 interface PriceTickerCardProps {
   symbol: string;
@@ -13,7 +14,11 @@ interface PriceTickerCardProps {
   status: StreamConnectionStatus;
 }
 
-export function PriceTickerCard({ symbol, ticker, status }: PriceTickerCardProps) {
+export const PriceTickerCard = React.memo(function PriceTickerCard({
+  symbol,
+  ticker,
+  status,
+}: PriceTickerCardProps) {
   const content = APP_CONTENT.marketPanel;
   const clean = symbol.toUpperCase();
   const { baseAsset, quoteAsset } = useMemo(() => parseSymbolAssets(clean), [clean]);
@@ -110,6 +115,9 @@ export function PriceTickerCard({ symbol, ticker, status }: PriceTickerCardProps
             </div>
           </div>
 
+          {/* Micro SVG Sparkline (30m Trend) */}
+          <PriceSparkline symbol={symbol} currentPrice={ticker.price} />
+
           {/* Volume Summary Footprint */}
           <div className="grid grid-cols-2 gap-2 pt-2 border-t border-theme-border-subtle/50 text-2xs font-mono">
             <div className="flex flex-col">
@@ -145,4 +153,6 @@ export function PriceTickerCard({ symbol, ticker, status }: PriceTickerCardProps
       )}
     </div>
   );
-}
+});
+
+PriceTickerCard.displayName = 'PriceTickerCard';

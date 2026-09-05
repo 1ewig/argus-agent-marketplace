@@ -79,6 +79,8 @@ export function useBinanceMarketStream(
 
     let isDisposed = false;
     let ws: WebSocket | null = null;
+    let rafId: number | null = null;
+    let pendingDepth: LiveOrderBookData | null = null;
     prevPriceRef.current = undefined;
 
     const connect = () => {
@@ -123,8 +125,16 @@ export function useBinanceMarketStream(
               }
             } else if (parsed.stream.includes('@depth')) {
               const rawDepth = parsed.data as BinanceRawDepthMessage;
-              const nextDepth = parseBinanceDepthMessage(cleanSymbol, rawDepth, depthLevels);
-              setOrderBook(nextDepth);
+              pendingDepth = parseBinanceDepthMessage(cleanSymbol, rawDepth, depthLevels);
+
+              if (rafId === null) {
+                rafId = requestAnimationFrame(() => {
+                  rafId = null;
+                  if (!isDisposed && pendingDepth) {
+                    setOrderBook(pendingDepth);
+                  }
+                });
+              }
             }
           } catch {
             // Silently swallow malformed JSON frames from stream
@@ -164,6 +174,7 @@ export function useBinanceMarketStream(
 
     return () => {
       isDisposed = true;
+      if (rafId !== null) cancelAnimationFrame(rafId);
       if (flashTimeoutRef.current) clearTimeout(flashTimeoutRef.current);
       if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
 

@@ -1,8 +1,10 @@
 import type {
   BinanceRawTickerMessage,
   BinanceRawDepthMessage,
+  BinanceRawMarkPriceMessage,
   LiveTickerData,
   LiveOrderBookData,
+  LiveFuturesFundingData,
   OrderBookLevel,
 } from './types';
 
@@ -145,5 +147,93 @@ export function parseBinanceDepthMessage(
     maxTotal,
     precision,
     lastUpdated: Date.now(),
+  };
+}
+
+/**
+ * Public Binance Futures WebSocket Base URL
+ */
+export const BINANCE_FUTURES_WS_BASE_URL = 'wss://fstream.binance.com/ws';
+
+/**
+ * Constructs a Binance Futures 1-second mark price stream URL
+ * e.g. wss://fstream.binance.com/ws/btcusdt@markPrice@1s
+ */
+export function buildFuturesMarkPriceStreamUrl(symbol: string): string {
+  const clean = symbol.trim().toLowerCase().replace(/[/\\_-]/g, '');
+  return `${BINANCE_FUTURES_WS_BASE_URL}/${clean}@markPrice@1s`;
+}
+
+/**
+ * Parses raw Binance Futures mark price WebSocket message into clean UI model
+ */
+export function parseBinanceFuturesMarkPrice(
+  raw: BinanceRawMarkPriceMessage
+): LiveFuturesFundingData {
+  const markPrice = Number.parseFloat(raw.p) || 0;
+  const indexPrice = Number.parseFloat(raw.i) || 0;
+  const fundingRate = Number.parseFloat(raw.r) || 0;
+  const nextFundingTime = raw.T || 0;
+  const precision = getPrecisionForPrice(markPrice);
+
+  const basis = Number((markPrice - indexPrice).toFixed(precision));
+  const basisPercent = indexPrice > 0 ? Number(((basis / indexPrice) * 100).toFixed(4)) : 0;
+  const fundingRatePercent = Number((fundingRate * 100).toFixed(4));
+  // 3 funding cycles per day * 365 days = 1095 cycles/year
+  const annualizedApr = Number((fundingRate * 1095 * 100).toFixed(2));
+
+  return {
+    symbol: raw.s,
+    markPrice,
+    indexPrice,
+    fundingRate,
+    fundingRatePercent,
+    annualizedApr,
+    nextFundingTime,
+    basis,
+    basisPercent,
+    isAvailable: true,
+    precision,
+    lastUpdated: raw.E || Date.now(),
+  };
+}
+
+/**
+ * Parses Binance Futures REST premiumIndex response into clean UI model
+ */
+export function parseBinanceFuturesRestPremiumIndex(
+  data: {
+    symbol: string;
+    markPrice: string;
+    indexPrice: string;
+    lastFundingRate: string;
+    nextFundingTime: number;
+    time?: number;
+  }
+): LiveFuturesFundingData {
+  const markPrice = Number.parseFloat(data.markPrice) || 0;
+  const indexPrice = Number.parseFloat(data.indexPrice) || 0;
+  const fundingRate = Number.parseFloat(data.lastFundingRate) || 0;
+  const nextFundingTime = data.nextFundingTime || 0;
+  const precision = getPrecisionForPrice(markPrice);
+
+  const basis = Number((markPrice - indexPrice).toFixed(precision));
+  const basisPercent = indexPrice > 0 ? Number(((basis / indexPrice) * 100).toFixed(4)) : 0;
+  const fundingRatePercent = Number((fundingRate * 100).toFixed(4));
+  const annualizedApr = Number((fundingRate * 1095 * 100).toFixed(2));
+
+  return {
+    symbol: data.symbol,
+    markPrice,
+    indexPrice,
+    fundingRate,
+    fundingRatePercent,
+    annualizedApr,
+    nextFundingTime,
+    basis,
+    basisPercent,
+    isAvailable: true,
+    precision,
+    lastUpdated: data.time || Date.now(),
   };
 }

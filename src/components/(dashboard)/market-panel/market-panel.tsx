@@ -7,6 +7,7 @@ import { APP_CONTENT } from '@/constants/content';
 import { sidebarSpringTransition } from '@/constants/animation';
 import { useBinanceMarketStream } from '@/hooks/use-binance-market-stream';
 import { PriceTickerCard } from './price-ticker-card';
+import { FuturesFundingCard } from './futures-funding-card';
 import { OrderBookDepthCard } from './order-book-depth-card';
 
 interface MarketPanelProps {
@@ -95,7 +96,7 @@ export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
             </div>
           ) : (
             <>
-              {/* Module 1: Price & 24h Ticker Pulse */}
+              {/* Module 1: Price & 24h Ticker Pulse with Micro Sparkline */}
               <PriceTickerCard
                 key={`ticker_${symbol}`}
                 symbol={symbol}
@@ -103,7 +104,14 @@ export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
                 status={status}
               />
 
-              {/* Module 2: Micro Order Book Depth Ladder */}
+              {/* Module 2: Perpetual Futures Sentinel (Funding Rate & Countdown) */}
+              <FuturesFundingCard
+                key={`futures_${symbol}`}
+                symbol={symbol}
+                isOpen={isOpen}
+              />
+
+              {/* Module 3: Micro Order Book Depth Ladder */}
               <OrderBookDepthCard
                 key={`depth_${symbol}`}
                 symbol={symbol}
