@@ -8,6 +8,8 @@ import {
   Calculator,
   History,
   Globe,
+  Users,
+  Crown,
 } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
 import type { ToolDisplayInfo } from './types';
@@ -72,6 +74,18 @@ export function getToolDisplayInfo(
       return {
         title: labels.get_open_interest(symbol),
         icon: Layers,
+        symbol,
+      };
+    case 'get_global_long_short_ratio':
+      return {
+        title: labels.get_global_long_short_ratio(symbol),
+        icon: Users,
+        symbol,
+      };
+    case 'get_top_long_short_ratio':
+      return {
+        title: labels.get_top_long_short_ratio(symbol),
+        icon: Crown,
         symbol,
       };
     case 'search_crypto_news':

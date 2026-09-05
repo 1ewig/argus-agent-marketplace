@@ -15,6 +15,7 @@ import {
   AveragePriceCard,
   RecentTradesCard,
   OpenInterestCard,
+  LongShortRatioCard,
   CryptoNewsCard,
 } from './tool-results';
 
@@ -72,6 +73,9 @@ export const ToolResultCard = React.memo(function ToolResultCard({
         return <RecentTradesCard resultObj={resultObj} />;
       case 'get_open_interest':
         return <OpenInterestCard resultObj={resultObj} />;
+      case 'get_global_long_short_ratio':
+      case 'get_top_long_short_ratio':
+        return <LongShortRatioCard resultObj={resultObj} />;
       case 'search_crypto_news':
         return <CryptoNewsCard resultObj={resultObj} />;
       default:

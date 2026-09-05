@@ -88,6 +88,8 @@ export const AGENT_TOOL_DESCRIPTIONS = {
   getAveragePrice: 'Fetch the 5-minute rolling average price (VWAP) for a trading pair to evaluate execution price quality and fair market value.',
   getRecentTrades: 'Fetch recent market trade executions (trade tape) to assess real-time buying vs selling pressure and trade momentum.',
   getOpenInterest: 'Fetch real-time perpetual futures open interest to evaluate market positioning, leverage buildup, and liquidation risk.',
+  getGlobalLongShortRatio: 'Fetch global long vs. short account ratio for a Binance Futures pair. Evaluates broad retail crowd sentiment and net account distribution.',
+  getTopLongShortRatio: 'Fetch top 20% whale trader long vs. short position ratio for a Binance Futures pair. Essential for smart money tracking and whale vs retail divergence.',
   searchCryptoNews: 'Search live cryptocurrency news, catalysts, regulatory events, narrative shifts, and market sentiment via Exa AI. Supports optional category focus ("news", "company", "financial report", "research paper"), ISO 8601 date range filters (startPublishedDate/endPublishedDate), and domain restrictions. Call whenever the user asks for news, catalysts, reasons for price movements, or protocol roadmaps.',
 } as const;
 

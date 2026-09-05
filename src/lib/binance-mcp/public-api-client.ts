@@ -5,6 +5,8 @@ import type {
   AveragePriceData,
   RecentTradeData,
   OpenInterestData,
+  GlobalLongShortAccountRatioData,
+  TopLongShortPositionRatioData,
 } from './types';
 
 /**
@@ -289,4 +291,80 @@ export async function getOpenInterest(symbol: string): Promise<OpenInterestData>
     { revalidateSeconds: 15, isFutures: true }
   );
 }
+
+export const VALID_RATIO_PERIODS = ['5m', '15m', '30m', '1h', '2h', '4h', '6h', '12h', '1d'] as const;
+export type RatioPeriod = typeof VALID_RATIO_PERIODS[number];
+
+/**
+ * Fetches global long vs. short account ratio (general market sentiment).
+ */
+export async function getGlobalLongShortAccountRatio(
+  symbol: string,
+  period: string = '5m',
+  limit: number = 30
+): Promise<GlobalLongShortAccountRatioData[]> {
+  const formatted = formatAndValidateSymbol(symbol);
+  const safeLimit = Math.min(Math.max(limit, 1), 500);
+  const safePeriod = VALID_RATIO_PERIODS.includes(period as RatioPeriod) ? period : '5m';
+
+  return fetchBinancePublic<
+    Array<{
+      symbol: string;
+      longAccount: string;
+      shortAccount: string;
+      longShortRatio: string;
+      timestamp: number;
+    }>,
+    GlobalLongShortAccountRatioData[]
+  >(
+    `/futures/data/globalLongShortAccountRatio?symbol=${formatted}&period=${safePeriod}&limit=${safeLimit}`,
+    formatted,
+    (data) =>
+      data.map((d) => ({
+        symbol: d.symbol,
+        longAccount: parseFloat(d.longAccount),
+        shortAccount: parseFloat(d.shortAccount),
+        longShortRatio: parseFloat(d.longShortRatio),
+        timestamp: Number(d.timestamp),
+      })),
+    { revalidateSeconds: 15, isFutures: true }
+  );
+}
+
+/**
+ * Fetches top 20% whale trader long vs. short position ratio.
+ */
+export async function getTopLongShortPositionRatio(
+  symbol: string,
+  period: string = '5m',
+  limit: number = 30
+): Promise<TopLongShortPositionRatioData[]> {
+  const formatted = formatAndValidateSymbol(symbol);
+  const safeLimit = Math.min(Math.max(limit, 1), 500);
+  const safePeriod = VALID_RATIO_PERIODS.includes(period as RatioPeriod) ? period : '5m';
+
+  return fetchBinancePublic<
+    Array<{
+      symbol: string;
+      longPosition: string;
+      shortPosition: string;
+      longShortRatio: string;
+      timestamp: number;
+    }>,
+    TopLongShortPositionRatioData[]
+  >(
+    `/futures/data/topLongShortPositionRatio?symbol=${formatted}&period=${safePeriod}&limit=${safeLimit}`,
+    formatted,
+    (data) =>
+      data.map((d) => ({
+        symbol: d.symbol,
+        longPosition: parseFloat(d.longPosition),
+        shortPosition: parseFloat(d.shortPosition),
+        longShortRatio: parseFloat(d.longShortRatio),
+        timestamp: Number(d.timestamp),
+      })),
+    { revalidateSeconds: 15, isFutures: true }
+  );
+}
+
 

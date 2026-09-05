@@ -9,4 +9,5 @@ export * from './cards/funding-rate-card';
 export * from './cards/average-price-card';
 export * from './cards/recent-trades-card';
 export * from './cards/open-interest-card';
+export * from './cards/long-short-ratio-card';
 export * from './cards/crypto-news-card';

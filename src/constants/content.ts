@@ -215,6 +215,10 @@ export const APP_CONTENT = {
         symbol ? `Reading ${symbol} recent trade tape` : 'Reading recent trades',
       get_open_interest: (symbol?: string) =>
         symbol ? `Checking ${symbol} open interest` : 'Checking open interest',
+      get_global_long_short_ratio: (symbol?: string) =>
+        symbol ? `Checking ${symbol} global long/short account ratio` : 'Checking global long/short account ratio',
+      get_top_long_short_ratio: (symbol?: string) =>
+        symbol ? `Checking ${symbol} top trader position ratio` : 'Checking top trader position ratio',
       search_crypto_news: (symbol?: string) =>
         symbol ? `Searching latest ${symbol} news & catalysts` : 'Searching crypto news & catalysts',
       default: (name: string) => name.replace(/_/g, ' '),
@@ -257,6 +261,17 @@ export const APP_CONTENT = {
       newsSource: 'Source',
       newsDate: 'Date',
       newsOpenArticle: 'Read article',
+      longShortRatio: 'Long/Short Ratio',
+      longAccountRatio: 'Long Accounts',
+      shortAccountRatio: 'Short Accounts',
+      topLongRatio: 'Whale Longs',
+      topShortRatio: 'Whale Shorts',
+      retailSentiment: 'Account Sentiment',
+      whaleSentiment: 'Whale Position Sentiment',
+      bullishBias: 'BULLISH',
+      bearishBias: 'BEARISH',
+      neutralBias: 'NEUTRAL',
+      period: 'Period',
       errorTitle: 'Action Error',
       emptyResult: 'No details available',
       priceHeader: 'Price',
@@ -271,6 +286,8 @@ export const APP_CONTENT = {
       get_average_price: 'get_average_price',
       get_recent_trades: 'get_recent_trades',
       get_open_interest: 'get_open_interest',
+      get_global_long_short_ratio: 'get_global_long_short_ratio',
+      get_top_long_short_ratio: 'get_top_long_short_ratio',
       search_crypto_news: 'search_crypto_news',
     } as Record<string, string>,
   },

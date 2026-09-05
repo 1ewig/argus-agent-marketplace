@@ -69,3 +69,25 @@ export interface OpenInterestData {
   openInterest: number;
   time: number;
 }
+
+/**
+ * Global Long/Short Account Ratio Data Point (Retail/General crowd sentiment)
+ */
+export interface GlobalLongShortAccountRatioData {
+  symbol: string;
+  longAccount: number;
+  shortAccount: number;
+  longShortRatio: number;
+  timestamp: number;
+}
+
+/**
+ * Top Trader Long/Short Position Ratio Data Point (Top 20% whale positioning)
+ */
+export interface TopLongShortPositionRatioData {
+  symbol: string;
+  longPosition: number;
+  shortPosition: number;
+  longShortRatio: number;
+  timestamp: number;
+}

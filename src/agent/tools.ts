@@ -10,6 +10,8 @@ import {
   getAveragePrice,
   getRecentTrades,
   getOpenInterest,
+  getGlobalLongShortAccountRatio,
+  getTopLongShortPositionRatio,
 } from '@/lib/binance-mcp';
 import { searchExa, ExaSearchInputSchema } from '@/lib/exa';
 import { AGENT_TOOL_DESCRIPTIONS } from './prompts';
@@ -287,6 +289,104 @@ export function buildAgentTools() {
           };
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : 'Failed to retrieve open interest';
+          return {
+            success: false,
+            error: message,
+          };
+        }
+      },
+    }),
+
+    get_global_long_short_ratio: tool({
+      description: AGENT_TOOL_DESCRIPTIONS.getGlobalLongShortRatio,
+      inputSchema: z.object({
+        symbol: symbolSchema.describe('Perpetual contract symbol in uppercase (e.g. BTCUSDT, ETHUSDT, SOLUSDT)'),
+        period: z
+          .enum(['5m', '15m', '30m', '1h', '2h', '4h', '6h', '12h', '1d'])
+          .default('5m')
+          .describe('Granularity timeframe interval (default: 5m)'),
+        limit: z
+          .coerce
+          .number({ message: 'Limit must be a number' })
+          .int('Limit must be an integer')
+          .min(1, 'Limit must be at least 1')
+          .max(100, 'Limit cannot exceed 100')
+          .default(30)
+          .describe('Number of historical ratio points to fetch (1-100, default 30)'),
+      }),
+      execute: async ({ symbol, period, limit }) => {
+        try {
+          const history = await getGlobalLongShortAccountRatio(symbol.toUpperCase(), period, limit);
+          const latest = history[history.length - 1];
+          const longPercent = latest ? +(latest.longAccount * 100).toFixed(1) : 50;
+          const shortPercent = latest ? +(latest.shortAccount * 100).toFixed(1) : 50;
+          const ratio = latest ? latest.longShortRatio : 1.0;
+          const sentiment = ratio > 1.1 ? 'bullish' : ratio < 0.9 ? 'bearish' : 'neutral';
+
+          return {
+            success: true,
+            symbol: symbol.toUpperCase(),
+            period,
+            summary: {
+              longPercent,
+              shortPercent,
+              longShortRatio: ratio,
+              sentiment,
+              latestTimestamp: latest?.timestamp ?? Date.now(),
+            },
+            history,
+          };
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : 'Failed to retrieve global long/short account ratio';
+          return {
+            success: false,
+            error: message,
+          };
+        }
+      },
+    }),
+
+    get_top_long_short_ratio: tool({
+      description: AGENT_TOOL_DESCRIPTIONS.getTopLongShortRatio,
+      inputSchema: z.object({
+        symbol: symbolSchema.describe('Perpetual contract symbol in uppercase (e.g. BTCUSDT, ETHUSDT, SOLUSDT)'),
+        period: z
+          .enum(['5m', '15m', '30m', '1h', '2h', '4h', '6h', '12h', '1d'])
+          .default('5m')
+          .describe('Granularity timeframe interval (default: 5m)'),
+        limit: z
+          .coerce
+          .number({ message: 'Limit must be a number' })
+          .int('Limit must be an integer')
+          .min(1, 'Limit must be at least 1')
+          .max(100, 'Limit cannot exceed 100')
+          .default(30)
+          .describe('Number of historical ratio points to fetch (1-100, default 30)'),
+      }),
+      execute: async ({ symbol, period, limit }) => {
+        try {
+          const history = await getTopLongShortPositionRatio(symbol.toUpperCase(), period, limit);
+          const latest = history[history.length - 1];
+          const longPercent = latest ? +(latest.longPosition * 100).toFixed(1) : 50;
+          const shortPercent = latest ? +(latest.shortPosition * 100).toFixed(1) : 50;
+          const ratio = latest ? latest.longShortRatio : 1.0;
+          const sentiment = ratio > 1.1 ? 'bullish' : ratio < 0.9 ? 'bearish' : 'neutral';
+
+          return {
+            success: true,
+            symbol: symbol.toUpperCase(),
+            period,
+            summary: {
+              longPercent,
+              shortPercent,
+              longShortRatio: ratio,
+              sentiment,
+              latestTimestamp: latest?.timestamp ?? Date.now(),
+            },
+            history,
+          };
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : 'Failed to retrieve top trader long/short position ratio';
           return {
             success: false,
             error: message,
