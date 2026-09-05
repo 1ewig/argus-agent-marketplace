@@ -7,6 +7,7 @@ import { AgentLoader, ArgusIcon } from '@/components/common';
 import { APP_CONTENT } from '@/constants/content';
 import { draftIndicatorVariants, messageEntranceVariants } from '@/constants/animation';
 import { MarkdownView } from '../markdown-view';
+import { AgentWorkGroup } from './agent-work-group';
 import { AgentProcessTimeline } from './agent-process-timeline';
 import { normalizeMessageSteps } from '@/lib/db';
 import { useActiveTimer } from '@/hooks';
@@ -132,15 +133,21 @@ export const ChatMessage = memo(function ChatMessage({
           )}
         </div>
 
-        {/* Chronological Process Timeline (Worked Group: Thoughts, Tools, Intermediate Text) */}
+        {/* Chronological Process Timeline wrapped in Work Group Accordion */}
         {hasSteps && (
-          <AgentProcessTimeline
+          <AgentWorkGroup
             steps={effectiveSteps}
             isStreaming={isStreaming}
             isCompleted={!isStreaming}
             workedDurationMs={message.workedDurationMs}
             startedAt={message.timestamp}
-          />
+          >
+            <AgentProcessTimeline
+              steps={effectiveSteps}
+              isStreaming={isStreaming}
+              isCompleted={!isStreaming}
+            />
+          </AgentWorkGroup>
         )}
 
         {/* Main Response Markdown (Frameless directly on page canvas) */}
