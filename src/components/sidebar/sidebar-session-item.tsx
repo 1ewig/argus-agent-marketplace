@@ -85,19 +85,20 @@ export function SidebarSessionItem({
           onSelect();
         }
       }}
-      className={`group relative h-10 flex items-center rounded-xl text-xs font-medium cursor-pointer transition-colors overflow-hidden shrink-0 select-none ${isCollapsed ? 'w-10 justify-center' : 'w-full'
-        } ${isActive
+      className={`group relative h-10 w-full flex items-center rounded-xl text-xs font-medium cursor-pointer transition-colors overflow-hidden shrink-0 select-none ${
+        isActive
           ? 'bg-theme-bg-elevated text-theme-text-primary border border-theme-border-subtle shadow-2xs font-semibold'
           : 'text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-elevated/40 border border-transparent'
-        }`}
+      }`}
     >
       {/* Anchored Icon Slot */}
       <div className="size-10 flex items-center justify-center shrink-0">
         <MessageSquare
-          className={`size-3.5 transition-colors ${isActive
+          className={`size-3.5 transition-colors ${
+            isActive
               ? 'text-theme-brand-binance'
               : 'text-theme-text-muted group-hover:text-theme-text-secondary'
-            }`}
+          }`}
         />
       </div>
 
@@ -106,8 +107,7 @@ export function SidebarSessionItem({
         initial={false}
         variants={sidebarHorizontalCollapseVariants}
         animate={isCollapsed ? 'collapsed' : 'expanded'}
-        className={`flex-1 flex items-center justify-between min-w-0 overflow-hidden ${isCollapsed ? 'w-0 opacity-0 p-0 gap-0 pointer-events-none' : 'pr-2.5 gap-1.5'
-          }`}
+        className="flex-1 flex items-center justify-between min-w-0 overflow-hidden pr-2.5 gap-1.5"
       >
         <span className="truncate whitespace-nowrap text-left flex-1">
           {conversation.title || APP_CONTENT.chat.defaultSessionTitle}

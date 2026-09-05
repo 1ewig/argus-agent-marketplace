@@ -92,43 +92,63 @@ export function SidebarWorkspaceGroup({
           }
         }}
         title={`${pairLabel} (${group.conversations.length})`}
-        className={`group relative flex items-center cursor-pointer transition-colors select-none ${
-          isCollapsed
-            ? 'size-10 justify-center rounded-xl mx-auto'
-            : 'h-8 w-full px-1.5 rounded-md overflow-hidden'
-        } ${
+        className={`group relative h-10 w-full flex items-center rounded-xl cursor-pointer transition-colors select-none overflow-hidden shrink-0 ${
           isCurrentActiveGroup
-            ? isCollapsed
-              ? 'bg-theme-bg-elevated text-theme-text-primary border border-theme-border-subtle shadow-2xs font-bold'
-              : 'text-theme-text-primary hover:bg-theme-bg-elevated/60'
-            : isCollapsed
-              ? 'text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-elevated/40 border border-transparent'
-              : 'text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-elevated/40'
+            ? 'bg-theme-bg-elevated text-theme-text-primary border border-theme-border-subtle shadow-2xs font-bold'
+            : 'text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-elevated/40 border border-transparent'
         }`}
       >
-        {/* Anchored Left Slot: Centered size-10 in Collapsed (matching Agent & Chart), size-6 Chevron in Expanded */}
-        <div className={`${isCollapsed ? 'size-10' : 'size-6'} flex items-center justify-center shrink-0`}>
-          {isCollapsed ? (
-            isGlobal ? (
-              <Globe
-                className={`size-4 transition-colors ${
-                  isCurrentActiveGroup
-                    ? 'text-theme-brand-binance'
-                    : 'text-theme-text-muted group-hover:text-theme-text-primary'
-                }`}
-              />
-            ) : (
-              <span
-                className={`font-mono text-[10px] font-bold tracking-tight uppercase transition-colors ${
-                  isCurrentActiveGroup
-                    ? 'text-theme-brand-binance'
-                    : 'text-theme-text-muted group-hover:text-theme-text-primary'
-                }`}
-              >
-                {group.baseAsset.slice(0, 3)}
-              </span>
-            )
+        {/* Anchored Left Slot: Centered size-10 matching all other sidebar buttons */}
+        <div className="size-10 flex items-center justify-center shrink-0">
+          {isGlobal ? (
+            <Globe
+              className={`size-4 transition-colors ${
+                isCurrentActiveGroup
+                  ? 'text-theme-brand-binance'
+                  : 'text-theme-text-muted group-hover:text-theme-text-primary'
+              }`}
+            />
           ) : (
+            <span
+              className={`font-mono text-[10px] font-bold tracking-tight uppercase transition-colors ${
+                isCurrentActiveGroup
+                  ? 'text-theme-brand-binance'
+                  : 'text-theme-text-muted group-hover:text-theme-text-primary'
+              }`}
+            >
+              {group.baseAsset.slice(0, 3)}
+            </span>
+          )}
+        </div>
+
+        {/* Expanded Workspace Label, Count Badge & Chevron */}
+        <motion.div
+          initial={false}
+          variants={sidebarHorizontalCollapseVariants}
+          animate={isCollapsed ? 'collapsed' : 'expanded'}
+          className="flex-1 flex items-center justify-between min-w-0 overflow-hidden pr-2"
+        >
+          {/* Pair Label & Active Dot */}
+          <div className="flex items-center gap-1.5 min-w-0 flex-1">
+            <span
+              className={`text-2xs font-bold uppercase tracking-wide truncate ${
+                isCurrentActiveGroup
+                  ? 'text-theme-brand-binance font-extrabold'
+                  : 'text-theme-text-secondary group-hover:text-theme-text-primary'
+              }`}
+            >
+              {pairLabel}
+            </span>
+            {isCurrentActiveGroup && (
+              <span className="size-1.5 rounded-full bg-theme-brand-binance shrink-0" />
+            )}
+          </div>
+
+          {/* Right Section: Session Count & Chevron */}
+          <div className="flex items-center gap-1 shrink-0">
+            <span className="text-2xs font-mono font-medium text-theme-text-muted tabular-nums">
+              {group.conversations.length}
+            </span>
             <motion.div
               animate={{ rotate: isExpanded ? 90 : 0 }}
               transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
@@ -140,43 +160,7 @@ export function SidebarWorkspaceGroup({
                 }`}
               />
             </motion.div>
-          )}
-        </div>
-
-        {/* Expanded Workspace Label & Count Badge */}
-        <motion.div
-          initial={false}
-          variants={sidebarHorizontalCollapseVariants}
-          animate={isCollapsed ? 'collapsed' : 'expanded'}
-          className={`flex-1 flex items-center justify-between min-w-0 overflow-hidden ${isCollapsed ? 'w-0 opacity-0 p-0 pointer-events-none' : 'ml-1 pr-1'
-            }`}
-        >
-          {/* Pair Label & Active Dot */}
-          <div className="flex items-center gap-1.5 min-w-0 flex-1">
-            {isGlobal && (
-              <Globe
-                className={`size-3 shrink-0 ${
-                  isCurrentActiveGroup ? 'text-theme-brand-binance' : 'text-theme-text-muted'
-                }`}
-              />
-            )}
-            <span
-              className={`text-2xs font-bold uppercase tracking-wide truncate ${isCurrentActiveGroup
-                  ? 'text-theme-brand-binance font-extrabold'
-                  : 'text-theme-text-secondary group-hover:text-theme-text-primary'
-                }`}
-            >
-              {pairLabel}
-            </span>
-            {isCurrentActiveGroup && (
-              <span className="size-1.5 rounded-full bg-theme-brand-binance shrink-0" />
-            )}
           </div>
-
-          {/* Right Section: Minimal Session Count */}
-          <span className="text-2xs font-mono font-medium text-theme-text-muted tabular-nums shrink-0 pr-0.5">
-            {group.conversations.length}
-          </span>
         </motion.div>
       </motion.div>
 

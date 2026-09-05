@@ -25,9 +25,7 @@ export function SidebarThemeToggle({
         onClick={onToggle}
         title={isDark ? APP_CONTENT.sidebar.themeLight : APP_CONTENT.sidebar.themeDark}
         aria-label={isDark ? APP_CONTENT.sidebar.themeLight : APP_CONTENT.sidebar.themeDark}
-        className={`h-10 flex items-center rounded-xl bg-theme-bg-elevated hover:bg-theme-bg-surface active:bg-theme-bg-elevated border border-theme-border-subtle hover:border-theme-border-strong text-theme-text-secondary hover:text-theme-text-primary text-xs font-semibold cursor-pointer transition-colors shadow-2xs overflow-hidden ${
-          isCollapsed ? 'w-10 justify-center' : 'w-full'
-        }`}
+        className="h-10 w-full flex items-center rounded-xl bg-theme-bg-elevated hover:bg-theme-bg-surface active:bg-theme-bg-elevated border border-theme-border-subtle hover:border-theme-border-strong text-theme-text-secondary hover:text-theme-text-primary text-xs font-semibold cursor-pointer transition-colors shadow-2xs overflow-hidden"
       >
         {/* Anchored Theme Icon Slot */}
         <div className="size-10 flex items-center justify-center shrink-0">
@@ -43,9 +41,7 @@ export function SidebarThemeToggle({
           initial={false}
           variants={sidebarHorizontalCollapseVariants}
           animate={isCollapsed ? 'collapsed' : 'expanded'}
-          className={`flex-1 flex items-center justify-between min-w-0 overflow-hidden whitespace-nowrap ${
-            isCollapsed ? 'w-0 opacity-0 p-0 pointer-events-none' : 'pr-2.5'
-          }`}
+          className="flex-1 flex items-center justify-between min-w-0 overflow-hidden whitespace-nowrap pr-2.5"
         >
           <span className="text-left font-medium">
             {isDark ? APP_CONTENT.sidebar.themeLight : APP_CONTENT.sidebar.themeDark}

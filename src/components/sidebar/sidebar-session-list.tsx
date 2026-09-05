@@ -59,11 +59,7 @@ export function SidebarSessionList({
       </motion.div>
 
       {/* Scrollable Conversation List Container */}
-      <div
-        className={`flex-1 overflow-y-auto overflow-x-hidden flex flex-col gap-1.5 ${
-          isCollapsed ? 'items-center' : 'pr-0.5'
-        } custom-scrollbar`}
-      >
+      <div className="flex-1 overflow-y-auto overflow-x-hidden flex flex-col gap-1.5 pr-0.5 custom-scrollbar">
         {groups.length === 0 ? (
           <motion.div
             initial={false}

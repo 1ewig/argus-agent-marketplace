@@ -42,9 +42,7 @@ export function SidebarNavViews({
         whileTap={tapScalePill}
         onClick={() => onViewSelect('agent')}
         title={APP_CONTENT.sidebar.agentView}
-        className={`h-10 flex items-center rounded-xl text-xs font-semibold cursor-pointer transition-colors relative overflow-hidden ${
-          isCollapsed ? 'w-10 justify-center' : 'w-full'
-        } ${
+        className={`h-10 w-full flex items-center rounded-xl text-xs font-semibold cursor-pointer transition-colors relative overflow-hidden ${
           stageView === 'agent'
             ? 'bg-theme-bg-elevated text-theme-text-primary border border-theme-border-subtle shadow-2xs font-bold'
             : 'text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-elevated/40 border border-transparent'
@@ -62,9 +60,7 @@ export function SidebarNavViews({
           initial={false}
           variants={sidebarHorizontalCollapseVariants}
           animate={isCollapsed ? 'collapsed' : 'expanded'}
-          className={`whitespace-nowrap overflow-hidden text-left select-none ${
-            isCollapsed ? 'w-0 opacity-0 p-0 pointer-events-none' : 'pr-3'
-          }`}
+          className="whitespace-nowrap overflow-hidden text-left select-none pr-3"
         >
           {APP_CONTENT.sidebar.agentView}
         </motion.span>
@@ -76,9 +72,7 @@ export function SidebarNavViews({
         whileTap={tapScalePill}
         onClick={() => onViewSelect('chart')}
         title={APP_CONTENT.sidebar.chartView}
-        className={`h-10 flex items-center rounded-xl text-xs font-semibold cursor-pointer transition-colors relative overflow-hidden ${
-          isCollapsed ? 'w-10 justify-center' : 'w-full'
-        } ${
+        className={`h-10 w-full flex items-center rounded-xl text-xs font-semibold cursor-pointer transition-colors relative overflow-hidden ${
           stageView === 'chart'
             ? 'bg-theme-bg-elevated text-theme-text-primary border border-theme-border-subtle shadow-2xs font-bold'
             : 'text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-elevated/40 border border-transparent'
@@ -96,9 +90,7 @@ export function SidebarNavViews({
           initial={false}
           variants={sidebarHorizontalCollapseVariants}
           animate={isCollapsed ? 'collapsed' : 'expanded'}
-          className={`whitespace-nowrap overflow-hidden text-left select-none ${
-            isCollapsed ? 'w-0 opacity-0 p-0 pointer-events-none' : 'pr-3'
-          }`}
+          className="whitespace-nowrap overflow-hidden text-left select-none pr-3"
         >
           {APP_CONTENT.sidebar.chartView}
         </motion.span>

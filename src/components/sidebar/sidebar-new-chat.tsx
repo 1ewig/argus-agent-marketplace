@@ -22,9 +22,7 @@ export function SidebarNewChat({ isCollapsed, onNewChat, disabled = false }: Sid
         disabled={disabled}
         title={disabled ? APP_CONTENT.sidebar.newChatDisabled : APP_CONTENT.sidebar.newChat}
         aria-label={APP_CONTENT.sidebar.newChat}
-        className={`h-10 rounded-xl font-bold text-xs flex items-center overflow-hidden select-none transition-colors ${
-          isCollapsed ? 'w-10 justify-center' : 'w-full'
-        } ${
+        className={`h-10 w-full rounded-xl font-bold text-xs flex items-center overflow-hidden select-none transition-colors ${
           disabled
             ? 'opacity-40 cursor-not-allowed bg-theme-brand-binance text-theme-bg-overlay shadow-none'
             : 'bg-theme-brand-binance text-theme-bg-overlay cursor-pointer shadow-2xs hover:brightness-105 active:brightness-95'
@@ -40,9 +38,7 @@ export function SidebarNewChat({ isCollapsed, onNewChat, disabled = false }: Sid
           initial={false}
           variants={sidebarHorizontalCollapseVariants}
           animate={isCollapsed ? 'collapsed' : 'expanded'}
-          className={`whitespace-nowrap overflow-hidden text-left select-none ${
-            isCollapsed ? 'w-0 opacity-0 p-0 pointer-events-none' : 'pr-3'
-          }`}
+          className="whitespace-nowrap overflow-hidden text-left select-none pr-3"
         >
           {APP_CONTENT.sidebar.newChat}
         </motion.span>

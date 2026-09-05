@@ -192,14 +192,15 @@ export const hoverScaleIcon = {
 } as const;
 
 /**
- * 60fps Spring and Easing parameters for Left Sidebar width collapse and expansion.
+ * Buttery smooth 60/120fps easing parameters for Left Sidebar width collapse and expansion.
+ * Uses architectural cubic-bezier deceleration for fluid, zero-jitter transitions.
  */
-export const sidebarSpringTransition = {
-  type: 'spring',
-  stiffness: 380,
-  damping: 32,
-  mass: 0.8,
+export const sidebarTransition = {
+  duration: 0.28,
+  ease: EASING_ARCHITECTURAL,
 } as const;
+
+export const sidebarSpringTransition = sidebarTransition;
 
 export const pillSpringTransition = {
   type: 'spring',
@@ -220,17 +221,24 @@ export const sidebarContentVariants: Variants = {
 
 /**
  * Clean width and opacity collapse for sidebar item labels and action containers.
+ * Fades opacity out quickly on collapse to prevent text squishing, and fades in gently on expand.
  */
 export const sidebarHorizontalCollapseVariants: Variants = {
   collapsed: {
     opacity: 0,
     width: 0,
-    transition: sidebarSpringTransition,
+    transition: {
+      width: { duration: 0.26, ease: EASING_ARCHITECTURAL },
+      opacity: { duration: 0.12, ease: 'easeOut' },
+    },
   },
   expanded: {
     opacity: 1,
     width: 'auto',
-    transition: sidebarSpringTransition,
+    transition: {
+      width: { duration: 0.28, ease: EASING_ARCHITECTURAL },
+      opacity: { duration: 0.2, delay: 0.06, ease: EASING_ARCHITECTURAL },
+    },
   },
 };
 
@@ -242,13 +250,21 @@ export const sidebarHeadingCollapseVariants: Variants = {
     height: 0,
     opacity: 0,
     marginBottom: 0,
-    transition: sidebarSpringTransition,
+    transition: {
+      height: { duration: 0.22, ease: EASING_ARCHITECTURAL },
+      opacity: { duration: 0.1, ease: 'easeOut' },
+      marginBottom: { duration: 0.22, ease: EASING_ARCHITECTURAL },
+    },
   },
   expanded: {
     height: 'auto',
     opacity: 1,
     marginBottom: 4,
-    transition: sidebarSpringTransition,
+    transition: {
+      height: { duration: 0.26, ease: EASING_ARCHITECTURAL },
+      opacity: { duration: 0.18, delay: 0.04, ease: EASING_ARCHITECTURAL },
+      marginBottom: { duration: 0.26, ease: EASING_ARCHITECTURAL },
+    },
   },
 };
 

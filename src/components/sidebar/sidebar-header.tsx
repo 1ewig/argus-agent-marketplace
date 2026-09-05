@@ -44,8 +44,7 @@ export function SidebarHeader({ isCollapsed, onToggle }: SidebarHeaderProps) {
           initial={false}
           variants={sidebarHorizontalCollapseVariants}
           animate={isCollapsed ? 'collapsed' : 'expanded'}
-          className={`flex flex-col min-w-0 overflow-hidden whitespace-nowrap flex-1 ${isCollapsed ? 'ml-0' : 'ml-2'
-            }`}
+          className="flex flex-col min-w-0 overflow-hidden whitespace-nowrap flex-1 pl-2.5"
         >
           <span className="text-sm font-extrabold tracking-tight text-theme-text-primary leading-none">
             {APP_CONTENT.sidebar.brand}
