@@ -29,7 +29,6 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
   const setIsSymbolSearchOpen = useAppStore((state) => state.setIsSymbolSearchOpen);
   const isMarketPanelOpen = useAppStore((state) => state.isMarketPanelOpen);
   const toggleMarketPanel = useAppStore((state) => state.toggleMarketPanel);
-  const setIsMarketPanelOpen = useAppStore((state) => state.setIsMarketPanelOpen);
   const { handleNewSession, isNewChatDisabled } = useChatSessions();
 
   const isGlobalWorkspace = (selectedSymbol || '').toUpperCase() === 'GLOBAL';
@@ -310,7 +309,6 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
           isOpen={isMarketPanelOpen}
           symbol={cleanSymbol}
           isGlobal={isGlobalWorkspace}
-          onClose={() => setIsMarketPanelOpen(false)}
         />
       </div>
     </div>
