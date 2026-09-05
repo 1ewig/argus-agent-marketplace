@@ -66,7 +66,14 @@ export function buildAgentTools() {
       description: AGENT_TOOL_DESCRIPTIONS.getOrderBook,
       inputSchema: z.object({
         symbol: symbolSchema.describe('Trading pair symbol in uppercase (e.g. SOLUSDT, BTCUSDT)'),
-        limit: z.coerce.number().int().min(1).max(100).default(20).describe('Depth levels to retrieve (default 20)'),
+        limit: z
+          .coerce
+          .number({ message: 'Depth limit must be a number' })
+          .int('Depth limit must be an integer')
+          .min(1, 'Depth limit must be at least 1')
+          .max(100, 'Depth limit cannot exceed 100')
+          .default(20)
+          .describe('Depth levels to retrieve (1-100, default 20)'),
       }),
       execute: async ({ symbol, limit }) => {
         try {
@@ -93,8 +100,8 @@ export function buildAgentTools() {
               totalAskVolume: +totalAskVolume.toFixed(2),
               depthImbalanceRatio,
             },
-            bids: result.bids.slice(0, 10),
-            asks: result.asks.slice(0, 10),
+            bids: result.bids,
+            asks: result.asks,
             timestamp: result.timestamp,
           };
         } catch (err: unknown) {
@@ -113,12 +120,22 @@ export function buildAgentTools() {
         symbol: symbolSchema.describe('Trading pair symbol in uppercase (e.g. SOLUSDT)'),
         interval: z
           .preprocess(
-            (val) => (typeof val === 'string' ? val.toLowerCase() : val),
-            z.enum(['1m', '5m', '15m', '1h', '4h', '1d'])
+            (val) => (typeof val === 'string' ? val.trim() : val),
+            z.enum(
+              ['1m', '3m', '5m', '15m', '30m', '1h', '2h', '4h', '6h', '8h', '12h', '1d', '3d', '1w', '1M'],
+              { message: 'Invalid interval timeframe. Valid options: 1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 6h, 8h, 12h, 1d, 3d, 1w, 1M' }
+            )
           )
           .default('15m')
-          .describe('Candlestick timeframe interval'),
-        limit: z.coerce.number().int().min(1).max(100).default(30).describe('Number of candlestick periods to fetch'),
+          .describe('Candlestick timeframe interval (e.g. 1m, 5m, 15m, 1h, 4h, 1d)'),
+        limit: z
+          .coerce
+          .number({ message: 'Candles limit must be a number' })
+          .int('Candles limit must be an integer')
+          .min(1, 'Candles limit must be at least 1')
+          .max(100, 'Candles limit cannot exceed 100')
+          .default(30)
+          .describe('Number of candlestick periods to fetch (1-100, default 30)'),
       }),
       execute: async ({ symbol, interval, limit }) => {
         try {
@@ -135,7 +152,7 @@ export function buildAgentTools() {
             periodChangePercent,
             latestPrice,
             candleCount: klines.length,
-            klines: klines.slice(-15),
+            klines,
           };
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : 'Unknown error';
@@ -217,7 +234,14 @@ export function buildAgentTools() {
       description: AGENT_TOOL_DESCRIPTIONS.getRecentTrades,
       inputSchema: z.object({
         symbol: symbolSchema.describe('Trading pair symbol in uppercase (e.g. BTCUSDT, SOLUSDT)'),
-        limit: z.number().int().min(5).max(50).default(15).describe('Number of recent trades to fetch (default 15)'),
+        limit: z
+          .coerce
+          .number({ message: 'Trades limit must be a number' })
+          .int('Trades limit must be an integer')
+          .min(1, 'Trades limit must be at least 1')
+          .max(100, 'Trades limit cannot exceed 100')
+          .default(15)
+          .describe('Number of recent trades to fetch (1-100, default 15)'),
       }),
       execute: async ({ symbol, limit }) => {
         try {
@@ -237,7 +261,7 @@ export function buildAgentTools() {
               takerSellVolume,
               buyRatio: totalVolume > 0 ? +((takerBuyVolume / totalVolume) * 100).toFixed(1) : 50,
             },
-            trades: trades.slice(0, 10),
+            trades,
           };
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : 'Failed to retrieve recent trades';
