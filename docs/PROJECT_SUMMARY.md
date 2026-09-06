@@ -13,7 +13,8 @@
 The product solves a real pain point for active traders: juggling multiple tabs (prices, order books, funding rates, news). Argus consolidates all of that into a single conversation with a **live market deck** beside the chat.
 
 ### Key product surfaces
-- **Agent chat (center):** multi-turn, tool-calling conversation streamed via SSE with a visible, collapsible reasoning/tool-execution timeline.
+- **Agent chat (center stage):** multi-turn, tool-calling conversation streamed via SSE with a visible, collapsible reasoning/tool-execution timeline.
+- **Trading Chart stage (center stage alt):** an interactive `lightweight-charts` candlestick canvas toggled from the header (Agent ⇄ Chart). Fetches historical klines per active timeframe, then live-streams `<symbol>@kline_<interval>` + `<symbol>@ticker` over WebSocket — with crosshair legend, zoom-to-recent, reset zoom, and fullscreen. Six timeframes (15M/1H/4H/1D/7D/30D).
 - **Live market panel (right):** real-time Binance WebSocket telemetry — price ticker + micro-sparkline, order book depth, and a perpetual futures funding sentinel. Symbol workspaces get a two-tab switcher (**Live Telemetry** / **Market Intelligence**).
 - **Market Intelligence Agent (right-panel tab):** a background sidecar agent that scans 9 live data sources in parallel and emits **one structured JSON payload → four executive cards** (CONTROL, KEY LEVELS, POSITIONING, TACTICAL PLAYBOOK) via `generateObject`, cached for 1 hour.
 - **Global Market deck (GLOBAL workspace):** the right panel swaps to a macro overview — **Market Pulse**, **Top Movers**, **Funding Heatmap**, and **Macro Positioning** — aggregated server-side by `GET /api/binance/global-overview` and refreshed every 30s.
@@ -32,12 +33,13 @@ The product solves a real pain point for active traders: juggling multiple tabs 
 | Market Data | Binance Public REST API & Binance Client WebSockets (Spot + Futures) |
 | Search | Exa AI REST API |
 | Local Persistence | Dexie IndexedDB v4 (`dexie@^4.4.5`, `dexie-react-hooks`) |
-| Styling & Motion | Tailwind CSS v4 design tokens & Framer Motion |
+| Styling & Motion | Tailwind CSS v4 design tokens & Framer Motion (`clsx` + `tailwind-merge` for `cn()`) |
 | Global State | Zustand 5 (with `persist`) |
 | Server/Client Caching (Data) | TanStack React Query 5 (`@tanstack/react-query@^5`) |
 | Validation | Zod v4 |
 | Markdown Rendering | `react-markdown` + `remark-gfm` |
 | Icons | `lucide-react` |
+| Charts | `lightweight-charts@^5.2.1` (candlestick canvas) |
 
 ---
 
@@ -99,6 +101,7 @@ src/
 │   │   ├── use-binance-futures-funding.ts # futures mark-price/funding stream + REST availability + countdown
 │   │   ├── use-global-market-overview.ts # macro deck hook (30s poll, force refresh)
 │   │   ├── use-market-intelligence.ts / use-scan-market-intelligence.ts # TanStack+Dexie cached agent
+│   │   ├── use-market-panel-data.ts # bundles telemetry + intelligence + global hooks for the panel
 │   │   ├── use-symbol-search.ts  # symbol catalog, fuzzy + keyboard nav, ⌘K
 │   │   └── use-sparkline-data.ts / use-sparkline-geometry.ts # micro price sparkline math
 │   ├── ui/                       # generic UX hooks
@@ -110,17 +113,24 @@ src/
 │
 ├── components/                   # pure presentation (decoupled from transports)
 │   ├── (dashboard)/
-│   │   ├── dashboard-client.tsx  # chat stage + market panel + empty state orchestration
-│   │   ├── dashboard-header.tsx  # workspace switcher, New Chat, Market Panel toggle
+│   │   ├── dashboard-client.tsx  # chat + chart stage, market panel & FAB orchestration
+│   │   ├── dashboard-header.tsx  # workspace switcher, stage (Agent/Chart) toggle,
+│   │   │                         #   timeframe switcher, New Chat, Market Panel toggle
 │   │   ├── markdown-view.tsx     # sanitized markdown renderer (react-markdown + remark-gfm)
-│   │   ├── chat/                 # empty-state, dock, input, message, message-list, timeline,
-│   │   │                         #   thought-accordion, work-group, tool-result-card,
-│   │   │                         #   tool-results/ (10 per-tool cards)
+│   │   ├── chat/                 # chat-client, empty-state, dock, input, message,
+│   │   │                         #   message-list, agent-process-timeline, thought-accordion,
+│   │   │                         #   agent-work-group, tool-result-card,
+│   │   │                         #   tool-results/ (10 per-tool cards) + display-info/helpers
+│   │   ├── chart/                # Trading Chart stage (lightweight-charts)
+│   │   │   ├── chart-client.tsx  # REST kline load + combined kline/ticker WS stream
+│   │   │   ├── candlestick-canvas.tsx # minimal canvas, crosshair sync, zoom-to-recent
+│   │   │   ├── chart-header.tsx  # floating live price / 24h stats / WS status / actions
+│   │   │   └── chart-legend.tsx  # O/H/L/C crosshair legend
 │   │   ├── market-panel/         # collapsible right deck (Live Telemetry / Market Intelligence / Global Market)
 │   │   │   ├── telemetry/        # price-ticker (+sparkline), futures-funding, order-book-depth
 │   │   │   ├── agents/           # market-intelligence-agent-view + cards/ (4 executive cards)
 │   │   │   └── global/           # global-market-view + cards/ (4 macro cards: Pulse, Movers, Funding, Positioning)
-│   │   └── market-chart-view.tsx # placeholder trading-chart stage
+│   │   └── market-chart-view.tsx # thin wrapper reusing ChartClient
 │   ├── sidebar/                  # workspace groups, session list, nav views, theme toggle
 │   ├── common/                   # agent-loader, argus-icon, confirm-dialog
 │   ├── modals/                   # symbol search modal
@@ -137,7 +147,7 @@ src/
 │   └── content/                  # ALL user-facing copy, modularized (AGENTS.md Rule 1)
 │       ├── index.ts              # assembles APP_CONTENT
 │       ├── sidebar.content.ts / chat.content.ts / process.content.ts
-│       ├── market.content.ts / intelligence.content.ts
+│       ├── market.content.ts / intelligence.content.ts / chart.content.ts
 │   └── animation.ts              # Framer Motion animation tokens
 │
 └── app/
@@ -192,6 +202,14 @@ src/
 3. `GET /api/binance/global-overview` ([`src/app/api/binance/global-overview/route.ts`](../src/app/api/binance/global-overview/route.ts)) fans out parallel requests server-side: 24h stats for an 8-symbol universe (`BTC/ETH/SOL/BNB/ARB/OP/DOGE/AVAX` USDT), funding rates for the 4 core majors, and retail + whale long/short ratios for BTC & ETH.
 4. The route assembles a four-section payload — `marketPulse` (bias + average 24h change + core-asset tiles), `topMovers` (top 3 gainers/losers), `funding` (perpetual funding heatmap with APR), and `positioning` (retail vs whale L/S bias summary) — served with `Cache-Control: public, s-maxage=15, stale-while-revalidate=30`.
 5. The **Refresh** button (`handleRefresh` → `fetchGlobalMarketOverview({ force: true })`) issues a cache-busting request (`?t=<now>` + `cache: 'no-store'`), hydrates the query cache directly, and shows a ~600ms minimum spinner state.
+
+### 4.5 Trading Chart stage lifecycle
+
+1. The **Chart** entry in the header toggles `stageView` between `'agent'` and `'chart'` ([`src/lib/types/agent.ts`](../src/lib/types/agent.ts)); the chart mounts only while active (zero-flash hidden subtree in [`DashboardClient`](../src/components/(dashboard)/dashboard-client.tsx)).
+2. [`ChartClient`](../src/components/(dashboard)/chart/chart-client.tsx) resolves the active timeframe (default `1D`, six options from `APP_CONTENT.chart.timeframes`) and fetches historical klines via Binance Spot REST (`/api/v3/klines?interval=<tf>&limit=<tf.limit>`).
+3. A combined WebSocket stream (`<symbol>@kline_<interval>` + `<symbol>@ticker`) then live-updates the canvas via `candlestick-canvas`'s imperative `updateCandle` handle; candle state keeps the floating legend (O/H/L/C) and live price in sync.
+4. The canvas [`candlestick-canvas.tsx`](../src/components/(dashboard)/chart/candlestick-canvas.tsx) applies precision-aware price formatting, a dotted crosshair with axis badges, crosshair→legend sync, and `zoomToRecent` (36 visible bars). Reset-zoom and fullscreen controls are exposed in the floating action strip.
+5. The stream sleeps on `document.hidden` and reconnects with exponential backoff (`min(1000·1.5^retries, 8000)`); on the `GLOBAL` workspace the chart benchmarks the last active symbol (default `BTCUSDT`). The chart uses its own direct REST+WS channels (independent of the shared market-panel stream).
 
 ---
 
@@ -249,7 +267,7 @@ All tools validate symbols through a strict Zod schema built on `normalizeSymbol
 | `get_top_long_short_ratio` | Binance Futures | Top-20% whale long/short positioning, sentiment bucket |
 | `search_crypto_news` | Exa AI | News/catalysts with category, date-range, domain filters |
 
-The Binance REST client ([`src/lib/binance-mcp/public-api-client.ts`](../src/lib/binance-mcp/public-api-client.ts)) targets a **multi-cluster failover pool**: `BINANCE_SPOT_CLUSTER_ENDPOINTS` (`api.binance.com`, `data-api.binance.vision`, `api1/2/3.binance.com`, `api-gcp.binance.com`) for Spot and `BINANCE_FUTURES_CLUSTER_ENDPOINTS` (`fapi.binance.com` / `futures/data`) for Futures. Each attempt is capped at a 6s `AbortSignal.timeout`; on timeouts, 429s, 5xx, or 451 geo-blocks it retries the next cluster (throwing immediately on deterministic 400 symbol errors), and `BINANCE_SPOT_API_URL` / `BINANCE_FUTURES_API_URL` prepend custom cluster bases. Per-endpoint `revalidate` caching applies (ticker/depth/trades 2s, klines 10s, 24h stats/avg 5s, funding/OI/ratios 15s) with unified error extraction.
+The Binance REST client ([`src/lib/binance-mcp/public-api-client.ts`](../src/lib/binance-mcp/public-api-client.ts)) targets a **multi-cluster failover pool**: `BINANCE_SPOT_CLUSTER_ENDPOINTS` (`api.binance.com`, `data-api.binance.vision`, `api1/2/3.binance.com`, `api-gcp.binance.com`) for Spot and the single `BINANCE_FUTURES_CLUSTER_ENDPOINTS` base (`fapi.binance.com`) for Futures — covering both the `/fapi/` and `/futures/data/` path namespaces. Each attempt is capped at a 6s `AbortSignal.timeout`; on timeouts, 429s, 5xx, or 451 geo-blocks it retries the next cluster (throwing immediately on deterministic 400 symbol errors), and `BINANCE_SPOT_API_URL` / `BINANCE_FUTURES_API_URL` prepend custom cluster bases. Per-endpoint `revalidate` caching applies (ticker/depth/trades 2s, klines 10s, 24h stats/avg 5s, funding/OI/ratios 15s) with unified error extraction.
 
 ---
 
@@ -321,14 +339,15 @@ Returns active Binance **USDT spot pairs** (from `exchangeInfo?permissions=SPOT`
 
 ## 11. Roadmap Status
 
-The roadmap centers on a **3-pane workstation architecture**: symbol catalog (Dexie-cached USDT pairs), center agent chat, and a right **intelligence deck** with isolated sidecar agents producing strict-Zod structured JSON via `generateObject`.
+The roadmap centers on a **workstation architecture**: symbol catalog (Dexie-cached USDT pairs), a center stage that toggles between agent chat and a live candlestick trading chart, and a right **intelligence deck** with isolated sidecar agents producing strict-Zod structured JSON via `generateObject`.
 
 **Implemented so far:**
-- Full 3-pane workstation shell (sidebar ↔ agent chat ↔ collapsible right panel with Live Telemetry / Market Intelligence tabs).
+- Full workstation shell (sidebar ↔ center stage with Agent chat / Trading Chart ↔ collapsible right panel with Live Telemetry / Market Intelligence tabs).
+- **Trading Chart stage** — interactive `lightweight-charts` candlestick canvas (six timeframes), live kline + ticker WebSocket stream, crosshair legend, zoom/reset/fullscreen, tab-visibility sleep with exponential backoff, and a `BTCUSDT` benchmark fallback on the GLOBAL workspace.
 - **Market Intelligence Agent** — a unified sidecar agent covering the Quant/Levels, Catalyst/News, and Liquidity/Positioning planes in **one structured 4-card payload** (CONTROL, KEY LEVELS, POSITIONING, TACTICAL PLAYBOOK) with 1-hour snapshot caching.
 - **Global Market Overview** — a pure data-layer macro deck for the `GLOBAL` workspace (Market Pulse, Top Movers, Funding Heatmap, Macro Positioning), aggregated by `GET /api/binance/global-overview` and polled every 30s.
 
-**Still on the roadmap:** dedicated independent sidecar **agent** endpoints (Tactical Signal & Key Levels, Catalyst & News Radar as standalone subscriptions, Liquidity & Risk Sentinel with slippage tiers), richer charting, and additional workspace-deck modules.
+**Still on the roadmap:** dedicated independent sidecar **agent** endpoints (Tactical Signal & Key Levels, Catalyst & News Radar as standalone subscriptions, Liquidity & Risk Sentinel with slippage tiers), trading-chart upgrades (technical indicator/volume-flow overlays), and additional workspace-deck modules.
 
 ---
 
