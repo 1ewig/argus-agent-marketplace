@@ -45,32 +45,15 @@ Your conversations, session history, and workspace notes stay in your browser vi
 
 ---
 
-## Technical Specifications & Architecture
+## Technical Architecture & In-Depth Docs
 
-### Available Agent Tools
+For engineers and hackathon judges looking for complete technical breakdowns, please see our dedicated documentation:
 
-| Tool | Source | Purpose |
-| :--- | :--- | :--- |
-| **`get_ticker_price`** | Binance Spot | Real-time spot price tick for any trading pair |
-| **`get_order_book`** | Binance Spot | Live 20-level bid/ask depth, spread %, and imbalance ratio |
-| **`get_klines`** | Binance Spot | Historical candlestick patterns across 1m, 5m, 15m, 1h, 4h, and 1d intervals |
-| **`get_24h_stats`** | Binance Spot | Rolling 24-hour high, low, price change %, and volume |
-| **`get_funding_rate`** | Binance Futures | Perpetual funding rate, mark price, annualized APR, and countdown |
-| **`get_average_price`** | Binance Spot | 5-minute rolling Volume Weighted Average Price (VWAP) |
-| **`get_recent_trades`** | Binance Spot | Live trade tape with taker buy vs. sell volume ratios |
-| **`get_open_interest`** | Binance Futures | Real-time open interest contracts and position sizing |
-| **`search_crypto_news`** | Exa AI | Live crypto news, protocol upgrades, and regulatory updates |
+👉 **[Read the Full Technical Project Summary (`docs/PROJECT_SUMMARY.md`)](docs/PROJECT_SUMMARY.md)**
 
-### Technology Stack
-
-* **Framework & UI:** Next.js 16 (Turbopack, App Router, React 19)
-* **Runtime & Package Manager:** Bun (`bun@1.4.0+`)
-* **Tooling:** TypeScript 7 (strict type-checking) & Oxlint
-* **AI & Agent Streaming:** Vercel AI SDK (`ai@7`, `@ai-sdk/groq`, `@ai-sdk/fireworks`) with `smoothStream`
-* **Real-time Market Feeds:** Binance Public REST API & Client WebSockets
-* **Search Engine:** Exa AI REST API
-* **Local Persistence:** Dexie IndexedDB (`dexie`, `dexie-react-hooks`)
-* **Styling & Motion:** Tailwind CSS v4 design tokens and Framer Motion
+* **AI Reasoning Layer:** Autonomous multi-step streaming via Vercel AI SDK (`ai@7`) with smooth word-by-word streaming, thinking capture, and automatic multi-provider failover (Groq & Fireworks AI).
+* **Live Exchange Feeds:** 10 registered agent tools covering Binance Spot REST, Futures REST, Exa Neural Search, and high-frequency WebSocket partial depth streams (`100ms`).
+* **Persistence & Architecture:** Client-side Dexie IndexedDB with versioned migrations, 0ms session prewarming, and modular presentation separation.
 
 ---
 
@@ -79,7 +62,7 @@ Your conversations, session history, and workspace notes stay in your browser vi
 ### Prerequisites
 * [Bun](https://bun.sh/) `v1.4.0` or higher
 * An API key from [Groq](https://console.groq.com/keys) or [Fireworks AI](https://fireworks.ai/api-keys)
-* *(Optional)* An API key from [Exa AI](https://dashboard.exa.ai/api-keys) for web search
+* *(Optional)* An API key from [Exa AI](https://dashboard.exa.ai/api-keys) for web news search
 
 ### 1. Installation
 ```bash
