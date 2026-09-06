@@ -5,7 +5,11 @@ import { motion } from 'framer-motion';
 import { Globe, Loader2, Bot, Activity, RefreshCw } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
 import { sidebarSpringTransition, tapScalePill } from '@/constants/animation';
-import { useBinanceMarketStream, useScanMarketIntelligence } from '@/hooks';
+import {
+  useBinanceMarketStream,
+  useBinanceFuturesFunding,
+  useScanMarketIntelligence,
+} from '@/hooks';
 import { useAppStore } from '@/stores/app-store';
 import {
   PriceTickerCard,
@@ -26,8 +30,14 @@ export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
   const rightPanelTab = useAppStore((state) => state.rightPanelTab);
   const setRightPanelTab = useAppStore((state) => state.setRightPanelTab);
 
+  // Market Intelligence Scan & Data hook
   const {
     cleanSymbol,
+    data: intelligenceData,
+    isLoading: isIntelligenceLoading,
+    isFetching: isIntelligenceFetching,
+    isError: isIntelligenceError,
+    refetch: refetchIntelligence,
     isAnalyzing,
     isAnalysisFresh,
     handleScan,
@@ -35,10 +45,19 @@ export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
     enabled: isOpen && !isGlobal,
   });
 
-  // Real-time client-direct Binance WebSocket connection
-  const { ticker, orderBook, status } = useBinanceMarketStream(symbol, {
+  // Real-time client-direct Binance Spot WebSocket connection
+  const { ticker, orderBook, status: spotStatus } = useBinanceMarketStream(symbol, {
     enabled: isOpen && !isGlobal,
     depthLevels: 8,
+  });
+
+  // Real-time Binance Futures WebSocket / Funding stream
+  const {
+    data: futuresData,
+    isAvailable: isFuturesAvailable,
+    countdownFormatted: futuresCountdownFormatted,
+  } = useBinanceFuturesFunding(symbol, {
+    enabled: isOpen && !isGlobal,
   });
 
   return (
@@ -89,23 +108,23 @@ export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
           </div>
 
           {/* Connection Status Badge (only shown during connecting, reconnecting, or error in overview) */}
-          {!isGlobal && rightPanelTab === 'overview' && status !== 'connected' && (
+          {!isGlobal && rightPanelTab === 'overview' && spotStatus !== 'connected' && (
             <div
               className={`flex items-center gap-1 px-2 py-0.5 rounded-full border transition-colors shrink-0 ${
-                status === 'connecting' || status === 'reconnecting'
+                spotStatus === 'connecting' || spotStatus === 'reconnecting'
                   ? 'bg-theme-brand-binance/10 border-theme-brand-binance/30 text-theme-brand-binance'
                   : 'bg-theme-status-danger/10 border-theme-status-danger/30 text-theme-status-danger'
               }`}
             >
-              {status === 'connecting' || status === 'reconnecting' ? (
+              {spotStatus === 'connecting' || spotStatus === 'reconnecting' ? (
                 <Loader2 className="size-2.5 animate-spin" />
               ) : (
                 <span className="size-1.5 rounded-full bg-theme-status-danger" />
               )}
               <span className="text-[10px] font-mono font-bold tracking-tight">
-                {status === 'connecting'
+                {spotStatus === 'connecting'
                   ? content.statusConnecting
-                  : status === 'reconnecting'
+                  : spotStatus === 'reconnecting'
                   ? content.statusReconnecting
                   : content.statusError}
               </span>
@@ -144,7 +163,14 @@ export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
               </p>
             </div>
           ) : rightPanelTab === 'intelligence' || rightPanelTab === 'market-data' ? (
-            <MarketIntelligenceAgentView key={`intelligence_${cleanSymbol}`} symbol={symbol} />
+            <MarketIntelligenceAgentView
+              key={`intelligence_${cleanSymbol}`}
+              data={intelligenceData}
+              isLoading={isIntelligenceLoading}
+              isFetching={isIntelligenceFetching}
+              isError={isIntelligenceError}
+              onRetry={refetchIntelligence}
+            />
           ) : (
             <>
               {/* Module 1: Price & 24h Ticker Pulse with Micro Sparkline */}
@@ -152,14 +178,15 @@ export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
                 key={`ticker_${symbol}`}
                 symbol={symbol}
                 ticker={ticker}
-                status={status}
+                status={spotStatus}
               />
 
               {/* Module 2: Perpetual Futures Sentinel (Funding Rate & Countdown) */}
               <FuturesFundingCard
                 key={`futures_${symbol}`}
-                symbol={symbol}
-                isOpen={isOpen}
+                data={futuresData}
+                isAvailable={isFuturesAvailable}
+                countdownFormatted={futuresCountdownFormatted}
               />
 
               {/* Module 3: Micro Order Book Depth Ladder */}
@@ -167,7 +194,7 @@ export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
                 key={`depth_${symbol}`}
                 symbol={symbol}
                 orderBook={orderBook}
-                status={status}
+                status={spotStatus}
               />
 
               {/* Verified Stream Notice */}

@@ -4,7 +4,7 @@ import React from 'react';
 import { RefreshCw, AlertCircle } from 'lucide-react';
 import { AgentLoader } from '@/components/common';
 import { APP_CONTENT } from '@/constants/content';
-import { useMarketIntelligence } from '@/hooks';
+import type { MarketIntelligencePayload } from '@/agent';
 import {
   MarketControlCard,
   MarketLevelsCard,
@@ -19,13 +19,22 @@ export {
   ONE_HOUR_MS,
 } from '@/lib/db';
 
-interface MarketIntelligenceAgentViewProps {
-  symbol: string;
+export interface MarketIntelligenceAgentViewProps {
+  data?: MarketIntelligencePayload;
+  isLoading?: boolean;
+  isFetching?: boolean;
+  isError?: boolean;
+  onRetry?: () => void;
 }
 
-export function MarketIntelligenceAgentView({ symbol }: MarketIntelligenceAgentViewProps) {
+export const MarketIntelligenceAgentView = React.memo(function MarketIntelligenceAgentView({
+  data,
+  isLoading = false,
+  isFetching = false,
+  isError = false,
+  onRetry,
+}: MarketIntelligenceAgentViewProps) {
   const content = APP_CONTENT.marketIntelligence;
-  const { data, isLoading, isFetching, isError, refetch } = useMarketIntelligence(symbol);
 
   // 1. Centered Loader State during initial analysis (only when no cached data exists)
   if ((isLoading || isFetching) && !data) {
@@ -62,14 +71,16 @@ export function MarketIntelligenceAgentView({ symbol }: MarketIntelligenceAgentV
             {content.errorSubtitle}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={refetch}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-theme-brand-binance text-theme-bg-overlay hover:brightness-105 active:brightness-95 transition-all cursor-pointer shadow-2xs"
-        >
-          <RefreshCw className="size-3" />
-          <span>{content.retryButton}</span>
-        </button>
+        {onRetry && (
+          <button
+            type="button"
+            onClick={onRetry}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-theme-brand-binance text-theme-bg-overlay hover:brightness-105 active:brightness-95 transition-all cursor-pointer shadow-2xs"
+          >
+            <RefreshCw className="size-3" />
+            <span>{content.retryButton}</span>
+          </button>
+        )}
       </div>
     );
   }
@@ -83,4 +94,6 @@ export function MarketIntelligenceAgentView({ symbol }: MarketIntelligenceAgentV
       <MarketPlaybookCard playbook={data.playbook} />
     </div>
   );
-}
+});
+
+MarketIntelligenceAgentView.displayName = 'MarketIntelligenceAgentView';

@@ -6,7 +6,7 @@ import { isGlobalSymbol } from '@/lib/utils';
 import { marketIntelligenceQuery, fetchMarketIntelligence } from '@/lib/queries';
 import { ONE_HOUR_MS } from '@/lib/db';
 import { useMarketIntelligence } from './use-market-intelligence';
-import type { MarketIntelligenceResponse } from '@/agent';
+import type { MarketIntelligencePayload, MarketIntelligenceResponse } from '@/agent';
 
 export interface UseScanMarketIntelligenceOptions {
   enabled?: boolean;
@@ -14,6 +14,13 @@ export interface UseScanMarketIntelligenceOptions {
 
 export interface UseScanMarketIntelligenceResult {
   cleanSymbol: string;
+  response: MarketIntelligenceResponse | undefined;
+  data: MarketIntelligencePayload | undefined;
+  isLoading: boolean;
+  isFetching: boolean;
+  isError: boolean;
+  error: Error | null;
+  refetch: () => void;
   isScanning: boolean;
   isAnalyzing: boolean;
   isAnalysisFresh: boolean;
@@ -22,7 +29,7 @@ export interface UseScanMarketIntelligenceResult {
 }
 
 /**
- * Hook to manage scanning, manual refresh mutations, and freshness derivation
+ * Hook to manage scanning, manual refresh mutations, data retrieval, and freshness derivation
  * for symbol-specific Market Intelligence.
  */
 export function useScanMarketIntelligence(
@@ -45,7 +52,15 @@ export function useScanMarketIntelligence(
     return () => clearInterval(interval);
   }, []);
 
-  const { response: intelligenceResponse } = useMarketIntelligence(cleanSymbol, {
+  const {
+    response: intelligenceResponse,
+    data,
+    isLoading,
+    isFetching,
+    isError,
+    error,
+    refetch,
+  } = useMarketIntelligence(cleanSymbol, {
     enabled: enabled && !isGlobal,
   });
 
@@ -77,6 +92,13 @@ export function useScanMarketIntelligence(
 
   return {
     cleanSymbol,
+    response: intelligenceResponse,
+    data,
+    isLoading,
+    isFetching,
+    isError,
+    error,
+    refetch,
     isScanning,
     isAnalyzing,
     isAnalysisFresh,

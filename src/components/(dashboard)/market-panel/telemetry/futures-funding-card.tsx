@@ -3,22 +3,20 @@
 import React from 'react';
 import { Gauge, AlertCircle, Clock, Loader2 } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
-import { useBinanceFuturesFunding } from '@/hooks';
+import type { LiveFuturesFundingData } from '@/lib/binance-websocket';
 
 interface FuturesFundingCardProps {
-  symbol: string;
-  isOpen: boolean;
+  data: LiveFuturesFundingData | null;
+  isAvailable?: boolean;
+  countdownFormatted?: string;
 }
 
 export const FuturesFundingCard = React.memo(function FuturesFundingCard({
-  symbol,
-  isOpen,
+  data,
+  isAvailable = true,
+  countdownFormatted = '--:--:--',
 }: FuturesFundingCardProps) {
   const content = APP_CONTENT.marketPanel;
-
-  const { data, isAvailable, countdownFormatted } = useBinanceFuturesFunding(symbol, {
-    enabled: isOpen,
-  });
 
   const isPositiveFunding = (data?.fundingRate ?? 0) > 0;
   const isNegativeFunding = (data?.fundingRate ?? 0) < 0;
