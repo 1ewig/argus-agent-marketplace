@@ -64,7 +64,12 @@ export async function executeMarketIntelligence(
   rawSymbol: string,
   options: MarketIntelligenceOptions = {}
 ): Promise<MarketIntelligenceResponse> {
+  const startTime = Date.now();
   const cleanSymbol = normalizeSymbol(rawSymbol);
+
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`\n📊 [Argus:MarketIntelligence] Scan initiated | Symbol: #${cleanSymbol}`);
+  }
 
   // Extract base asset for news search (e.g. SOL from SOLUSDT)
   const baseAsset = cleanSymbol.replace(/(USDT|USDC|FDUSD|BTC|ETH|BNB|EUR|TRY)$/, '') || cleanSymbol;
@@ -117,6 +122,15 @@ export async function executeMarketIntelligence(
   const totalBidVol = orderBook?.bids.reduce((sum, [, q]) => sum + q, 0) ?? 0;
   const totalAskVol = orderBook?.asks.reduce((sum, [, q]) => sum + q, 0) ?? 0;
   const rawImbalance = totalAskVol > 0 ? +(totalBidVol / totalAskVol).toFixed(2) : 1.0;
+
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(
+      `   📡 [Data Ingestion] Spot: $${currentPrice} | Best Bid/Ask: $${bestBid}/$${bestAsk} | Depth Imbalance: ${rawImbalance}x`
+    );
+    console.log(
+      `   📈 [Derivatives] Funding: ${funding ? `${(funding.lastFundingRate * 100).toFixed(4)}% (APR: ${funding.annualizedRatePercent}%)` : 'None'} | Catalysts: ${news?.results?.length ?? 0} articles`
+    );
+  }
 
   const kline15mCloses = klines15m.map((k) => k.close);
   const kline15mHighs = klines15m.map((k) => k.high);
@@ -175,6 +189,8 @@ Synthesize the 4-card executive intelligence payload now.`;
     // If models cannot be initialized, use deterministic computation
   }
 
+  let finalPayload: MarketIntelligencePayload | null = null;
+
   if (primaryModel) {
     try {
       const result = await generateObject({
@@ -184,13 +200,10 @@ Synthesize the 4-card executive intelligence payload now.`;
         prompt: userPrompt,
       });
 
-      return {
-        symbol: cleanSymbol,
-        timestamp: Date.now(),
-        data: result.object,
-        newsCount: newsSnippets.length,
-        sources: newsSnippets.map((n) => n.url).filter(Boolean),
-      };
+      finalPayload = result.object;
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`   ✨ [Synthesis] Primary LLM generated payload in ${Date.now() - startTime}ms`);
+      }
     } catch {
       if (backupModel) {
         try {
@@ -201,13 +214,10 @@ Synthesize the 4-card executive intelligence payload now.`;
             prompt: userPrompt,
           });
 
-          return {
-            symbol: cleanSymbol,
-            timestamp: Date.now(),
-            data: result.object,
-            newsCount: newsSnippets.length,
-            sources: newsSnippets.map((n) => n.url).filter(Boolean),
-          };
+          finalPayload = result.object;
+          if (process.env.NODE_ENV !== 'production') {
+            console.log(`   ✨ [Synthesis] Backup LLM generated payload in ${Date.now() - startTime}ms`);
+          }
         } catch {
           // Fall through to deterministic synthesizer
         }
@@ -215,56 +225,70 @@ Synthesize the 4-card executive intelligence payload now.`;
     }
   }
 
-  // Deterministic Fallback grounded in exact Binance mathematical metrics
-  const isBuyerDominant = rawImbalance >= 1.05;
-  const isSellerDominant = rawImbalance <= 0.95;
-  const controlSide = isBuyerDominant ? 'buyers' : isSellerDominant ? 'sellers' : 'neutral';
+  if (!finalPayload) {
+    // Deterministic Fallback grounded in exact Binance mathematical metrics
+    const isBuyerDominant = rawImbalance >= 1.05;
+    const isSellerDominant = rawImbalance <= 0.95;
+    const controlSide = isBuyerDominant ? 'buyers' : isSellerDominant ? 'sellers' : 'neutral';
 
-  const calculatedSupport = +(min15mLow > 0 ? min15mLow : currentPrice * 0.985).toFixed(currentPrice < 1 ? 4 : 2);
-  const calculatedResistance = +(max15mHigh > 0 ? max15mHigh : currentPrice * 1.015).toFixed(currentPrice < 1 ? 4 : 2);
+    const calculatedSupport = +(min15mLow > 0 ? min15mLow : currentPrice * 0.985).toFixed(currentPrice < 1 ? 4 : 2);
+    const calculatedResistance = +(max15mHigh > 0 ? max15mHigh : currentPrice * 1.015).toFixed(currentPrice < 1 ? 4 : 2);
 
-  const isFundingPositive = funding ? funding.lastFundingRate > 0.0001 : false;
-  const isFundingNegative = funding ? funding.lastFundingRate < -0.0001 : false;
-  const fundingBias = isFundingPositive ? 'longs_paying' : isFundingNegative ? 'shorts_paying' : 'neutral';
+    const isFundingPositive = funding ? funding.lastFundingRate > 0.0001 : false;
+    const isFundingNegative = funding ? funding.lastFundingRate < -0.0001 : false;
+    const fundingBias = isFundingPositive ? 'longs_paying' : isFundingNegative ? 'shorts_paying' : 'neutral';
 
-  const targetPrice = +(calculatedResistance * 1.002).toFixed(currentPrice < 1 ? 4 : 2);
-  const invalidationPrice = +(calculatedSupport * 0.995).toFixed(currentPrice < 1 ? 4 : 2);
+    const targetPrice = +(calculatedResistance * 1.002).toFixed(currentPrice < 1 ? 4 : 2);
+    const invalidationPrice = +(calculatedSupport * 0.995).toFixed(currentPrice < 1 ? 4 : 2);
 
-  const fallbackPayload: MarketIntelligencePayload = {
-    control: {
-      side: controlSide,
-      imbalance: rawImbalance,
-      summary: isBuyerDominant
-        ? `Buyers in control with ${rawImbalance}x bid support across top 20 depth levels.`
-        : isSellerDominant
-        ? `Sellers pressing down with ${+(1 / rawImbalance).toFixed(2)}x ask resistance.`
-        : 'Balanced liquidity distribution with neutral order book pressure.',
-    },
-    levels: {
-      support: calculatedSupport,
-      resistance: calculatedResistance,
-      bias: isBuyerDominant ? 'bullish' : isSellerDominant ? 'bearish' : 'neutral',
-      summary: `Holding above immediate $${calculatedSupport.toLocaleString()} support; next test at $${calculatedResistance.toLocaleString()}.`,
-    },
-    positioning: {
-      fundingBias,
-      sentiment: isFundingPositive ? 'mildly_bullish' : isFundingNegative ? 'mildly_bearish' : 'neutral',
-      summary: funding
-        ? `Perpetual funding rate at ${(funding.lastFundingRate * 100).toFixed(4)}% (${funding.annualizedRatePercent}% APR).`
-        : 'Perpetual contract not listed; relying on spot volume profile.',
-    },
-    playbook: {
-      target: targetPrice,
-      invalidation: invalidationPrice,
-      bias: isBuyerDominant ? 'dip_buyer' : 'range_scalp',
-      summary: `Favorable risk/reward positioning toward $${targetPrice.toLocaleString()} target with invalidation at $${invalidationPrice.toLocaleString()}.`,
-    },
-  };
+    finalPayload = {
+      control: {
+        side: controlSide,
+        imbalance: rawImbalance,
+        summary: isBuyerDominant
+          ? `Buyers in control with ${rawImbalance}x bid support across top 20 depth levels.`
+          : isSellerDominant
+          ? `Sellers pressing down with ${+(1 / rawImbalance).toFixed(2)}x ask resistance.`
+          : 'Balanced liquidity distribution with neutral order book pressure.',
+      },
+      levels: {
+        support: calculatedSupport,
+        resistance: calculatedResistance,
+        bias: isBuyerDominant ? 'bullish' : isSellerDominant ? 'bearish' : 'neutral',
+        summary: `Holding above immediate $${calculatedSupport.toLocaleString()} support; next test at $${calculatedResistance.toLocaleString()}.`,
+      },
+      positioning: {
+        fundingBias,
+        sentiment: isFundingPositive ? 'mildly_bullish' : isFundingNegative ? 'mildly_bearish' : 'neutral',
+        summary: funding
+          ? `Perpetual funding rate at ${(funding.lastFundingRate * 100).toFixed(4)}% (${funding.annualizedRatePercent}% APR).`
+          : 'Perpetual contract not listed; relying on spot volume profile.',
+      },
+      playbook: {
+        target: targetPrice,
+        invalidation: invalidationPrice,
+        bias: isBuyerDominant ? 'dip_buyer' : 'range_scalp',
+        summary: `Favorable risk/reward positioning toward $${targetPrice.toLocaleString()} target with invalidation at $${invalidationPrice.toLocaleString()}.`,
+      },
+    };
+
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`   ⚡ [Synthesis] Computed deterministic mathematical payload in ${Date.now() - startTime}ms`);
+    }
+  }
+
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`🏁 [Argus:MarketIntelligence] Completed 4-card payload for #${cleanSymbol}:`);
+    console.log(`      • Control: ${finalPayload.control.side} (${finalPayload.control.imbalance}x imbalance)`);
+    console.log(`      • Key Levels: Support $${finalPayload.levels.support} | Resistance $${finalPayload.levels.resistance} (${finalPayload.levels.bias})`);
+    console.log(`      • Positioning: ${finalPayload.positioning.fundingBias} | Sentiment: ${finalPayload.positioning.sentiment}`);
+    console.log(`      • Tactical Playbook: ${finalPayload.playbook.bias} -> Target $${finalPayload.playbook.target} | Invalidation $${finalPayload.playbook.invalidation}`);
+  }
 
   return {
     symbol: cleanSymbol,
     timestamp: Date.now(),
-    data: fallbackPayload,
+    data: finalPayload,
     newsCount: newsSnippets.length,
     sources: newsSnippets.map((n) => n.url).filter(Boolean),
   };

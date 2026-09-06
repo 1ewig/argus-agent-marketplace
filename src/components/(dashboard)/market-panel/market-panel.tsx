@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Globe, Loader2, Bot, Activity, RefreshCw } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useIsFetching } from '@tanstack/react-query';
 import { sidebarSpringTransition, tapScalePill } from '@/constants/animation';
 import { useBinanceMarketStream } from '@/hooks/use-binance-market-stream';
 import { useAppStore } from '@/stores/app-store';
@@ -13,13 +13,7 @@ import {
   FuturesFundingCard,
   OrderBookDepthCard,
 } from './telemetry';
-import {
-  MarketIntelligenceAgentView,
-  getStoredIntelligence,
-  useIsFresh,
-  ONE_HOUR_MS,
-} from './agents';
-import type { MarketIntelligenceResponse } from '@/agent';
+import { MarketIntelligenceAgentView } from './agents';
 
 interface MarketPanelProps {
   isOpen: boolean;
@@ -35,27 +29,21 @@ export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
   const queryClient = useQueryClient();
 
   const [isScanning, setIsScanning] = useState(false);
-  const [scanKey, setScanKey] = useState(0);
-
   const cleanSymbol = symbol.trim().toUpperCase();
 
-  // Check if market intelligence for this coin was analyzed within the past 1 hour
-  const cachedIntelligence =
-    queryClient.getQueryData<MarketIntelligenceResponse>([
-      'market-intelligence',
-      cleanSymbol,
-    ]) ?? (typeof window !== 'undefined' ? getStoredIntelligence(cleanSymbol) : null);
+  const isFetchingIntelligence = useIsFetching({
+    queryKey: ['market-intelligence', cleanSymbol],
+  }) > 0;
 
-  const isIntelligenceFresh = useIsFresh(cachedIntelligence?.timestamp, ONE_HOUR_MS);
+  const isAnalyzing = isScanning || isFetchingIntelligence;
 
   const handleScan = async () => {
-    if (isScanning) return;
+    if (isAnalyzing) return;
     setIsScanning(true);
     try {
-      await queryClient.invalidateQueries({
+      await queryClient.refetchQueries({
         queryKey: ['market-intelligence', cleanSymbol],
       });
-      setScanKey((k) => k + 1);
     } finally {
       setIsScanning(false);
     }
@@ -138,19 +126,18 @@ export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
             </div>
           )}
 
-          {/* Header Action in Intelligence Tab: Scan Market Button (Removed for 1 hour once cached) */}
+          {/* Header Action in Intelligence Tab: Scan Market Button */}
           {!isGlobal &&
-            (rightPanelTab === 'intelligence' || rightPanelTab === 'market-data') &&
-            !isIntelligenceFresh && (
+            (rightPanelTab === 'intelligence' || rightPanelTab === 'market-data') && (
               <motion.button
                 type="button"
                 whileTap={tapScalePill}
                 onClick={handleScan}
-                disabled={isScanning}
+                disabled={isAnalyzing}
                 className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-theme-bg-elevated hover:bg-theme-bg-elevated/80 active:bg-theme-bg-surface border border-theme-border-subtle text-theme-text-primary transition-colors cursor-pointer disabled:opacity-50 shadow-2xs shrink-0"
               >
-                <RefreshCw className={`size-3 text-theme-brand-binance ${isScanning ? 'animate-spin' : ''}`} />
-                <span>{isScanning ? intelligence.refreshing : intelligence.refreshButton}</span>
+                <RefreshCw className={`size-3 text-theme-brand-binance ${isAnalyzing ? 'animate-spin' : ''}`} />
+                <span>{isAnalyzing ? intelligence.refreshing : intelligence.refreshButton}</span>
               </motion.button>
           )}
         </div>
@@ -170,7 +157,7 @@ export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
               </p>
             </div>
           ) : rightPanelTab === 'intelligence' || rightPanelTab === 'market-data' ? (
-            <MarketIntelligenceAgentView key={`intelligence_${symbol}_${scanKey}`} symbol={symbol} />
+            <MarketIntelligenceAgentView key={`intelligence_${cleanSymbol}`} symbol={symbol} />
           ) : (
             <>
               {/* Module 1: Price & 24h Ticker Pulse with Micro Sparkline */}

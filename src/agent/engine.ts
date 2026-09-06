@@ -38,6 +38,15 @@ export async function executeAgentStream(
   let activeThinkingStepId: string | null = null;
   let accumulatedText = '';
 
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(
+      `\n🤖 [Argus:ChatAgent] Started | Symbol: ${symbol ?? 'GLOBAL'} | Mode: ${mode} | MaxSteps: ${maxSteps}`
+    );
+    console.log(
+      `   Prompt: "${options.prompt.slice(0, 100)}${options.prompt.length > 100 ? '...' : ''}"`
+    );
+  }
+
   // Stream interceptor to prevent raw <session_title> XML leaking to the client
   const titleFilter = new SessionTitleStreamFilter(
     (title) => onEvent({ type: 'session_title', title }),
@@ -159,6 +168,9 @@ export async function executeAgentStream(
           toolArgs: (part.input as Record<string, unknown>) ?? undefined,
         };
         steps.push(toolStep);
+        if (process.env.NODE_ENV !== 'production') {
+          console.log(`   🛠️ [Tool Call]: ${part.toolName}`, part.input ?? {});
+        }
         onEvent({ type: 'step_start', step: toolStep });
 
       } else if (part.type === 'tool-result') {
@@ -182,6 +194,10 @@ export async function executeAgentStream(
             toolArgs: matchingToolStep.toolArgs,
             toolResult: matchingToolStep.toolResult,
           });
+        }
+
+        if (process.env.NODE_ENV !== 'production') {
+          console.log(`   ✔️ [Tool Result]: ${part.toolName}`);
         }
 
         executedToolCalls.push({
@@ -224,6 +240,10 @@ export async function executeAgentStream(
             toolArgs: matchingToolStep.toolArgs,
             toolResult: matchingToolStep.toolResult,
           });
+        }
+
+        if (process.env.NODE_ENV !== 'production') {
+          console.log(`   ❌ [Tool Error]: ${part.toolName} -> ${errorMessage}`);
         }
 
         executedToolCalls.push({
@@ -370,6 +390,15 @@ export async function executeAgentStream(
     timestamp: Date.now(),
   };
 
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(
+      `🏁 [Argus:ChatAgent] Finished in ${workedDurationMs}ms (${prunedSteps.length} steps, ${executedToolCalls.length} tools)`
+    );
+    if (sessionTitle) {
+      console.log(`   🏷️ [Session Title]: "${sessionTitle}"`);
+    }
+  }
+
   onEvent({ type: 'done', result: finalResult });
   return finalResult;
 }
@@ -379,6 +408,12 @@ export async function executeAgentStream(
  */
 export async function executeAgent(options: AgentOptions): Promise<AgentResult> {
   const { maxSteps = 5, mode = 'simulation', symbol } = options;
+
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(
+      `\n🤖 [Argus:ChatAgent:Batch] Started | Symbol: ${symbol ?? 'GLOBAL'} | Mode: ${mode}`
+    );
+  }
   const {
     model,
     backupModel,

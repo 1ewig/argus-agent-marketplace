@@ -97,6 +97,10 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
     const prompt = (textToSend ?? '').trim();
     if (!prompt || isLoading) return;
 
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`[Argus:ChatAgent] Sending message | Symbol: ${selectedSymbol ?? 'GLOBAL'}`, { prompt });
+    }
+
     setErrorNotice(null);
 
     // Cancel any previous stream before starting a new one
@@ -239,6 +243,10 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
 
       updateCachedMessage(finalMessage);
       await saveStoredMessage(finalMessage);
+
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`[Argus:ChatAgent] Message stream completed`, finalMessage);
+      }
 
       // Ensure conversation title is updated on first turn if still a default title
       const resolvedTitle =
