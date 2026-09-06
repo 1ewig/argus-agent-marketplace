@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useRef, useSyncExternalStore, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { isGlobalSymbol } from '@/lib/utils';
+import { useTabVisibility } from '@/hooks/ui';
 import {
   buildFuturesMarkPriceStreamUrl,
   parseBinanceFuturesMarkPrice,
@@ -21,15 +22,6 @@ export interface UseBinanceFuturesFundingReturn {
   isAvailable: boolean;
   countdownFormatted: string;
 }
-
-const getIsTabVisible = () =>
-  typeof document !== 'undefined' ? document.visibilityState === 'visible' : true;
-
-const subscribeVisibility = (callback: () => void) => {
-  if (typeof document === 'undefined') return () => {};
-  document.addEventListener('visibilitychange', callback);
-  return () => document.removeEventListener('visibilitychange', callback);
-};
 
 function formatCountdown(targetEpochMs: number): string {
   if (!targetEpochMs || targetEpochMs <= 0) return '00:00:00';
@@ -56,7 +48,7 @@ export function useBinanceFuturesFunding(
 ): UseBinanceFuturesFundingReturn {
   const { enabled = true } = options;
 
-  const isTabVisible = useSyncExternalStore(subscribeVisibility, getIsTabVisible, () => true);
+  const isTabVisible = useTabVisibility();
   const cleanSymbol = (symbol || '').trim().toUpperCase().replace(/[/\\_-]/g, '');
   const isGlobal = isGlobalSymbol(cleanSymbol);
   const isStreamActive = enabled && !isGlobal && isTabVisible;

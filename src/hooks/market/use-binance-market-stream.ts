@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useRef, useSyncExternalStore } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { isGlobalSymbol } from '@/lib/utils';
+import { useTabVisibility } from '@/hooks/ui';
 import {
   buildCombinedStreamUrl,
   parseBinanceTickerMessage,
@@ -26,15 +27,6 @@ export interface UseBinanceMarketStreamReturn {
   symbol: string;
 }
 
-const getIsTabVisible = () =>
-  typeof document !== 'undefined' ? document.visibilityState === 'visible' : true;
-
-const subscribeVisibility = (callback: () => void) => {
-  if (typeof document === 'undefined') return () => {};
-  document.addEventListener('visibilitychange', callback);
-  return () => document.removeEventListener('visibilitychange', callback);
-};
-
 /**
  * Custom hook connecting directly to Binance public WebSocket combined streams
  * Subscribes to <symbol>@ticker (1000ms) and <symbol>@depth10@100ms (100ms)
@@ -46,7 +38,7 @@ export function useBinanceMarketStream(
 ): UseBinanceMarketStreamReturn {
   const { enabled = true, depthLevels = 8 } = options;
 
-  const isTabVisible = useSyncExternalStore(subscribeVisibility, getIsTabVisible, () => true);
+  const isTabVisible = useTabVisibility();
 
   const cleanSymbol = (symbol || '').trim().toUpperCase();
   const isGlobal = isGlobalSymbol(cleanSymbol);
