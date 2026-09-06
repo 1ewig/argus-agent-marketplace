@@ -47,15 +47,19 @@ The repository follows the modular convention laid out in [`AGENTS.md`](../AGENT
 ```
 src/
 ├── agent/                        # AI reasoning layer
-│   ├── engine.ts                 # streamText / generateText execution + step timeline + failover
-│   ├── intelligence-engine.ts    # Market Intelligence Agent (generateObject → 4-card payload)
-│   ├── prompts.ts                # system prompt, directives, tool descriptions
-│   ├── providers.ts              # Groq/Fireworks model resolution + cross-provider failover
-│   ├── tools.ts                  # 11 AI SDK tool definitions wrapped around lib clients
+│   ├── chat/                     # SSE streaming engine + step state machine
+│   │   ├── prepare-invocation.ts # builds model+prompt+messages+directives per request
+│   │   ├── stream-state-machine.ts # thinking/tool/intermediate_text step timeline
+│   │   └── stream-engine.ts      # streamText execution + step timeline + failover
+│   ├── intelligence/             # Market Intelligence Agent (generateObject → 4-card payload)
+│   │   ├── engine.ts             # 9-source parallel scan + generateObject orchestration
+│   │   ├── schemas.ts            # strict Zod MarketIntelligencePayloadSchema
+│   │   └── synthesizer.ts        # deterministic fallback from raw exchange math
+│   ├── prompts/                  # system prompt, directives, tool descriptions
+│   ├── providers/                # Groq/Fireworks model resolution + cross-provider failover
+│   ├── tools/                    # 11 AI SDK tool definitions wrapped around lib clients
+│   ├── transforms/               # sanitizer, follow-up extractor, session-title filter
 │   ├── types.ts                  # AgentOptions/Result, stream events, Zod chat schema
-│   ├── prepare-invocation.ts     # builds model+prompt+messages+directives per request
-│   ├── follow-up-extractor.ts    # parses <follow_up_questions> block + fallbacks
-│   ├── title-stream-filter.ts    # intercepts <session_title> during streaming
 │   └── index.ts                  # public barrel
 │
 ├── lib/                          # external clients, persistence, shared types
@@ -130,7 +134,7 @@ src/
 1. User submits a message in `ChatInput` → `useAgentChat.handleSend` ([`src/hooks/use-agent-chat.ts`](../src/hooks/use-agent-chat.ts)).
 2. The user message is optimistically persisted to Dexie + memory cache; an `AbortController` is created for cancellation (`handleStop`).
 3. `streamAgentChat` ([`src/lib/agents/chat-stream-client.ts`](../src/lib/agents/chat-stream-client.ts)) `POST`s to `/api/agent/chat` with `{ message, mode, symbol, history, isFirstTurn }`.
-4. The route validates the body against `AgentChatRequestSchema`, then calls `executeAgentStream` ([`src/agent/engine.ts`](../src/agent/engine.ts)).
+4. The route validates the body against `AgentChatRequestSchema`, then calls `executeAgentStream` ([`src/agent/chat/stream-engine.ts`](../src/agent/chat/stream-engine.ts)).
 5. `executeAgentStream` invokes Vercel AI SDK `streamText` with the assembled model, system prompt, conversation history (sliding window of ≤10), 11 tools, and a `smoothStream` (15ms / word) transform.
 6. The model calls the defined tools **in parallel** against live Binance/Exa endpoints (e.g. price + 24h stats + order book + news in one round-trip).
 7. The engine translates SDK stream parts into SSE events (`step_start`, `step_update`, `reasoning_delta`, `text_delta`, `clear_text`, `session_title`, `done`, `error`) streamed back to the client.
@@ -140,7 +144,7 @@ src/
 
 1. User opens the **Market Intelligence** tab (from the right panel tabs or the header trigger) → [`MarketIntelligenceAgentView`](../src/components/(dashboard)/market-panel/agents/market-intelligence-agent-view.tsx) mounts.
 2. TanStack React Query keyed `['market-intelligence', symbol]` resolves from React Query cache or `localStorage` (`argus_intel_<SYMBOL>`) if fresh (<1h), then `POST /api/agent/intelligence` on first miss.
-3. The route validates `{ symbol, apiKey?, providerOverride? }` and calls `executeMarketIntelligence` ([`src/agent/intelligence-engine.ts`](../src/agent/intelligence-engine.ts)).
+3. The route validates `{ symbol, apiKey?, providerOverride? }` and calls `executeMarketIntelligence` ([`src/agent/intelligence/engine.ts`](../src/agent/intelligence/engine.ts)).
 4. The engine fires **9 parallel `Promise.allSettled` fetches**: ticker price, 20-level order book, 15m klines (30), 1h klines (24), 5m VWAP, funding rate, global long/short account ratio (5m×5), top trader long/short (5m×5), and Exa news (3 results, `category: 'news'`).
 5. Quantitative anchors are derived deterministically (best bid/ask, bid/ask volume imbalance, 15m/1h range low/high) and injected — alongside live news snippets — into a grounded prompt.
 6. `generateObject` (primary model, then backup on failure) fills the strict `MarketIntelligencePayloadSchema`. If both models fail, a **deterministic fallback synthesizer** computes the 4-card payload from the same raw exchange math (never hallucinated prices).
@@ -160,7 +164,7 @@ src/
 ### Streaming architecture
 - `executeAgentStream` — real-time SSE streaming with `smoothStream` (15ms delay, word chunking) and a full step timeline. Used by the chat route (`streamArgusAgent` alias).
 
-### Model providers ([`providers.ts`](../src/agent/providers.ts))
+### Model providers ([`src/agent/providers/`](../src/agent/providers/))
 - Active provider resolved from `INFERENCE_PROVIDER` env (`groq` default | `fireworks`), overridable per request via `provider`.
 - **Groq:** `qwen/qwen3.8-27b` (backup `openai/gpt-oss-120b`), env-overridable via `GROQ_MODEL` / `GROQ_BACKUP_MODEL`.
 - **Fireworks:** `glm-5p3-flash` (backup `deepseek-v4-flash-0731`), wrapped with `extractReasoningMiddleware({ tagName: 'think' })`; env-overridable via `FIREWORKS_MODEL` / `FIREWORKS_BACKUP_MODEL`.
@@ -179,7 +183,7 @@ Each turn maintains an ordered list of `AgentExecutionStep` with types `thinking
 - `SessionTitleStreamFilter` intercepts `<session_title>` so raw XML never leaks to the client (buffers across chunk boundaries); `extractSessionTitle` falls back to a keyword-driven `generateFallbackSessionTitle`.
 - `extractFollowUpQuestions` parses the trailing `<follow_up_questions>` block into `followUpQuestions[]` and pads to exactly 3 with symbol-aware fallbacks.
 
-### System prompt guards ([`prompts.ts`](../src/agent/prompts.ts))
+### System prompt guards ([`src/agent/prompts/`](../src/agent/prompts/))
 - **Zero assumptions:** the model must call live tools before reporting any price/stats; no hallucinated fallbacks; unquoted tickers default to USDT pairs.
 - **Parallel tool calling:** it must dispatch independent tools in a single round-trip (e.g., price + 24h stats + depth + news simultaneously).
 - **Formatting:** clean executive markdown with snapshot tables, bold metrics, and a one-line takeaway blockquote.
@@ -189,7 +193,7 @@ Each turn maintains an ordered list of `AgentExecutionStep` with types `thinking
 
 ---
 
-## 6. Agent Tools ([`src/agent/tools.ts`](../src/agent/tools.ts))
+## 6. Agent Tools ([`src/agent/tools/registry.ts`](../src/agent/tools/registry.ts))
 
 All tools validate symbols through a strict Zod schema built on `normalizeSymbol` (strips quotes/separators, uppercases, enforces alphanumeric format and a valid quote suffix from `USDT | USDC | FDUSD | EUR | TRY | BTC | ETH | BNB`). Each returns `{ success, ... }` with live data envelopes (e.g. order book summaries with spread + imbalance, kline period change %, trade-tape taker buy ratio, sentiment buckets) and surfaces failures as `{ success: false, error }`.
 
