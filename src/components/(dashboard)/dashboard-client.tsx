@@ -18,11 +18,11 @@ import { MarketPanel } from './market-panel';
 import { ChatMessage, ChatInput, type ChatInputHandle } from './chat';
 import type { ExecutionMode } from '@/lib/types';
 
-interface ChatClientProps {
+interface DashboardClientProps {
   mode?: ExecutionMode;
 }
 
-export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
+export function DashboardClient({ mode = 'simulation' }: DashboardClientProps) {
   const chatInputRef = useRef<ChatInputHandle>(null);
   const selectedSymbol = useAppStore((state) => state.selectedSymbol);
   const setIsSymbolSearchOpen = useAppStore((state) => state.setIsSymbolSearchOpen);

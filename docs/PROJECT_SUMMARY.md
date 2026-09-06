@@ -84,7 +84,7 @@ src/
 │
 ├── components/                   # pure presentation (decoupled from transports)
 │   ├── (dashboard)/
-│   │   ├── chat-client.tsx       # chat stage + market panel layout shell
+│   │   ├── dashboard-client.tsx  # chat stage + market panel layout shell
 │   │   ├── chat/                 # message, input, process timeline, tool result cards
 │   │   ├── market-panel/         # price ticker, order book depth, sparkline, futures
 │   │   └── market-chart-view.tsx # placeholder chart stage

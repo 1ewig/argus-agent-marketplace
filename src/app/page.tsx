@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { MarketChartView } from '@/components/(dashboard)/market-chart-view';
-import { ChatClient } from '@/components/(dashboard)/chat-client';
+import { DashboardClient } from '@/components/(dashboard)/dashboard-client';
 import { SymbolSearchModal } from '@/components/modals/symbol-search-modal';
 import { useAppStore } from '@/stores/app-store';
 import { useUrlSymbolSync } from '@/hooks';
@@ -18,7 +18,7 @@ export default function Home() {
         {/* Central Stage View (Zero-flash dual-render with CSS toggle) */}
         <section className="flex-1 min-h-0 overflow-hidden relative flex flex-col h-full">
           <div className={`h-full w-full ${stageView === 'agent' ? 'flex flex-col' : 'hidden'}`}>
-            <ChatClient mode={executionMode} />
+            <DashboardClient mode={executionMode} />
           </div>
           <div className={`h-full w-full p-spacing-sm sm:p-spacing-md lg:p-spacing-lg ${stageView === 'chart' ? 'flex flex-col' : 'hidden'}`}>
             <MarketChartView />
