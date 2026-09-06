@@ -27,8 +27,8 @@ export function MarketIntelligenceAgentView({ symbol }: MarketIntelligenceAgentV
   const content = APP_CONTENT.marketIntelligence;
   const { data, isLoading, isFetching, isError, refetch } = useMarketIntelligence(symbol);
 
-  // 1. Centered Loader State during analysis
-  if (isLoading || isFetching) {
+  // 1. Centered Loader State during initial analysis (only when no cached data exists)
+  if ((isLoading || isFetching) && !data) {
     return (
       <div className="flex-1 min-h-[360px] flex flex-col items-center justify-center text-center p-6 my-auto select-none">
         <div className="relative mb-4 flex items-center justify-center">

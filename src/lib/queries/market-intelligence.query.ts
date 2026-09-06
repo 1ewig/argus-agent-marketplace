@@ -1,6 +1,7 @@
 import { queryOptions } from '@tanstack/react-query';
 import {
   getCachedIntelligence,
+  getStoredIntelligence,
   saveStoredIntelligence,
   ONE_HOUR_MS,
 } from '@/lib/db';
@@ -9,6 +10,8 @@ import type { MarketIntelligenceResponse } from '@/agent';
 export interface MarketIntelligenceFetchOptions {
   apiKey?: string;
   providerOverride?: 'groq' | 'fireworks';
+  force?: boolean;
+  enabled?: boolean;
 }
 
 /**
@@ -56,9 +59,19 @@ export const marketIntelligenceQuery = {
   detail: (symbol: string) => ['market-intelligence', symbol.trim().toUpperCase()] as const,
   options: (symbol: string, options?: MarketIntelligenceFetchOptions) => {
     const cleanSymbol = symbol.trim().toUpperCase();
+    const isEnabled = options?.enabled ?? Boolean(cleanSymbol && cleanSymbol !== 'GLOBAL');
     return queryOptions({
       queryKey: marketIntelligenceQuery.detail(cleanSymbol),
-      queryFn: () => fetchMarketIntelligence(cleanSymbol, options),
+      queryFn: async () => {
+        // Unless explicitly forced, check if stored intelligence is valid (< 1 hour) before doing network fetch
+        if (!options?.force) {
+          const stored = await getStoredIntelligence(cleanSymbol, ONE_HOUR_MS);
+          if (stored && typeof stored.timestamp === 'number' && Date.now() - stored.timestamp < ONE_HOUR_MS) {
+            return stored;
+          }
+        }
+        return fetchMarketIntelligence(cleanSymbol, options);
+      },
       initialData: () => getCachedIntelligence(cleanSymbol) ?? undefined,
       initialDataUpdatedAt: () => getCachedIntelligence(cleanSymbol)?.timestamp,
       staleTime: ONE_HOUR_MS,
@@ -66,6 +79,7 @@ export const marketIntelligenceQuery = {
       refetchOnWindowFocus: false,
       refetchOnMount: false,
       refetchOnReconnect: false,
+      enabled: isEnabled,
     });
   },
 };

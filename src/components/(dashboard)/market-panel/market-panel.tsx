@@ -1,14 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Globe, Loader2, Bot, Activity, RefreshCw } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
 import { useQueryClient, useIsFetching } from '@tanstack/react-query';
 import { sidebarSpringTransition, tapScalePill } from '@/constants/animation';
-import { useBinanceMarketStream } from '@/hooks';
+import { useBinanceMarketStream, useMarketIntelligence } from '@/hooks';
 import { useAppStore } from '@/stores/app-store';
-import { marketIntelligenceQuery } from '@/lib/queries';
+import { marketIntelligenceQuery, fetchMarketIntelligence } from '@/lib/queries';
+import { ONE_HOUR_MS } from '@/lib/db';
 import {
   PriceTickerCard,
   FuturesFundingCard,
@@ -30,7 +31,20 @@ export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
   const queryClient = useQueryClient();
 
   const [isScanning, setIsScanning] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
   const cleanSymbol = symbol.trim().toUpperCase();
+
+  // Tick every 10 seconds so button visibility updates reactively when analysis hits 1-hour threshold
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNow(Date.now());
+    }, 10_000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const { response: intelligenceResponse } = useMarketIntelligence(cleanSymbol, {
+    enabled: isOpen && !isGlobal && cleanSymbol !== 'GLOBAL',
+  });
 
   const isFetchingIntelligence = useIsFetching({
     queryKey: marketIntelligenceQuery.detail(cleanSymbol),
@@ -38,13 +52,21 @@ export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
 
   const isAnalyzing = isScanning || isFetchingIntelligence;
 
+  // Analysis is fresh if it exists and was conducted less than 1 hour ago
+  const isAnalysisFresh = Boolean(
+    intelligenceResponse?.timestamp && now - intelligenceResponse.timestamp < ONE_HOUR_MS
+  );
+
   const handleScan = async () => {
     if (isAnalyzing) return;
     setIsScanning(true);
     try {
-      await queryClient.refetchQueries({
-        queryKey: marketIntelligenceQuery.detail(cleanSymbol),
-      });
+      const freshData = await fetchMarketIntelligence(cleanSymbol, { force: true });
+      queryClient.setQueryData(marketIntelligenceQuery.detail(cleanSymbol), freshData);
+    } catch (err) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('[Argus:MarketIntelligence] Scan failed:', err);
+      }
     } finally {
       setIsScanning(false);
     }
@@ -127,9 +149,10 @@ export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
             </div>
           )}
 
-          {/* Header Action in Intelligence Tab: Scan Market Button */}
+          {/* Header Action in Intelligence Tab: Scan Market Button (hidden if analysis is fresh / not older than 1 hour) */}
           {!isGlobal &&
-            (rightPanelTab === 'intelligence' || rightPanelTab === 'market-data') && (
+            (rightPanelTab === 'intelligence' || rightPanelTab === 'market-data') &&
+            !isAnalysisFresh && (
               <motion.button
                 type="button"
                 whileTap={tapScalePill}

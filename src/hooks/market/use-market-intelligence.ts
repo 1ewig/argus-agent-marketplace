@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getStoredIntelligence } from '@/lib/db';
 import {
   marketIntelligenceQuery,
@@ -31,6 +31,7 @@ export function useMarketIntelligence(
   options: UseMarketIntelligenceOptions = {}
 ): UseMarketIntelligenceResult {
   const cleanSymbol = symbol.trim().toUpperCase();
+  const queryClient = useQueryClient();
 
   const {
     data: response,
@@ -43,14 +44,14 @@ export function useMarketIntelligence(
 
   // Async Dexie hydration if not in memory cache yet
   useEffect(() => {
-    if (!response && cleanSymbol) {
+    if (!response && cleanSymbol && cleanSymbol !== 'GLOBAL') {
       void getStoredIntelligence(cleanSymbol).then((persisted) => {
         if (persisted) {
-          void refetch();
+          queryClient.setQueryData(marketIntelligenceQuery.detail(cleanSymbol), persisted);
         }
       });
     }
-  }, [cleanSymbol, response, refetch]);
+  }, [cleanSymbol, response, queryClient]);
 
   return {
     symbol: cleanSymbol,
