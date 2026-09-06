@@ -6,8 +6,8 @@ export type InferenceProviderType = 'groq' | 'fireworks';
 export const DEFAULT_GROQ_MODEL = 'qwen/qwen3.8-27b';
 export const DEFAULT_GROQ_BACKUP_MODEL = 'openai/gpt-oss-120b';
 
-export const DEFAULT_FIREWORKS_MODEL = 'accounts/fireworks/models/glm-5p3-flash';
-export const DEFAULT_FIREWORKS_BACKUP_MODEL = 'accounts/fireworks/models/deepseek-v4-flash-0731';
+export const DEFAULT_FIREWORKS_MODEL = 'accounts/fireworks/models/deepseek-v4-flash-0731';
+export const DEFAULT_FIREWORKS_BACKUP_MODEL = 'accounts/fireworks/models/glm-5p3-flash';
 
 // Backwards-compatible aliases
 export const DEFAULT_AGENT_MODEL = DEFAULT_GROQ_MODEL;

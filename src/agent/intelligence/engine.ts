@@ -11,6 +11,7 @@ import {
 } from '@/lib/binance-mcp';
 import { searchExa } from '@/lib/exa';
 import { getAgentModel, getBackupAgentModel } from '../providers/models';
+import { DEFAULT_GROQ_MODEL, DEFAULT_GROQ_BACKUP_MODEL } from '../providers/config';
 import {
   MarketIntelligencePayloadSchema,
   type MarketIntelligencePayload,
@@ -137,8 +138,9 @@ Synthesize the 4-card executive intelligence payload now.`;
   let primaryModel;
   let backupModel;
   try {
-    primaryModel = getAgentModel(undefined, options.apiKey, options.providerOverride);
-    backupModel = getBackupAgentModel(undefined, options.apiKey, options.providerOverride);
+    // Hardcoded to Groq with DEFAULT_GROQ_MODEL (qwen/qwen3.8-27b) for rapid structured intelligence generation
+    primaryModel = getAgentModel(DEFAULT_GROQ_MODEL, options.apiKey, 'groq');
+    backupModel = getBackupAgentModel(DEFAULT_GROQ_BACKUP_MODEL, options.apiKey, 'groq');
   } catch {
     // If models cannot be initialized, use deterministic computation
   }
@@ -156,7 +158,7 @@ Synthesize the 4-card executive intelligence payload now.`;
 
       finalPayload = result.object;
       if (process.env.NODE_ENV !== 'production') {
-        console.log(`   ✨ [Synthesis] Primary LLM generated payload in ${Date.now() - startTime}ms`);
+        console.log(`   ✨ [Synthesis] Primary Groq LLM generated payload in ${Date.now() - startTime}ms`);
       }
     } catch {
       if (backupModel) {
@@ -170,7 +172,7 @@ Synthesize the 4-card executive intelligence payload now.`;
 
           finalPayload = result.object;
           if (process.env.NODE_ENV !== 'production') {
-            console.log(`   ✨ [Synthesis] Backup LLM generated payload in ${Date.now() - startTime}ms`);
+            console.log(`   ✨ [Synthesis] Backup Groq LLM generated payload in ${Date.now() - startTime}ms`);
           }
         } catch {
           // Fall through to deterministic synthesizer
