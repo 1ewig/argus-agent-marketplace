@@ -12,7 +12,7 @@ import {
   useMessages,
   type ChatMessageRecord,
 } from '@/lib/db';
-import { prepareConversationHistory, streamAgentChat } from '@/lib/agents';
+import { prepareConversationHistory, streamAgentChat } from '@/lib/chat';
 import {
   sanitizeAgentText,
   isDefaultSessionTitle,

@@ -205,3 +205,5 @@ export interface AgentMessage {
   riskCertificate?: RiskCertificate;
   executionReceipt?: ExecutionReceipt;
 }
+
+export * from './global-market';

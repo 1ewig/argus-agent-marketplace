@@ -80,7 +80,7 @@ src/
 │   ├── queries/                  # TanStack queryOptions factories
 │   │   ├── market-intelligence.query.ts # 4-card scan cache (1h stale / 24h GC)
 │   │   └── symbols.query.ts      # cached USDT symbol catalog
-│   ├── agents/                   # client-side transport helpers
+│   ├── chat/                     # client-side transport & history helpers
 │   │   ├── chat-stream-client.ts # SSE reader for /api/agent/chat
 │   │   └── chat-history.ts       # sliding 10-message context window builder
 │   ├── symbols.ts                # normalizeSymbolForDisplay / parseSymbolAssets / base-asset
@@ -112,9 +112,10 @@ src/
 │   │   ├── chat/                 # empty-state, dock, input, message, message-list, timeline,
 │   │   │                         #   thought-accordion, work-group, tool-result-card,
 │   │   │                         #   markdown-view + tool-results/ (10 per-tool cards)
-│   │   ├── market-panel/         # collapsible right deck (Live Telemetry / Market Intelligence)
+│   │   ├── market-panel/         # collapsible right deck (Live Telemetry / Market Intelligence / Global Market)
 │   │   │   ├── telemetry/        # price-ticker (+sparkline), futures-funding, order-book-depth
-│   │   │   └── agents/           # market-intelligence-agent-view + cards/ (4 executive cards)
+│   │   │   ├── agents/           # market-intelligence-agent-view + cards/ (4 executive cards)
+│   │   │   └── global/           # global-market-view + cards/ (4 macro cards: Pulse, Movers, Funding, Positioning)
 │   │   └── market-chart-view.tsx # placeholder trading-chart stage
 │   ├── sidebar/                  # workspace groups, session list, nav views, theme toggle
 │   ├── common/                   # agent-loader, argus-icon, confirm-dialog
@@ -141,6 +142,7 @@ src/
     └── api/
         ├── agent/chat/route.ts         # SSE streaming endpoint
         ├── agent/intelligence/route.ts # Market Intelligence Agent endpoint
+        ├── binance/global-overview/route.ts # Global Market Overview endpoint (pure data layer)
         └── binance/symbols/route.ts    # cached USDT symbol catalog
 ```
 
@@ -152,7 +154,7 @@ src/
 
 1. User submits a message in `ChatInput` → `useAgentChat.handleSend` ([`src/hooks/chat/use-agent-chat.ts`](../src/hooks/chat/use-agent-chat.ts)).
 2. The user message is optimistically persisted to Dexie + memory cache; an `AbortController` is created for cancellation (`handleStop`).
-3. `streamAgentChat` ([`src/lib/agents/chat-stream-client.ts`](../src/lib/agents/chat-stream-client.ts)) `POST`s to `/api/agent/chat` with `{ message, mode, symbol, history, isFirstTurn }`.
+3. `streamAgentChat` ([`src/lib/chat/chat-stream-client.ts`](../src/lib/chat/chat-stream-client.ts)) `POST`s to `/api/agent/chat` with `{ message, mode, symbol, history, isFirstTurn }`.
 4. The route validates the body against `AgentChatRequestSchema`, then calls `executeAgentStream` ([`src/agent/chat/stream-engine.ts`](../src/agent/chat/stream-engine.ts)).
 5. `executeAgentStream` invokes Vercel AI SDK `streamText` with the assembled model, system prompt, conversation history (sliding window of ≤10), 11 tools, and a `smoothStream` (15ms / word) transform.
 6. The model calls the defined tools **in parallel** against live Binance/Exa endpoints (e.g. price + 24h stats + order book + news in one round-trip).
@@ -258,7 +260,7 @@ Key behaviors:
 - **Message cache** (`prewarmMessagesCache`/`updateCachedMessage`/`useMessages` in [`queries.ts`](../src/lib/db/queries.ts)) eliminates flash-of-empty when switching conversations (0ms switching).
 - **Intelligence cache** — two-tier read path: synchronous in-memory Map for 0ms within-session switching (`getCachedIntelligence`), backed durably by the Dexie `marketIntelligence` table (`getStoredIntelligence`/`saveStoredIntelligence`), all respecting `ONE_HOUR_MS` freshness; `prewarmIntelligenceCache()` rehydrates memory from Dexie on boot.
 - `normalizeMessageSteps` backfills legacy `toolCalls`-only message records into the new `steps` timeline for rendering.
-- `prepareConversationHistory` ([`src/lib/agents/chat-history.ts`](../src/lib/agents/chat-history.ts)) builds a sliding 10-message context window, filtering `error` states.
+- `prepareConversationHistory` ([`src/lib/chat/chat-history.ts`](../src/lib/chat/chat-history.ts)) builds a sliding 10-message context window, filtering `error` states.
 - `useChatSessions` groups conversations into symbol workspaces (`symbolGroups`) via `parseSymbolAssets`, keeps Global pinned at top, and syncs the persisted `selectedSymbol` workspace across refresh/session-switching.
 
 ---

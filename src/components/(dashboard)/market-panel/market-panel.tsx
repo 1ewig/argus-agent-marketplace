@@ -9,6 +9,7 @@ import {
   useBinanceMarketStream,
   useBinanceFuturesFunding,
   useScanMarketIntelligence,
+  useGlobalMarketOverview,
 } from '@/hooks';
 import { useAppStore, isIntelligenceTabActive } from '@/stores/app-store';
 import {
@@ -17,6 +18,7 @@ import {
   OrderBookDepthCard,
 } from './telemetry';
 import { MarketIntelligenceAgentView } from './agents';
+import { GlobalMarketView } from './global';
 
 interface MarketPanelProps {
   isOpen: boolean;
@@ -26,11 +28,23 @@ interface MarketPanelProps {
 
 export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
   const content = APP_CONTENT.marketPanel;
+  const globalContent = APP_CONTENT.globalMarket;
   const intelligence = APP_CONTENT.marketIntelligence;
   const rightPanelTab = useAppStore((state) => state.rightPanelTab);
   const setRightPanelTab = useAppStore((state) => state.setRightPanelTab);
 
-  // Market Intelligence Scan & Data hook
+  // Global Market Overview hook (active when on GLOBAL workspace)
+  const {
+    data: globalData,
+    isLoading: isGlobalLoading,
+    isFetching: isGlobalFetching,
+    isError: isGlobalError,
+    refetch: refetchGlobal,
+  } = useGlobalMarketOverview({
+    enabled: isOpen && isGlobal,
+  });
+
+  // Market Intelligence Scan & Data hook (active for symbol workspaces)
   const {
     cleanSymbol,
     data: intelligenceData,
@@ -73,115 +87,143 @@ export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
       aria-label={content.title}
     >
       <div className="w-full min-w-[340px] h-full flex flex-col overflow-hidden">
-        {/* Panel Header with Multi-Tab Switcher & Action Controls */}
+        {/* Panel Header */}
         <div className="h-14 px-3 sm:px-4 flex items-center justify-between border-b border-theme-border-subtle shrink-0 gap-2">
-          {/* Tabs Segmented Control */}
-          <div className="flex items-center gap-1 p-0.5 rounded-lg bg-theme-bg-elevated/70 border border-theme-border-subtle/80">
-            {/* Tab 1: Live Telemetry Overview */}
-            <motion.button
-              type="button"
-              whileTap={tapScalePill}
-              onClick={() => setRightPanelTab('overview')}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold transition-colors cursor-pointer ${
-                rightPanelTab === 'overview'
-                  ? 'bg-theme-bg-surface text-theme-text-primary shadow-2xs'
-                  : 'text-theme-text-secondary hover:text-theme-text-primary'
-              }`}
-            >
-              <Activity className="size-3 text-theme-brand-binance" />
-              <span>{content.tabs.overview}</span>
-            </motion.button>
-
-            {/* Tab 2: Market Intelligence Agent */}
-            <motion.button
-              type="button"
-              whileTap={tapScalePill}
-              onClick={() => setRightPanelTab('intelligence')}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold transition-colors cursor-pointer ${
-                isIntelligenceTabActive(rightPanelTab)
-                  ? 'bg-theme-bg-surface text-theme-text-primary shadow-2xs'
-                  : 'text-theme-text-secondary hover:text-theme-text-primary'
-              }`}
-            >
-              <Bot className="size-3 text-theme-brand-binance" />
-              <span>{content.tabs.intelligence}</span>
-            </motion.button>
-          </div>
-
-          {/* Connection Status Badge (only shown during connecting, reconnecting, or error in overview) */}
-          {!isGlobal && rightPanelTab === 'overview' && spotStatus !== 'connected' && (
-            <div
-              className={`flex items-center gap-1 px-2 py-0.5 rounded-full border transition-colors shrink-0 ${
-                spotStatus === 'connecting' || spotStatus === 'reconnecting'
-                  ? 'bg-theme-brand-binance/10 border-theme-brand-binance/30 text-theme-brand-binance'
-                  : 'bg-theme-status-danger/10 border-theme-status-danger/30 text-theme-status-danger'
-              }`}
-            >
-              {spotStatus === 'connecting' || spotStatus === 'reconnecting' ? (
-                <Loader2 className="size-2.5 animate-spin" />
-              ) : (
-                <span className="size-1.5 rounded-full bg-theme-status-danger" />
-              )}
-              <span className="text-[10px] font-mono font-bold tracking-tight">
-                {spotStatus === 'connecting'
-                  ? content.statusConnecting
-                  : spotStatus === 'reconnecting'
-                  ? content.statusReconnecting
-                  : content.statusError}
-              </span>
-            </div>
-          )}
-
-          {/* Header Action in Intelligence Tab: Next Run countdown when fresh, or Scan Market Button when ready */}
-          {!isGlobal && isIntelligenceTabActive(rightPanelTab) && (
-            <div className="flex items-center gap-1.5 shrink-0">
-              {isAnalyzing ? (
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-theme-bg-elevated text-theme-text-secondary border border-theme-border-subtle shadow-2xs">
-                  <RefreshCw className="size-3 text-theme-brand-binance animate-spin shrink-0" />
-                  <span>{intelligence.refreshing}</span>
-                </div>
-              ) : isAnalysisFresh && nextRunCountdown ? (
-                <div
-                  title={intelligence.nextRunTooltip}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono font-bold bg-theme-bg-elevated/80 border border-theme-border-subtle text-theme-text-secondary select-none shadow-2xs"
-                >
-                  <Clock className="size-3 text-theme-brand-binance shrink-0" />
-                  <span className="text-theme-text-muted text-[11px] font-sans font-semibold uppercase tracking-wider">
-                    {intelligence.nextRunPrefix}
+          {isGlobal ? (
+            /* Dedicated Header for Global Workspace: Single Overview Title & Refresh */
+            <>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-theme-bg-elevated/70 border border-theme-border-subtle/80">
+                  <Globe className="size-3.5 text-theme-brand-binance" />
+                  <span className="text-xs font-bold text-theme-text-primary">
+                    {globalContent.headerTitle}
                   </span>
-                  <span className="text-theme-text-primary">{nextRunCountdown}</span>
+                  <span className="text-2xs font-mono font-bold text-theme-brand-binance bg-theme-brand-binance/10 border border-theme-brand-binance/25 px-1.5 py-0.5 rounded">
+                    {globalContent.headerBadge}
+                  </span>
                 </div>
-              ) : (
+              </div>
+
+              <motion.button
+                type="button"
+                whileTap={tapScalePill}
+                onClick={() => refetchGlobal()}
+                disabled={isGlobalFetching}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-theme-bg-elevated hover:bg-theme-bg-elevated/80 active:bg-theme-bg-surface border border-theme-border-subtle text-theme-text-primary transition-colors cursor-pointer disabled:opacity-50 shadow-2xs shrink-0"
+              >
+                <RefreshCw className={`size-3 text-theme-brand-binance ${isGlobalFetching ? 'animate-spin' : ''}`} />
+                <span>{isGlobalFetching ? globalContent.refreshing : globalContent.refreshButton}</span>
+              </motion.button>
+            </>
+          ) : (
+            /* Symbol Workspace Header: Segmented Tabs & Action Controls */
+            <>
+              {/* Tabs Segmented Control */}
+              <div className="flex items-center gap-1 p-0.5 rounded-lg bg-theme-bg-elevated/70 border border-theme-border-subtle/80">
+                {/* Tab 1: Live Telemetry Overview */}
                 <motion.button
                   type="button"
                   whileTap={tapScalePill}
-                  onClick={handleScan}
-                  disabled={isAnalyzing}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-theme-bg-elevated hover:bg-theme-bg-elevated/80 active:bg-theme-bg-surface border border-theme-border-subtle text-theme-text-primary transition-colors cursor-pointer disabled:opacity-50 shadow-2xs"
+                  onClick={() => setRightPanelTab('overview')}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold transition-colors cursor-pointer ${
+                    rightPanelTab === 'overview'
+                      ? 'bg-theme-bg-surface text-theme-text-primary shadow-2xs'
+                      : 'text-theme-text-secondary hover:text-theme-text-primary'
+                  }`}
                 >
-                  <RefreshCw className={`size-3 text-theme-brand-binance ${isAnalyzing ? 'animate-spin' : ''}`} />
-                  <span>{intelligence.refreshButton}</span>
+                  <Activity className="size-3 text-theme-brand-binance" />
+                  <span>{content.tabs.overview}</span>
                 </motion.button>
+
+                {/* Tab 2: Market Intelligence Agent */}
+                <motion.button
+                  type="button"
+                  whileTap={tapScalePill}
+                  onClick={() => setRightPanelTab('intelligence')}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold transition-colors cursor-pointer ${
+                    isIntelligenceTabActive(rightPanelTab)
+                      ? 'bg-theme-bg-surface text-theme-text-primary shadow-2xs'
+                      : 'text-theme-text-secondary hover:text-theme-text-primary'
+                  }`}
+                >
+                  <Bot className="size-3 text-theme-brand-binance" />
+                  <span>{content.tabs.intelligence}</span>
+                </motion.button>
+              </div>
+
+              {/* Connection Status Badge in Telemetry View */}
+              {rightPanelTab === 'overview' && spotStatus !== 'connected' && (
+                <div
+                  className={`flex items-center gap-1 px-2 py-0.5 rounded-full border transition-colors shrink-0 ${
+                    spotStatus === 'connecting' || spotStatus === 'reconnecting'
+                      ? 'bg-theme-brand-binance/10 border-theme-brand-binance/30 text-theme-brand-binance'
+                      : 'bg-theme-status-danger/10 border-theme-status-danger/30 text-theme-status-danger'
+                  }`}
+                >
+                  {spotStatus === 'connecting' || spotStatus === 'reconnecting' ? (
+                    <Loader2 className="size-2.5 animate-spin" />
+                  ) : (
+                    <span className="size-1.5 rounded-full bg-theme-status-danger" />
+                  )}
+                  <span className="text-[10px] font-mono font-bold tracking-tight">
+                    {spotStatus === 'connecting'
+                      ? content.statusConnecting
+                      : spotStatus === 'reconnecting'
+                      ? content.statusReconnecting
+                      : content.statusError}
+                  </span>
+                </div>
               )}
-            </div>
+
+              {/* Action Controls in Intelligence Tab */}
+              {isIntelligenceTabActive(rightPanelTab) && (
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {isAnalyzing ? (
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-theme-bg-elevated text-theme-text-secondary border border-theme-border-subtle shadow-2xs">
+                      <RefreshCw className="size-3 text-theme-brand-binance animate-spin shrink-0" />
+                      <span>{intelligence.refreshing}</span>
+                    </div>
+                  ) : isAnalysisFresh && nextRunCountdown ? (
+                    <div
+                      title={intelligence.nextRunTooltip}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono font-bold bg-theme-bg-elevated/80 border border-theme-border-subtle text-theme-text-secondary select-none shadow-2xs"
+                    >
+                      <Clock className="size-3 text-theme-brand-binance shrink-0" />
+                      <span className="text-theme-text-muted text-[11px] font-sans font-semibold uppercase tracking-wider">
+                        {intelligence.nextRunPrefix}
+                      </span>
+                      <span className="text-theme-text-primary">{nextRunCountdown}</span>
+                    </div>
+                  ) : (
+                    <motion.button
+                      type="button"
+                      whileTap={tapScalePill}
+                      onClick={handleScan}
+                      disabled={isAnalyzing}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-theme-bg-elevated hover:bg-theme-bg-elevated/80 active:bg-theme-bg-surface border border-theme-border-subtle text-theme-text-primary transition-colors cursor-pointer disabled:opacity-50 shadow-2xs"
+                    >
+                      <RefreshCw className={`size-3 text-theme-brand-binance ${isAnalyzing ? 'animate-spin' : ''}`} />
+                      <span>{intelligence.refreshButton}</span>
+                    </motion.button>
+                  )}
+                </div>
+              )}
+            </>
           )}
         </div>
 
         {/* Scrollable Panel Body */}
         <div className="flex-1 overflow-y-auto custom-scrollbar p-3.5 sm:p-4 flex flex-col gap-3.5 sm:gap-4">
           {isGlobal ? (
-            <div className="flex flex-col items-center justify-center text-center p-6 rounded-xl bg-theme-bg-elevated/40 border border-theme-border-subtle/80 my-auto">
-              <div className="size-10 rounded-xl bg-theme-bg-surface border border-theme-border-subtle flex items-center justify-center mb-3 shadow-2xs">
-                <Globe className="size-5 text-theme-brand-binance" />
-              </div>
-              <h4 className="text-sm font-bold text-theme-text-primary mb-1">
-                {content.globalTitle}
-              </h4>
-              <p className="text-xs text-theme-text-secondary leading-relaxed max-w-xs">
-                {content.globalEmptyNotice}
-              </p>
-            </div>
+            /* 4-Card Global Market View */
+            <GlobalMarketView
+              data={globalData}
+              isLoading={isGlobalLoading}
+              isError={isGlobalError}
+              onRetry={refetchGlobal}
+            />
           ) : isIntelligenceTabActive(rightPanelTab) ? (
+            /* Symbol Market Intelligence Agent View */
             <MarketIntelligenceAgentView
               key={`intelligence_${cleanSymbol}`}
               data={intelligenceData}
@@ -191,6 +233,7 @@ export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
               onRetry={refetchIntelligence}
             />
           ) : (
+            /* Symbol Live Telemetry View */
             <>
               {/* Module 1: Price & 24h Ticker Pulse with Micro Sparkline */}
               <PriceTickerCard
