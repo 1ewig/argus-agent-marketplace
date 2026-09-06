@@ -21,7 +21,19 @@ Think of Argus as that calm, analytical teammate sitting next to you at the desk
 
 ## Guided Visual Tour of the Workstation
 
-### 1. Real-Time Telemetry Deck (`Spot + Futures WebSocket`)
+### 1. Grounded Multi-Turn Agent Conversation (`Reasoning & Tool Execution`)
+
+Ask complex, open-ended market questions and watch Argus orchestrate multiple live data checks in parallel:
+
+![Argus Multi-Turn Agent Conversation](public/images/argus-agent-conversation.webp)
+
+* **Autonomous Tool Orchestration:** In the screenshot above, asking *"What are the biggest crypto gainers, losers, and top volume movers today across Binance?"* triggered parallel 24h stats checks, volume scans, and Exa neural search.
+* **Inspectable Reasoning Timeline:** The collapsible `Worked for 24 seconds` accordion lets you inspect the full execution trace: tool calls, parameters, raw exchange responses, and model thinking.
+* **Real Catalysts, Not Just Numbers:** Argus explains *why* assets move — highlighting that the day's biggest outlier (ARB +29.2%) was driven by the Robinhood Chain L2 revenue narrative.
+
+---
+
+### 2. Real-Time Telemetry Deck (`Spot + Futures WebSocket`)
 
 Beside your conversation sits a live telemetry panel connected directly to Binance WebSockets:
 
@@ -33,7 +45,7 @@ Beside your conversation sits a live telemetry panel connected directly to Binan
 
 ---
 
-### 2. Market Intelligence Sidecar Agent (`Autonomous 4-Card Synthesis`)
+### 3. Market Intelligence Sidecar Agent (`Autonomous 4-Card Synthesis`)
 
 Switch the right panel tab to **Market Intelligence** to activate an autonomous background sidecar agent. It scans 9 live exchange feeds simultaneously (klines, order book, 5m VWAP, funding rates, whale vs. retail positioning, and Exa news catalysts) and outputs **four executive cards**:
 
@@ -48,7 +60,7 @@ Switch the right panel tab to **Market Intelligence** to activate an autonomous 
 
 ---
 
-### 3. Global Macro Deck (`GLOBAL` Workspace)
+### 4. Global Macro Deck (`GLOBAL` Workspace)
 
 When you need a top-down view of market conditions before zooming into individual tokens, jump into the `GLOBAL` workspace:
 
@@ -62,7 +74,7 @@ When you need a top-down view of market conditions before zooming into individua
 
 ---
 
-### 4. Interactive Candlestick Trading Chart
+### 5. Interactive Candlestick Trading Chart
 
 Argus lets you toggle smoothly between the conversational AI stage and a full-screen candlestick chart powered by Lightweight Charts, keeping your telemetry deck right beside you:
 
@@ -75,7 +87,7 @@ Argus lets you toggle smoothly between the conversational AI stage and a full-sc
 
 ---
 
-### 5. Multi-Symbol Workspaces & Local-First Privacy
+### 6. Multi-Symbol Workspaces & Local-First Privacy
 
 Organize your trading workflows by currency pairs with dedicated workspace groupings and session history:
 
