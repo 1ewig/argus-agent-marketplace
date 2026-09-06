@@ -2,13 +2,13 @@ import { sidebarContent } from './sidebar.content';
 import { chatContent } from './chat.content';
 import { processContent } from './process.content';
 import { marketContent } from './market.content';
-import { subAgentsContent } from './sub-agents.content';
+import { intelligenceContent } from './intelligence.content';
 
 export * from './sidebar.content';
 export * from './chat.content';
 export * from './process.content';
 export * from './market.content';
-export * from './sub-agents.content';
+export * from './intelligence.content';
 
 /**
  * Centralized Application UI Copy and Labels
@@ -21,7 +21,7 @@ export const APP_CONTENT = {
   ...chatContent,
   ...processContent,
   ...marketContent,
-  ...subAgentsContent,
+  ...intelligenceContent,
 } as const;
 
 export type AppContent = typeof APP_CONTENT;

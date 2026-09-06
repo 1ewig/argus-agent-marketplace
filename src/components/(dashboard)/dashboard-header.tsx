@@ -72,33 +72,30 @@ export function DashboardHeader() {
           <span className="font-bold">{APP_CONTENT.chat.newChatButton}</span>
         </motion.button>
 
-        {/* Dedicated Sub-Agents Trigger Button */}
+        {/* Dedicated Market Intelligence Agent Trigger Button */}
         <motion.button
           type="button"
           whileTap={tapScalePill}
           onClick={() => {
             if (!isMarketPanelOpen) {
               setIsMarketPanelOpen(true);
-              setRightPanelTab('market-data');
-            } else if (rightPanelTab === 'market-data') {
+              setRightPanelTab('intelligence');
+            } else if (rightPanelTab === 'intelligence' || rightPanelTab === 'market-data') {
               setRightPanelTab('overview');
             } else {
-              setRightPanelTab('market-data');
+              setRightPanelTab('intelligence');
             }
           }}
-          title={APP_CONTENT.subAgents.headerButtonTooltip}
-          aria-label={APP_CONTENT.subAgents.headerButtonLabel}
+          title={APP_CONTENT.marketIntelligence.headerButtonTooltip}
+          aria-label={APP_CONTENT.marketIntelligence.headerButtonLabel}
           className={`h-8 px-2.5 rounded-lg text-xs font-bold inline-flex items-center gap-1.5 select-none transition-colors border cursor-pointer ${
-            isMarketPanelOpen && rightPanelTab === 'market-data'
+            isMarketPanelOpen && (rightPanelTab === 'intelligence' || rightPanelTab === 'market-data')
               ? 'bg-theme-bg-elevated text-theme-brand-binance border-theme-brand-binance/40 shadow-2xs'
               : 'bg-theme-bg-surface text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-elevated border-theme-border-subtle'
           }`}
         >
           <Bot className="size-3.5 text-theme-brand-binance" />
-          <span className="font-semibold">{APP_CONTENT.subAgents.headerButtonLabel}</span>
-          <span className="px-1 py-0.2 rounded-xs bg-theme-brand-binance/15 text-theme-brand-binance text-[9px] font-mono font-bold">
-            {APP_CONTENT.subAgents.agentBadgeNum}
-          </span>
+          <span className="font-semibold">{APP_CONTENT.marketIntelligence.headerButtonLabel}</span>
         </motion.button>
 
         {/* Collapsible Market Panel Toggle Button */}

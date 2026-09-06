@@ -57,9 +57,9 @@ export interface AppState {
   toggleMarketPanel: () => void;
 
   // Right Panel Active Tab
-  rightPanelTab: 'overview' | 'market-data' | 'technical-analysis' | 'risk-volatility' | 'sentiment-context' | 'decision';
+  rightPanelTab: 'overview' | 'intelligence' | 'market-data' | 'technical-analysis' | 'risk-volatility' | 'sentiment-context' | 'decision';
   setRightPanelTab: (
-    tab: 'overview' | 'market-data' | 'technical-analysis' | 'risk-volatility' | 'sentiment-context' | 'decision'
+    tab: 'overview' | 'intelligence' | 'market-data' | 'technical-analysis' | 'risk-volatility' | 'sentiment-context' | 'decision'
   ) => void;
 
   // Hydration state tracking
