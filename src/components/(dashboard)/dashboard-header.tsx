@@ -106,9 +106,7 @@ export const DashboardHeader = memo(function DashboardHeader({
             whileTap={tapScalePill}
             onClick={onOpenSymbolSearch}
             title={APP_CONTENT.chat.switchSymbolTooltip}
-            className={`group ${
-              stageView === 'chart' ? 'hidden md:inline-flex' : 'inline-flex'
-            } items-center gap-1.5 px-2.5 py-1.5 -ml-2 rounded-lg text-theme-text-primary hover:bg-theme-bg-surface active:bg-theme-bg-elevated border border-transparent hover:border-theme-border-subtle transition-colors cursor-pointer select-none shrink-0`}
+            className="group inline-flex items-center gap-1.5 px-2.5 py-1.5 -ml-2 rounded-lg text-theme-text-primary hover:bg-theme-bg-surface active:bg-theme-bg-elevated border border-transparent hover:border-theme-border-subtle transition-colors cursor-pointer select-none shrink-0"
           >
             {isGlobal ? (
               <>
@@ -125,9 +123,9 @@ export const DashboardHeader = memo(function DashboardHeader({
             <ChevronDown className="size-3.5 text-theme-text-muted group-hover:text-theme-text-primary transition-colors" />
           </motion.button>
 
-          {/* Live Flash Price Badge & 24h Stats (Active when Trading Chart is open) */}
+          {/* Live Flash Price Badge & 24h Stats (Desktop & Tablet only, active when Trading Chart is open) */}
           {stageView === 'chart' && ticker && (
-            <div className="flex items-center gap-2.5 shrink-0 animate-in fade-in duration-200">
+            <div className="hidden sm:flex items-center gap-2.5 shrink-0 animate-in fade-in duration-200">
               {/* Live Flash Price Badge */}
               <div
                 className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs sm:text-sm font-mono font-bold transition-all duration-300 ${ticker.flashDirection === 'up'
@@ -300,7 +298,7 @@ export const DashboardHeader = memo(function DashboardHeader({
           <span className="hidden sm:inline font-bold">{APP_CONTENT.chat.newChatButton}</span>
         </motion.button>
 
-        {/* Collapsible Market Panel Toggle Button */}
+        {/* Collapsible Market Panel Toggle Button (Visible on both desktop & mobile) */}
         <motion.button
           type="button"
           whileTap={tapScalePill}
@@ -315,7 +313,7 @@ export const DashboardHeader = memo(function DashboardHeader({
               ? APP_CONTENT.marketPanel.collapsePanel
               : APP_CONTENT.marketPanel.expandPanel
           }
-          className={`size-8 rounded-lg hidden md:flex items-center justify-center select-none cursor-pointer transition-colors border ${isMarketPanelOpen
+          className={`size-8 rounded-lg flex items-center justify-center select-none cursor-pointer transition-colors border ${isMarketPanelOpen
               ? 'bg-theme-bg-elevated text-theme-brand-binance border-theme-border-subtle shadow-2xs'
               : 'text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-surface border-transparent hover:border-theme-border-subtle'
             }`}
