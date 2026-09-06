@@ -14,6 +14,10 @@ export interface AppState {
   stageView: StageViewMode;
   setStageView: (view: StageViewMode) => void;
 
+  // Chart Timeframe State (e.g. '15m', '1h', '4h', '1D', '7D', '30D')
+  chartTimeframe: string;
+  setChartTimeframe: (timeframe: string) => void;
+
   // Active Chat Session State
   activeConversationId: string;
   setActiveConversationId: (id: string) => void;
@@ -83,6 +87,10 @@ export const useAppStore = create<AppState>()(
       // Stage View defaults to 'agent'
       stageView: 'agent',
       setStageView: (view) => set({ stageView: view }),
+
+      // Chart Timeframe defaults to '1D'
+      chartTimeframe: '1D',
+      setChartTimeframe: (chartTimeframe) => set({ chartTimeframe }),
 
       // Chat State
       activeConversationId: DEFAULT_CONVERSATION_ID,
@@ -169,6 +177,7 @@ export const useAppStore = create<AppState>()(
       partialize: (state) => ({
         activeConversationId: state.activeConversationId,
         stageView: state.stageView,
+        chartTimeframe: state.chartTimeframe,
         isSidebarCollapsed: state.isSidebarCollapsed,
         isMarketPanelOpen: state.isMarketPanelOpen,
         rightPanelTab: state.rightPanelTab,

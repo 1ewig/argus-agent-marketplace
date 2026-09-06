@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo, useCallback } from 'react';
-import { useAgentChat } from '@/hooks';
+import { useAgentChat, useBinanceMarketStream } from '@/hooks';
 import { isGlobalSymbol, normalizeSymbolForDisplay } from '@/lib/utils';
 import { parseSymbolAssets } from '@/lib/symbols';
 import { APP_CONTENT } from '@/constants/content';
@@ -25,6 +25,8 @@ export function DashboardClient({ mode = 'simulation' }: DashboardClientProps) {
   const selectedSymbol = useAppStore((state) => state.selectedSymbol);
   const stageView = useAppStore((state) => state.stageView);
   const setStageView = useAppStore((state) => state.setStageView);
+  const chartTimeframe = useAppStore((state) => state.chartTimeframe);
+  const setChartTimeframe = useAppStore((state) => state.setChartTimeframe);
   const isMarketPanelOpen = useAppStore((state) => state.isMarketPanelOpen);
   const toggleMarketPanel = useAppStore((state) => state.toggleMarketPanel);
   const setIsSymbolSearchOpen = useAppStore((state) => state.setIsSymbolSearchOpen);
@@ -32,6 +34,11 @@ export function DashboardClient({ mode = 'simulation' }: DashboardClientProps) {
   // Symbol domain parsing
   const cleanSymbol = normalizeSymbolForDisplay(selectedSymbol) || 'BTCUSDT';
   const isGlobalWorkspace = isGlobalSymbol(cleanSymbol);
+
+  // Live market ticker for chart header telemetry
+  const { ticker } = useBinanceMarketStream(cleanSymbol, {
+    enabled: stageView === 'chart' && !isGlobalWorkspace,
+  });
 
   // Agent chat orchestration hook (handles persistence, SSE streams, scroll refs, session actions)
   const {
@@ -87,15 +94,18 @@ export function DashboardClient({ mode = 'simulation' }: DashboardClientProps) {
 
   return (
     <div className="relative flex flex-col h-full w-full bg-theme-bg-base overflow-hidden">
-      {/* 1. Header Toolbar with Workspace Selector, Chart Switcher, New Chat & Panel Toggles */}
+      {/* 1. Header Toolbar with Workspace Selector, Live Price/24h Stats, Timeframe Switcher, Agent/Chart Toggle, New Chat & Panel Toggles */}
       <DashboardHeader
         symbol={cleanSymbol}
         isGlobal={isGlobalWorkspace}
         stageView={stageView}
+        chartTimeframe={chartTimeframe}
+        ticker={ticker}
         isNewChatDisabled={isNewChatDisabled}
         isMarketPanelOpen={isMarketPanelOpen}
         onOpenSymbolSearch={handleOpenSymbolSearch}
         onToggleStageView={handleToggleStageView}
+        onSelectChartTimeframe={setChartTimeframe}
         onNewChat={handleNewChat}
         onToggleMarketPanel={toggleMarketPanel}
       />

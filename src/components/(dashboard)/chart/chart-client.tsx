@@ -1,8 +1,11 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { motion } from 'framer-motion';
+import { RefreshCw, Maximize2, Minimize2 } from 'lucide-react';
 import type { UTCTimestamp } from 'lightweight-charts';
 import { APP_CONTENT } from '@/constants/content';
+import { tapScalePill } from '@/constants/animation';
 import { isGlobalSymbol } from '@/lib/utils';
 import { useAppStore } from '@/stores/app-store';
 import {
@@ -10,7 +13,6 @@ import {
   type CandlestickCanvasHandle,
   type ChartCandleItem,
 } from './candlestick-canvas';
-import { ChartHeader, type ChartTickerStats } from './chart-header';
 import { ChartLegend } from './chart-legend';
 
 export interface ChartClientProps {
@@ -20,6 +22,7 @@ export interface ChartClientProps {
 export function ChartClient({ symbol: propSymbol }: ChartClientProps) {
   const storeSymbol = useAppStore((state) => state.selectedSymbol);
   const lastActiveSymbol = useAppStore((state) => state.lastActiveSymbol);
+  const chartTimeframe = useAppStore((state) => state.chartTimeframe);
 
   const rawSymbol = propSymbol || storeSymbol || 'BTCUSDT';
   const isGlobal = isGlobalSymbol(rawSymbol);
@@ -28,26 +31,22 @@ export function ChartClient({ symbol: propSymbol }: ChartClientProps) {
     .toUpperCase();
 
   const timeframes = APP_CONTENT.chart.timeframes;
-  const [activeTimeframeId, setActiveTimeframeId] = useState<string>('1D');
   const [candles, setCandles] = useState<ChartCandleItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   const [hoveredCandle, setHoveredCandle] = useState<ChartCandleItem | null>(null);
   const [livePrice, setLivePrice] = useState<number | null>(null);
-  const [flashDirection, setFlashDirection] = useState<'up' | 'down' | null>(null);
-  const [tickerStats, setTickerStats] = useState<ChartTickerStats | null>(null);
   const [wsStatus, setWsStatus] = useState<'connected' | 'connecting' | 'disconnected' | 'error'>('connecting');
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
 
   const canvasRef = useRef<CandlestickCanvasHandle | null>(null);
   const chartWrapperRef = useRef<HTMLDivElement | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
-  const flashTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const activeTimeframe = useMemo(() => {
-    return timeframes.find((tf) => tf.id === activeTimeframeId) || timeframes[3];
-  }, [timeframes, activeTimeframeId]);
+    return timeframes.find((tf) => tf.id === chartTimeframe) || timeframes[3];
+  }, [timeframes, chartTimeframe]);
 
   // Determine derived decimal precision based on price level
   const precision = useMemo(() => {
@@ -154,30 +153,7 @@ export function ChartClient({ symbol: propSymbol }: ChartClientProps) {
                 canvasRef.current.updateCandle(newCandle);
               }
 
-              // Update price flash
-              setLivePrice((prev) => {
-                if (prev !== null && prev !== newCandle.close) {
-                  const dir = newCandle.close > prev ? 'up' : 'down';
-                  setFlashDirection(dir);
-                  if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
-                  flashTimerRef.current = setTimeout(() => {
-                    setFlashDirection(null);
-                  }, 600);
-                }
-                return newCandle.close;
-              });
-            }
-
-            // Handle 24h Ticker update
-            if (payload.stream.endsWith('@ticker')) {
-              const t = payload.data;
-              setTickerStats({
-                priceChange: parseFloat(t.p),
-                priceChangePercent: parseFloat(t.P),
-                high: parseFloat(t.h),
-                low: parseFloat(t.l),
-                close: parseFloat(t.c),
-              });
+              setLivePrice(newCandle.close);
             }
           } catch (e) {
             console.error('[ChartClient] WS Parse error:', e);
@@ -216,7 +192,6 @@ export function ChartClient({ symbol: propSymbol }: ChartClientProps) {
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
       if (ws) {
         ws.onclose = null;
         ws.close();
@@ -263,22 +238,6 @@ export function ChartClient({ symbol: propSymbol }: ChartClientProps) {
       ref={chartWrapperRef}
       className="relative flex flex-col h-full w-full bg-theme-bg-base overflow-hidden"
     >
-      {/* 1. Chart Sub-Header Toolbar */}
-      <ChartHeader
-        symbol={cleanSymbol}
-        livePrice={livePrice}
-        flashDirection={flashDirection}
-        tickerStats={tickerStats}
-        activeTimeframe={activeTimeframeId}
-        timeframes={timeframes}
-        wsStatus={wsStatus}
-        isFullscreen={isFullscreen}
-        precision={precision}
-        onTimeframeSelect={setActiveTimeframeId}
-        onResetZoom={handleResetZoom}
-        onToggleFullscreen={handleToggleFullscreen}
-      />
-
       {/* Global Workspace Notice Banner (if applicable) */}
       {isGlobal && (
         <div className="px-4 py-1 bg-theme-bg-elevated/80 border-b border-theme-border-subtle text-2xs text-theme-text-muted">
@@ -286,7 +245,7 @@ export function ChartClient({ symbol: propSymbol }: ChartClientProps) {
         </div>
       )}
 
-      {/* 2. Chart Canvas Stage with Floating OHLC Legend */}
+      {/* Main Chart Canvas Stage with Floating Overlays */}
       <div className="relative flex-1 min-h-0 w-full overflow-hidden bg-theme-bg-base">
         {/* Floating Top-Left Dynamic Legend */}
         <div className="absolute top-3 left-4 z-10 pointer-events-none">
@@ -296,6 +255,52 @@ export function ChartClient({ symbol: propSymbol }: ChartClientProps) {
             candle={displayedCandle}
             precision={precision}
           />
+        </div>
+
+        {/* Floating Top-Right Action Controls (WS Status, Reset Zoom, Fullscreen) */}
+        <div className="absolute top-3 right-4 z-10 flex items-center gap-2">
+          {/* Live WS Status Indicator */}
+          <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-md bg-theme-bg-elevated/90 backdrop-blur-xs border border-theme-border-subtle text-2xs font-mono text-theme-text-muted select-none">
+            <span
+              className={`size-1.5 rounded-full ${
+                wsStatus === 'connected'
+                  ? 'bg-theme-positive-base animate-pulse'
+                  : wsStatus === 'connecting'
+                  ? 'bg-theme-brand-binance animate-ping'
+                  : 'bg-theme-negative-base'
+              }`}
+            />
+            <span>
+              {wsStatus === 'connected'
+                ? APP_CONTENT.chart.liveStreamBadge
+                : wsStatus === 'connecting'
+                ? APP_CONTENT.chart.connectingBadge
+                : APP_CONTENT.chart.offlineBadge}
+            </span>
+          </div>
+
+          {/* Reset Zoom Button */}
+          <motion.button
+            type="button"
+            whileTap={tapScalePill}
+            onClick={handleResetZoom}
+            title={APP_CONTENT.chart.resetZoomTooltip}
+            className="flex items-center gap-1 px-2.5 py-1 text-2xs rounded-lg bg-theme-bg-elevated/90 backdrop-blur-xs hover:bg-theme-bg-surface text-theme-text-secondary hover:text-theme-text-primary border border-theme-border-subtle transition-colors cursor-pointer select-none"
+          >
+            <RefreshCw className="size-3" />
+            <span className="hidden sm:inline">{APP_CONTENT.chart.resetZoom}</span>
+          </motion.button>
+
+          {/* Fullscreen Toggle Button */}
+          <motion.button
+            type="button"
+            whileTap={tapScalePill}
+            onClick={handleToggleFullscreen}
+            title={APP_CONTENT.chart.fullscreenTooltip}
+            className="size-7 rounded-lg bg-theme-bg-elevated/90 backdrop-blur-xs hover:bg-theme-bg-surface text-theme-text-secondary hover:text-theme-text-primary border border-theme-border-subtle flex items-center justify-center transition-colors cursor-pointer select-none"
+          >
+            {isFullscreen ? <Minimize2 className="size-3.5" /> : <Maximize2 className="size-3.5" />}
+          </motion.button>
         </div>
 
         {/* Loading Overlay */}

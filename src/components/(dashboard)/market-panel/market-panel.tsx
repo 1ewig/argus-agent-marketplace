@@ -45,7 +45,8 @@ export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
     enabled: isOpen && isGlobal,
   });
 
-  // Market Intelligence Scan & Data hook (active for symbol workspaces)
+  // Market Intelligence Scan & Data hook (active for symbol workspaces when tab is opened)
+  const isIntelligenceActive = isIntelligenceTabActive(rightPanelTab);
   const {
     cleanSymbol,
     data: intelligenceData,
@@ -58,7 +59,7 @@ export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
     nextRunCountdown,
     handleScan,
   } = useScanMarketIntelligence(symbol, {
-    enabled: isOpen && !isGlobal,
+    enabled: isOpen && !isGlobal && isIntelligenceActive,
   });
 
   // Real-time client-direct Binance Spot WebSocket connection

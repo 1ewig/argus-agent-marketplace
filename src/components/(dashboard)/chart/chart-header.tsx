@@ -3,7 +3,7 @@
 import React, { memo } from 'react';
 import { motion } from 'framer-motion';
 import { RefreshCw, Maximize2, Minimize2 } from 'lucide-react';
-import { APP_CONTENT, type ChartTimeframeOption } from '@/constants/content';
+import { APP_CONTENT } from '@/constants/content';
 import { tapScalePill } from '@/constants/animation';
 
 export interface ChartTickerStats {
@@ -19,12 +19,9 @@ export interface ChartHeaderProps {
   livePrice: number | null;
   flashDirection: 'up' | 'down' | null;
   tickerStats: ChartTickerStats | null;
-  activeTimeframe: string;
-  timeframes: readonly ChartTimeframeOption[];
   wsStatus: 'connected' | 'connecting' | 'disconnected' | 'error';
   isFullscreen: boolean;
   precision?: number;
-  onTimeframeSelect: (tfId: string) => void;
   onResetZoom: () => void;
   onToggleFullscreen: () => void;
 }
@@ -33,12 +30,9 @@ export const ChartHeader = memo(function ChartHeader({
   livePrice,
   flashDirection,
   tickerStats,
-  activeTimeframe,
-  timeframes,
   wsStatus,
   isFullscreen,
   precision = 2,
-  onTimeframeSelect,
   onResetZoom,
   onToggleFullscreen,
 }: ChartHeaderProps) {
@@ -109,27 +103,6 @@ export const ChartHeader = memo(function ChartHeader({
             </div>
           </div>
         )}
-      </div>
-
-      {/* Center: Timeframe Selector */}
-      <div className="flex items-center gap-1 bg-theme-bg-elevated p-0.5 rounded-lg border border-theme-border-subtle shrink-0">
-        {timeframes.map((tf) => {
-          const isActive = tf.id === activeTimeframe;
-          return (
-            <button
-              key={tf.id}
-              type="button"
-              onClick={() => onTimeframeSelect(tf.id)}
-              className={`px-2.5 py-1 text-2xs font-semibold rounded-md transition-colors cursor-pointer select-none ${
-                isActive
-                  ? 'bg-theme-brand-binance text-theme-bg-overlay shadow-2xs font-bold'
-                  : 'text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-surface/80'
-              }`}
-            >
-              {tf.label}
-            </button>
-          );
-        })}
       </div>
 
       {/* Right: Connection Status & Actions */}
