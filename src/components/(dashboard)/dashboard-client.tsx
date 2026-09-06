@@ -1,21 +1,11 @@
 'use client';
 
-import React, { useRef, useCallback, useMemo } from 'react';
-import { motion } from 'framer-motion';
-import { ArrowUpRight, ChevronDown, Plus, Globe, PanelRightClose, PanelRightOpen, Bot } from 'lucide-react';
-import { AgentLoader, ArgusIcon } from '@/components/common';
-import { APP_CONTENT } from '@/constants/content';
-import {
-  emptyStateContainerVariants,
-  emptyStateGlowVariants,
-  emptyStateItemVariants,
-  tapScalePill,
-  hoverLiftPill,
-} from '@/constants/animation';
-import { useAgentChat, useChatSessions, parseSymbolAssets } from '@/hooks';
+import React, { useMemo } from 'react';
+import { useAgentChat } from '@/hooks';
 import { useAppStore } from '@/stores/app-store';
+import { DashboardHeader } from './dashboard-header';
 import { MarketPanel } from './market-panel';
-import { ChatMessage, ChatInput, type ChatInputHandle } from './chat';
+import { ChatEmptyState, ChatMessageList, ChatDock } from './chat';
 import type { ExecutionMode } from '@/lib/types';
 
 interface DashboardClientProps {
@@ -23,26 +13,11 @@ interface DashboardClientProps {
 }
 
 export function DashboardClient({ mode = 'simulation' }: DashboardClientProps) {
-  const chatInputRef = useRef<ChatInputHandle>(null);
   const selectedSymbol = useAppStore((state) => state.selectedSymbol);
-  const setIsSymbolSearchOpen = useAppStore((state) => state.setIsSymbolSearchOpen);
   const isMarketPanelOpen = useAppStore((state) => state.isMarketPanelOpen);
-  const setIsMarketPanelOpen = useAppStore((state) => state.setIsMarketPanelOpen);
-  const toggleMarketPanel = useAppStore((state) => state.toggleMarketPanel);
-  const rightPanelTab = useAppStore((state) => state.rightPanelTab);
-  const setRightPanelTab = useAppStore((state) => state.setRightPanelTab);
-  const { handleNewSession, isNewChatDisabled } = useChatSessions();
 
   const isGlobalWorkspace = (selectedSymbol || '').toUpperCase() === 'GLOBAL';
   const cleanSymbol = (selectedSymbol || 'BTCUSDT').toUpperCase();
-
-  const quickActions = useMemo(() => {
-    if (isGlobalWorkspace) {
-      return APP_CONTENT.chat.globalQuickActions;
-    }
-    const { baseAsset, quoteAsset } = parseSymbolAssets(cleanSymbol);
-    return APP_CONTENT.chat.getSymbolQuickActions(cleanSymbol, baseAsset, quoteAsset);
-  }, [isGlobalWorkspace, cleanSymbol]);
 
   const {
     messages,
@@ -56,10 +31,6 @@ export function DashboardClient({ mode = 'simulation' }: DashboardClientProps) {
     handleSend,
     handleStop,
   } = useAgentChat({ mode });
-
-  const handleSelectTemplate = useCallback((template: string) => {
-    chatInputRef.current?.setInputText(template);
-  }, []);
 
   const isChatEmpty = !isMessagesLoading && messages.length === 0 && !activeStreamMessage;
 
@@ -76,121 +47,14 @@ export function DashboardClient({ mode = 'simulation' }: DashboardClientProps) {
 
   return (
     <div className="relative flex flex-col h-full w-full bg-theme-bg-base overflow-hidden">
-      {/* 1. Top Bar with Minimal Active Symbol & New Chat Trigger */}
-      <div className="relative z-30 h-14 px-spacing-md sm:px-spacing-lg border-b border-theme-border-subtle bg-theme-bg-base/90 backdrop-blur-xs flex items-center justify-between shrink-0">
-        <div className="flex items-center">
-          {/* Minimal Symbol / Workspace Dropdown Button with Tactile Press */}
-          <motion.button
-            type="button"
-            whileTap={tapScalePill}
-            onClick={() => setIsSymbolSearchOpen(true)}
-            title={APP_CONTENT.chat.switchSymbolTooltip}
-            className="group inline-flex items-center gap-1.5 px-2.5 py-1.5 -ml-2 rounded-lg text-theme-text-primary hover:bg-theme-bg-surface active:bg-theme-bg-elevated border border-transparent hover:border-theme-border-subtle transition-colors cursor-pointer select-none"
-          >
-            {isGlobalWorkspace ? (
-              <>
-                <Globe className="size-3.5 text-theme-brand-binance shrink-0" />
-                <span className="text-xs sm:text-sm font-bold tracking-wider">
-                  {APP_CONTENT.chat.globalWorkspaceTitle}
-                </span>
-              </>
-            ) : (
-              <span className="text-xs sm:text-sm font-bold tracking-wider">
-                {cleanSymbol}
-              </span>
-            )}
-            <ChevronDown className="size-3.5 text-theme-text-muted group-hover:text-theme-text-primary transition-colors" />
-          </motion.button>
-        </div>
+      {/* 1. Header Toolbar with Workspace Selector, New Chat & Panel Toggles */}
+      <DashboardHeader />
 
-        {/* Right Header Section: New Chat Button & Market Panel Toggle */}
-        <div className="flex items-center gap-2">
-          {/* New Chat Primary Action Button */}
-          <motion.button
-            type="button"
-            whileTap={isNewChatDisabled ? undefined : tapScalePill}
-            onClick={() => handleNewSession()}
-            disabled={isNewChatDisabled}
-            title={
-              isNewChatDisabled
-                ? APP_CONTENT.chat.newSessionDisabled
-                : APP_CONTENT.chat.newChatTooltip
-            }
-            aria-label={APP_CONTENT.chat.newChatButton}
-            className={`h-8 px-3 rounded-lg text-xs font-bold inline-flex items-center gap-1.5 select-none transition-colors ${
-              isNewChatDisabled
-                ? 'opacity-40 cursor-not-allowed bg-theme-brand-binance text-theme-bg-overlay'
-                : 'bg-theme-brand-binance text-theme-bg-overlay cursor-pointer shadow-2xs hover:brightness-105 active:brightness-95'
-            }`}
-          >
-            <Plus className="size-3.5 stroke-[2.75]" />
-            <span className="font-bold">{APP_CONTENT.chat.newChatButton}</span>
-          </motion.button>
-
-          {/* Dedicated Sub-Agents Trigger Button */}
-          <motion.button
-            type="button"
-            whileTap={tapScalePill}
-            onClick={() => {
-              if (!isMarketPanelOpen) {
-                setIsMarketPanelOpen(true);
-                setRightPanelTab('market-data');
-              } else if (rightPanelTab === 'market-data') {
-                setRightPanelTab('overview');
-              } else {
-                setRightPanelTab('market-data');
-              }
-            }}
-            title={APP_CONTENT.subAgents.headerButtonTooltip}
-            aria-label={APP_CONTENT.subAgents.headerButtonLabel}
-            className={`h-8 px-2.5 rounded-lg text-xs font-bold inline-flex items-center gap-1.5 select-none transition-colors border cursor-pointer ${
-              isMarketPanelOpen && rightPanelTab === 'market-data'
-                ? 'bg-theme-bg-elevated text-theme-brand-binance border-theme-brand-binance/40 shadow-2xs'
-                : 'bg-theme-bg-surface text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-elevated border-theme-border-subtle'
-            }`}
-          >
-            <Bot className="size-3.5 text-theme-brand-binance" />
-            <span className="font-semibold">{APP_CONTENT.subAgents.headerButtonLabel}</span>
-            <span className="px-1 py-0.2 rounded-xs bg-theme-brand-binance/15 text-theme-brand-binance text-[9px] font-mono font-bold">
-              {APP_CONTENT.subAgents.agentBadgeNum}
-            </span>
-          </motion.button>
-
-          {/* Collapsible Market Panel Toggle Button */}
-          <motion.button
-            type="button"
-            whileTap={tapScalePill}
-            onClick={toggleMarketPanel}
-            title={
-              isMarketPanelOpen
-                ? APP_CONTENT.marketPanel.collapsePanel
-                : APP_CONTENT.marketPanel.expandPanel
-            }
-            aria-label={
-              isMarketPanelOpen
-                ? APP_CONTENT.marketPanel.collapsePanel
-                : APP_CONTENT.marketPanel.expandPanel
-            }
-            className={`size-8 rounded-lg flex items-center justify-center select-none cursor-pointer transition-colors border ${
-              isMarketPanelOpen
-                ? 'bg-theme-bg-elevated text-theme-brand-binance border-theme-border-subtle shadow-2xs'
-                : 'text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-surface border-transparent hover:border-theme-border-subtle'
-            }`}
-          >
-            {isMarketPanelOpen ? (
-              <PanelRightClose className="size-4" />
-            ) : (
-              <PanelRightOpen className="size-4" />
-            )}
-          </motion.button>
-        </div>
-      </div>
-
-      {/* 2. Main Stage Body: Horizontal Flex (Chat Area + Right Market Panel) */}
+      {/* 2. Main Stage Body: Horizontal Flex (Chat Column + Right Market Panel) */}
       <div className="relative flex-1 min-h-0 w-full flex flex-row overflow-hidden">
         {/* Chat Column */}
         <div className="relative flex-1 min-h-0 min-w-0 flex flex-col overflow-hidden">
-          {/* Gemini-Style Atmospheric Ambient Depth Glow */}
+          {/* Atmospheric Ambient Depth Glow */}
           <div
             aria-hidden="true"
             className={`pointer-events-none absolute inset-0 ambient-glow-gemini transition-opacity duration-500 ease-out ${
@@ -198,148 +62,38 @@ export function DashboardClient({ mode = 'simulation' }: DashboardClientProps) {
             }`}
           />
 
-          {/* Dynamic Luminous Glow */}
-          {isChatEmpty && (
-            <motion.div
-              key="chat-empty-glow"
-              variants={emptyStateGlowVariants}
-              initial="hidden"
-              animate="visible"
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-0 overflow-hidden z-0"
-            >
-              <div className="absolute inset-0 chat-empty-glow animate-glow-breathe" />
-            </motion.div>
-          )}
-
           {/* Empty State Overlay */}
           {isChatEmpty && (
-            <motion.div
-              key="empty-state-canvas"
-              variants={emptyStateContainerVariants}
-              initial="hidden"
-              animate="visible"
-              className="absolute inset-0 flex flex-col items-center justify-center p-spacing-md sm:p-spacing-lg text-center overflow-y-auto pointer-events-auto z-20 custom-scrollbar"
-            >
-              <div className="my-auto flex flex-col items-center justify-center w-full py-spacing-md max-w-3xl">
-                {/* Header Stack */}
-                <motion.div
-                  variants={emptyStateItemVariants}
-                  className="flex flex-col items-center text-center max-w-xl mb-spacing-lg"
-                >
-                  <div className="size-10 rounded-2xl bg-theme-bg-elevated border border-theme-border-subtle flex items-center justify-center mb-3 shadow-2xs">
-                    <ArgusIcon className="size-5 text-theme-brand-binance" />
-                  </div>
-
-                  <h3 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-theme-text-primary tracking-tight font-sans leading-tight">
-                    {APP_CONTENT.chat.emptyTitle}
-                  </h3>
-                </motion.div>
-
-                {/* Hero Input */}
-                <motion.div
-                  variants={emptyStateItemVariants}
-                  className="w-full max-w-2xl px-spacing-xs mb-spacing-md"
-                >
-                  <ChatInput
-                    ref={chatInputRef}
-                    key="hero-input"
-                    isLoading={isLoading}
-                    onSend={handleSend}
-                    onStop={handleStop}
-                    className="max-w-2xl"
-                    containerClassName="w-full p-0 bg-transparent shrink-0"
-                    autoFocus
-                    showAura={true}
-                  />
-                </motion.div>
-
-                {/* Quick Action Template Pills */}
-                <motion.div variants={emptyStateItemVariants} className="flex flex-col items-center gap-spacing-xs w-full">
-                  <div className="flex items-center justify-center mb-0.5">
-                    <span className="text-2xs font-bold uppercase tracking-wider text-theme-text-muted">
-                      {APP_CONTENT.chat.quickActionsTitle}
-                    </span>
-                  </div>
-                  <div className="flex flex-wrap items-center justify-center gap-2 max-w-xl">
-                    {quickActions.map((action) => (
-                      <motion.button
-                        key={`${cleanSymbol}_${action.id}`}
-                        type="button"
-                        whileHover={hoverLiftPill}
-                        whileTap={tapScalePill}
-                        onClick={() => handleSelectTemplate(action.template)}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-theme-bg-surface/80 hover:bg-theme-bg-surface active:bg-theme-bg-elevated border border-theme-border-subtle hover:border-theme-border-strong active:border-theme-border-strong text-theme-text-secondary hover:text-theme-text-primary text-xs font-medium cursor-pointer transition-colors duration-150 shadow-2xs group select-none backdrop-blur-xs"
-                      >
-                        <span className="leading-tight">{action.label}</span>
-                        <ArrowUpRight className="size-3 text-theme-text-muted group-hover:text-theme-brand-binance group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-150 shrink-0" />
-                      </motion.button>
-                    ))}
-                  </div>
-                </motion.div>
-              </div>
-            </motion.div>
+            <ChatEmptyState
+              isLoading={isLoading}
+              onSend={handleSend}
+              onStop={handleStop}
+              cleanSymbol={cleanSymbol}
+              isGlobalWorkspace={isGlobalWorkspace}
+            />
           )}
 
-          {/* Messages Scroll Area */}
-          <div
-            ref={scrollContainerRef}
+          {/* Messages Scroll Feed */}
+          <ChatMessageList
+            messages={messages}
+            activeStreamMessage={activeStreamMessage}
+            isLoading={isLoading}
+            errorNotice={errorNotice}
+            lastAssistantMessageId={lastAssistantMessageId}
+            isChatEmpty={isChatEmpty}
+            scrollContainerRef={scrollContainerRef}
+            messagesEndRef={messagesEndRef}
             onScroll={handleScroll}
-            className={`relative z-10 flex-1 overflow-y-auto overscroll-y-contain [will-change:scroll-position] [transform:translateZ(0)] px-spacing-md sm:px-spacing-lg pt-spacing-md pb-spacing-lg min-h-0 custom-scrollbar ${
-              isChatEmpty ? 'pointer-events-none select-none opacity-0' : 'opacity-100'
-            }`}
-          >
-            <div className="w-full max-w-3xl mx-auto flex flex-col gap-spacing-md">
-              {messages.map((msg, index) => (
-                <ChatMessage
-                  key={msg.id}
-                  message={msg}
-                  animateEntrance={index === messages.length - 1 && isLoading}
-                  isLatestAssistantMessage={msg.id === lastAssistantMessageId}
-                  onSelectFollowUp={handleSend}
-                />
-              ))}
-
-              {/* Real-time Streaming Agent Response with Live Process Timeline */}
-              {activeStreamMessage && (
-                <ChatMessage
-                  key={activeStreamMessage.id}
-                  message={activeStreamMessage}
-                  isStreaming={true}
-                  animateEntrance={true}
-                />
-              )}
-
-              {isLoading && !activeStreamMessage && (
-                <div className="flex items-center gap-spacing-sm p-spacing-md bg-theme-bg-elevated rounded-xl border border-theme-border-subtle animate-pulse">
-                  <AgentLoader className="size-5 text-theme-brand-binance shrink-0" />
-                  <span className="text-sm text-theme-text-secondary font-medium">
-                    {APP_CONTENT.chat.thinkingText}
-                  </span>
-                </div>
-              )}
-
-              {errorNotice && (
-                <div className="p-spacing-sm px-spacing-md bg-theme-bg-elevated border border-theme-status-danger text-theme-status-danger rounded-xl text-xs">
-                  {errorNotice}
-                </div>
-              )}
-
-              <div ref={messagesEndRef} />
-            </div>
-          </div>
+            onSend={handleSend}
+          />
 
           {/* Persistent Bottom Dock Input */}
           {!isChatEmpty && (
-            <div className="relative z-20 w-full bg-gradient-to-t from-theme-bg-base via-theme-bg-base/95 to-transparent pb-spacing-lg sm:pb-spacing-xl px-spacing-md sm:px-spacing-lg shrink-0">
-              <ChatInput
-                ref={chatInputRef}
-                isLoading={isLoading}
-                onSend={handleSend}
-                onStop={handleStop}
-                containerClassName="w-full p-0 bg-transparent"
-              />
-            </div>
+            <ChatDock
+              isLoading={isLoading}
+              onSend={handleSend}
+              onStop={handleStop}
+            />
           )}
         </div>
 

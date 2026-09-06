@@ -7,9 +7,7 @@ import { APP_CONTENT } from '@/constants/content';
 import { sidebarSpringTransition, tapScalePill } from '@/constants/animation';
 import { useBinanceMarketStream } from '@/hooks/use-binance-market-stream';
 import { useAppStore } from '@/stores/app-store';
-import { PriceTickerCard } from './price-ticker-card';
-import { FuturesFundingCard } from './futures-funding-card';
-import { OrderBookDepthCard } from './order-book-depth-card';
+import { PriceTickerCard, FuturesFundingCard, OrderBookDepthCard } from './telemetry';
 import { MarketDataAgentView } from './agents/market-data-agent-view';
 
 interface MarketPanelProps {
