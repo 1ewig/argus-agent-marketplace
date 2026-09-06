@@ -14,8 +14,9 @@ The product solves a real pain point for active traders: juggling multiple tabs 
 
 ### Key product surfaces
 - **Agent chat (center):** multi-turn, tool-calling conversation streamed via SSE with a visible, collapsible reasoning/tool-execution timeline.
-- **Live market panel (right):** real-time Binance WebSocket telemetry — price ticker + micro-sparkline, order book depth, and a perpetual futures funding sentinel; plus a two-tab switcher (**Live Telemetry** / **Market Intelligence**).
+- **Live market panel (right):** real-time Binance WebSocket telemetry — price ticker + micro-sparkline, order book depth, and a perpetual futures funding sentinel. Symbol workspaces get a two-tab switcher (**Live Telemetry** / **Market Intelligence**).
 - **Market Intelligence Agent (right-panel tab):** a background sidecar agent that scans 9 live data sources in parallel and emits **one structured JSON payload → four executive cards** (CONTROL, KEY LEVELS, POSITIONING, TACTICAL PLAYBOOK) via `generateObject`, cached for 1 hour.
+- **Global Market deck (GLOBAL workspace):** the right panel swaps to a macro overview — **Market Pulse**, **Top Movers**, **Funding Heatmap**, and **Macro Positioning** — aggregated server-side by `GET /api/binance/global-overview` and refreshed every 30s.
 - **Workspaces & sessions:** symbol-tagged workspaces (`BTCUSDT`, `SOLUSDT`, `GLOBAL`, ...) with persistent chat sessions stored locally in the browser, deep-linkable via URL params (`?symbol=BTCUSDT&chat=conv_...`).
 
 ---
@@ -79,12 +80,13 @@ src/
 │   │   └── index.ts              # barrel export (public API for the db layer)
 │   ├── queries/                  # TanStack queryOptions factories
 │   │   ├── market-intelligence.query.ts # 4-card scan cache (1h stale / 24h GC)
+│   │   ├── global-market.query.ts # macro deck (30s poll / force-refresh cache-bust)
 │   │   └── symbols.query.ts      # cached USDT symbol catalog
 │   ├── chat/                     # client-side transport & history helpers
 │   │   ├── chat-stream-client.ts # SSE reader for /api/agent/chat
 │   │   └── chat-history.ts       # sliding 10-message context window builder
 │   ├── symbols.ts                # normalizeSymbolForDisplay / parseSymbolAssets / base-asset
-│   ├── types/                    # domain types (trades, risk certs, invoices, x402)
+│   ├── types/                    # modular domain types (agent, alpha, risk, execution, x402, global-market)
 │   └── utils.ts                  # cn(), GLOBAL workspace helpers, id/time helpers
 │
 ├── hooks/                        # specialized reactive hooks (barrel aggregates 3 domains)
@@ -95,6 +97,7 @@ src/
 │   ├── market/                   # live market data + intelligence
 │   │   ├── use-binance-market-stream.ts # live spot WS ticker/depth (tab-visibility sleep)
 │   │   ├── use-binance-futures-funding.ts # futures mark-price/funding stream + REST availability + countdown
+│   │   ├── use-global-market-overview.ts # macro deck hook (30s poll, force refresh)
 │   │   ├── use-market-intelligence.ts / use-scan-market-intelligence.ts # TanStack+Dexie cached agent
 │   │   ├── use-symbol-search.ts  # symbol catalog, fuzzy + keyboard nav, ⌘K
 │   │   └── use-sparkline-data.ts / use-sparkline-geometry.ts # micro price sparkline math
@@ -109,9 +112,10 @@ src/
 │   ├── (dashboard)/
 │   │   ├── dashboard-client.tsx  # chat stage + market panel + empty state orchestration
 │   │   ├── dashboard-header.tsx  # workspace switcher, New Chat, Market Panel toggle
+│   │   ├── markdown-view.tsx     # sanitized markdown renderer (react-markdown + remark-gfm)
 │   │   ├── chat/                 # empty-state, dock, input, message, message-list, timeline,
 │   │   │                         #   thought-accordion, work-group, tool-result-card,
-│   │   │                         #   markdown-view + tool-results/ (10 per-tool cards)
+│   │   │                         #   tool-results/ (10 per-tool cards)
 │   │   ├── market-panel/         # collapsible right deck (Live Telemetry / Market Intelligence / Global Market)
 │   │   │   ├── telemetry/        # price-ticker (+sparkline), futures-funding, order-book-depth
 │   │   │   ├── agents/           # market-intelligence-agent-view + cards/ (4 executive cards)
@@ -125,8 +129,9 @@ src/
 │
 ├── stores/
 │   └── app-store.ts              # Zustand persisted UI state (symbol, panel, tabs, streams,
-│                                 #  sidebar) via persist → localStorage; 7-tab rightPanelTab
-│                                 #  enum reserved for future sidecar agents (UI renders 2)
+│                                 #  sidebar) via persist → localStorage; 7-value rightPanelTab
+│                                 #  union defaults 'overview' (UI renders 2 tabs; legacy
+│                                 #  'market-data' accepted by isIntelligenceTabActive)
 │
 ├── constants/
 │   └── content/                  # ALL user-facing copy, modularized (AGENTS.md Rule 1)
@@ -168,8 +173,10 @@ src/
 3. The route validates `{ symbol, apiKey?, providerOverride? }` and calls `executeMarketIntelligence` ([`src/agent/intelligence/engine.ts`](../src/agent/intelligence/engine.ts)).
 4. The engine fires **9 parallel `Promise.allSettled` fetches**: ticker price, 20-level order book, 15m klines (30), 1h klines (24), 5m VWAP, funding rate, global long/short account ratio (5m×5), top trader long/short (5m×5), and Exa news (3 results, `category: 'news'`).
 5. Quantitative anchors are derived deterministically (best bid/ask, bid/ask volume imbalance, 15m/1h range low/high) and injected — alongside live news snippets — into a grounded prompt.
-6. `generateObject` (primary model, then backup on failure) fills the strict `MarketIntelligencePayloadSchema`. If both models fail, a **deterministic fallback synthesizer** computes the 4-card payload from the same raw exchange math (never hallucinated prices).
-7. The response is returned via JSON, persisted directly to Dexie v4 (`marketIntelligence` table), hydrated into React Query (`staleTime: 1h`, `gcTime: 24h`), and rendered as 4 executive cards. The panel header's **Scan Market** button (`handleScan` → `fetchMarketIntelligence({ force: true })`) forces a fresh scan.
+6. `generateObject` fills the strict `MarketIntelligencePayloadSchema` using a model **hardcoded to Groq** (primary `DEFAULT_GROQ_MODEL`, backup `DEFAULT_GROQ_BACKUP_MODEL` — see [§5](#5-agent-engine-details-srcagent)); the route's `providerOverride` is currently not consulted by the engine. If both models fail, a **deterministic fallback synthesizer** computes the 4-card payload from the same raw exchange math (never hallucinated prices).
+7. The response is returned via JSON, persisted directly to Dexie v4 (`marketIntelligence` table), hydrated into React Query (`staleTime: 1h`, `gcTime: 24h`), and rendered as 4 executive cards. The panel header's **Scan Market** button (`handleScan` → `fetchMarketIntelligence({ force: true })`) forces a fresh scan; while the snapshot is fresh (< 1h) the button is replaced by a **Next Run** countdown chip (`useScanMarketIntelligence` ticks every second) plus a `1H SNAPSHOT` cached badge.
+
+> **Dev tooling:** LLM latency benchmarks live in [`scratch/`](../scratch/) (`benchmark.ts`, `test-groq-benchmark.ts`, `test-fireworks-benchmark.ts`).
 
 ### 4.3 Live market telemetry (WebSocket)
 
@@ -177,6 +184,14 @@ src/
 - [`use-binance-futures-funding`](../src/hooks/market/use-binance-futures-funding.ts) performs an initial REST `premiumIndex` fetch (instant display + availability check), then a Futures `<symbol>@markPrice@1s` stream; drives a per-second settlement countdown.
 - Parsers in [`src/lib/binance-websocket/parsers.ts`](../src/lib/binance-websocket/parsers.ts) normalize raw frames into UI-ready models (spread, depth imbalance, annualized APR, flash direction, precision, basis).
 - Both streams **auto-sleep when the browser tab is hidden** (`visibilitychange` + `useSyncExternalStore`) and auto-reconnect with exponential backoff (Spot: `min(1000·1.5^retries, 10s)`; Futures: fixed 3s).
+
+### 4.4 Global Market Overview lifecycle (macro deck)
+
+1. On the **GLOBAL** workspace the right panel mounts [`GlobalMarketView`](../src/components/(dashboard)/market-panel/global/global-market-view.tsx); `useGlobalMarketOverview` ([`src/hooks/market/use-global-market-overview.ts`](../src/hooks/market/use-global-market-overview.ts)) is enabled only while the panel is open on the GLOBAL workspace.
+2. The hook subscribes to a TanStack React Query keyed `['global-market-overview']` (`globalMarketQuery` in [`src/lib/queries/global-market.query.ts`](../src/lib/queries/global-market.query.ts)) with `staleTime: 30s`, `gcTime: 5min`, and a 30s background `refetchInterval`.
+3. `GET /api/binance/global-overview` ([`src/app/api/binance/global-overview/route.ts`](../src/app/api/binance/global-overview/route.ts)) fans out parallel requests server-side: 24h stats for an 8-symbol universe (`BTC/ETH/SOL/BNB/ARB/OP/DOGE/AVAX` USDT), funding rates for the 4 core majors, and retail + whale long/short ratios for BTC & ETH.
+4. The route assembles a four-section payload — `marketPulse` (bias + average 24h change + core-asset tiles), `topMovers` (top 3 gainers/losers), `funding` (perpetual funding heatmap with APR), and `positioning` (retail vs whale L/S bias summary) — served with `Cache-Control: public, s-maxage=15, stale-while-revalidate=30`.
+5. The **Refresh** button (`handleRefresh` → `fetchGlobalMarketOverview({ force: true })`) issues a cache-busting request (`?t=<now>` + `cache: 'no-store'`), hydrates the query cache directly, and shows a ~600ms minimum spinner state.
 
 ---
 
@@ -188,10 +203,11 @@ src/
 ### Model providers ([`src/agent/providers/`](../src/agent/providers/))
 - Active provider resolved from `INFERENCE_PROVIDER` env (`groq` default | `fireworks`), overridable per request via `provider`.
 - **Groq:** `qwen/qwen3.8-27b` (backup `openai/gpt-oss-120b`), env-overridable via `GROQ_MODEL` / `GROQ_BACKUP_MODEL`.
-- **Fireworks:** `glm-5p3-flash` (backup `deepseek-v4-flash-0731`), wrapped with `extractReasoningMiddleware({ tagName: 'think' })`; env-overridable via `FIREWORKS_MODEL` / `FIREWORKS_BACKUP_MODEL`.
+- **Fireworks:** code defaults in [`config.ts`](../src/agent/providers/config.ts) are `deepseek-v4-flash-0731` (primary) / `glm-5p3-flash` (backup), whereas `.env.example` lists them swapped — when `FIREWORKS_MODEL`/`FIREWORKS_BACKUP_MODEL` are set, env wins. Models are wrapped with `extractReasoningMiddleware({ tagName: 'think' })`.
 - **Reasoning effort:** per-provider env (`GROQ_REASONING_EFFORT` / `FIREWORKS_REASONING_EFFORT`, default `'low'`), mapped into `providerOptions` (`groq.reasoningEffort`, `fireworks.thinking.enabled`).
 - **Max tokens:** default `6000`, overridable via `GROQ_MAX_TOKENS` or `AgentOptions.maxTokens`.
 - **Failover:** if the primary model throws before producing text, the engine retries on the backup model — including **cross-provider** failover (Groq→Fireworks) whenever a `FIREWORKS_API_KEY` is present or `BACKUP_INFERENCE_PROVIDER` is set.
+- **Market Intelligence model:** the sidecar engine deliberately **pins Groq** — `getAgentModel(DEFAULT_GROQ_MODEL, apiKey, 'groq')` primary and `getBackupAgentModel(DEFAULT_GROQ_BACKUP_MODEL, apiKey, 'groq')` backup — so `INFERENCE_PROVIDER` does not apply to the intelligence path (rapid structured `generateObject` synthesis).
 
 ### Step timeline state machine
 Each turn maintains an ordered list of `AgentExecutionStep` with types `thinking` | `tool` | `intermediate_text` and status `active` | `completed` | `error`. The engine:
@@ -202,6 +218,7 @@ Each turn maintains an ordered list of `AgentExecutionStep` with types `thinking
 
 ### Output post-processing
 - `<session_title>` is captured **in-stream**: `executeAgentStream` regex-matches the accumulated text and emits a `session_title` SSE event the moment a complete tag appears; `extractSessionTitle` (`transforms/title-stream-filter.ts`) strips the tag from the final payload and falls back to a keyword-driven `generateFallbackSessionTitle` on turn 1, while `sanitizeAgentText` removes any lingering or in-flight XML so raw markup never reaches the UI.
+- `stripIntermediateTextPrefix` (`transforms/sanitizer.ts`) deduplicates any pre-tool intermediate text that leaked into the final response, preventing thought duplication at inference end.
 - `extractFollowUpQuestions` parses the trailing `<follow_up_questions>` block into `followUpQuestions[]` and pads to exactly 3 with symbol-aware fallbacks.
 
 ### System prompt guards ([`src/agent/prompts/`](../src/agent/prompts/))
@@ -232,7 +249,7 @@ All tools validate symbols through a strict Zod schema built on `normalizeSymbol
 | `get_top_long_short_ratio` | Binance Futures | Top-20% whale long/short positioning, sentiment bucket |
 | `search_crypto_news` | Exa AI | News/catalysts with category, date-range, domain filters |
 
-The Binance REST client ([`src/lib/binance-mcp/public-api-client.ts`](../src/lib/binance-mcp/public-api-client.ts)) targets `https://api.binance.com` (Spot) and `https://fapi.binance.com` / `https://fapi.binance.com/futures/data` (Futures), with per-endpoint `revalidate` caching (ticker/depth/trades 2s, klines 10s, 24h stats/avg 5s, funding/OI/ratios 15s) and unified error extraction.
+The Binance REST client ([`src/lib/binance-mcp/public-api-client.ts`](../src/lib/binance-mcp/public-api-client.ts)) targets a **multi-cluster failover pool**: `BINANCE_SPOT_CLUSTER_ENDPOINTS` (`api.binance.com`, `data-api.binance.vision`, `api1/2/3.binance.com`, `api-gcp.binance.com`) for Spot and `BINANCE_FUTURES_CLUSTER_ENDPOINTS` (`fapi.binance.com` / `futures/data`) for Futures. Each attempt is capped at a 6s `AbortSignal.timeout`; on timeouts, 429s, 5xx, or 451 geo-blocks it retries the next cluster (throwing immediately on deterministic 400 symbol errors), and `BINANCE_SPOT_API_URL` / `BINANCE_FUTURES_API_URL` prepend custom cluster bases. Per-endpoint `revalidate` caching applies (ticker/depth/trades 2s, klines 10s, 24h stats/avg 5s, funding/OI/ratios 15s) with unified error extraction.
 
 ---
 
@@ -276,8 +293,13 @@ Event types emitted: `step_start`, `step_update`, `reasoning_delta`, `text_delta
 ### `POST /api/agent/intelligence`
 Validates `{ symbol (required), apiKey?, providerOverride? ('groq'|'fireworks') }`, calls `executeMarketIntelligence`, and returns `{ success, symbol, timestamp, data, newsCount, sources }` where `data` is the 4-card `MarketIntelligencePayload`.
 
+### `GET /api/binance/global-overview`
+Pure data layer for the **Global Market deck** (no LLM involved). Runs parallel server-side aggregation for an 8-symbol universe — 24h stats, funding rates for the 4 core majors, and BTC/ETH retail + whale long/short ratios — assembled into a four-section `GlobalMarketOverviewData` payload (`marketPulse`, `topMovers`, `funding`, `positioning`). `dynamic = 'force-dynamic'` with `Cache-Control: public, s-maxage=15, stale-while-revalidate=30`; clients poll every 30s or force cache-busting refresh.
+
 ### `GET /api/binance/symbols`
-Returns active Binance **USDT spot pairs** (from `exchangeInfo?permissions=SPOT`, filtered to `TRADING` + USDT quote + spot-trading allowed), prioritized popular pairs first (BTC, ETH, SOL, ...) then alphabetical. `dynamic = 'force-static'`, `revalidate = 3600`, plus an in-memory 1-hour TTL cache. Fetches with `cache: 'no-store'` to bypass Next's 2MB data-cache limit (raw payload ~23MB), and degrades gracefully to a fallback symbol list on network failure.
+Returns active Binance **USDT spot pairs** (from `exchangeInfo?permissions=SPOT`, filtered to `TRADING` + USDT quote + spot-trading allowed), prioritized popular pairs first (BTC, ETH, SOL, ...) then alphabetical. `dynamic = 'force-static'`, `revalidate = 3600`, plus an in-memory 1-hour TTL cache. Fetches with `cache: 'no-store'` (bypassing Next's 2MB data-cache limit on the ~23MB raw payload) across its own multi-cluster failover pool (8s timeout), and degrades gracefully to a fallback symbol list on network failure.
+
+> **Deployment:** all four API routes pin `preferredRegion = 'fra1'` and [`vercel.json`](../vercel.json) declares `regions: ["fra1"]` — keeping Vercel serverless functions on the Frankfurt cluster to avoid Binance's HTTP 451 geo-restriction on US-region IPs.
 
 ---
 
@@ -292,19 +314,21 @@ Returns active Binance **USDT spot pairs** (from `exchangeInfo?permissions=SPOT`
 ### Environment variables (`.env.example`)
 - `INFERENCE_PROVIDER` (`groq` | `fireworks`), `GROQ_API_KEY`, `GROQ_MODEL`, `GROQ_BACKUP_MODEL`, `GROQ_REASONING_EFFORT`, `GROQ_MAX_TOKENS`.
 - `FIREWORKS_API_KEY`, `FIREWORKS_MODEL`, `FIREWORKS_BACKUP_MODEL`, `FIREWORKS_REASONING_EFFORT`, `BACKUP_INFERENCE_PROVIDER`.
-- `EXA_API_KEY` (news search), `NEXT_PUBLIC_BINANCE_MODE=simulation`, optional x402 wallet placeholders.
+- `EXA_API_KEY` (news search), `NEXT_PUBLIC_BINANCE_MODE=simulation`, and optional x402 wallet placeholders.
+- `BINANCE_SPOT_API_URL` / `BINANCE_FUTURES_API_URL` (optional custom cluster bases prepended to the failover pools).
 
 ---
 
 ## 11. Roadmap Status
 
-[`future-plan.md`](../future-plan.md) describes the **3-pane workstation architecture**: symbol catalog (Dexie-cached USDT pairs), center agent chat, right **intelligence deck** with isolated sidecar agents producing strict-Zod structured JSON via `generateObject`.
+The roadmap centers on a **3-pane workstation architecture**: symbol catalog (Dexie-cached USDT pairs), center agent chat, and a right **intelligence deck** with isolated sidecar agents producing strict-Zod structured JSON via `generateObject`.
 
 **Implemented so far:**
 - Full 3-pane workstation shell (sidebar ↔ agent chat ↔ collapsible right panel with Live Telemetry / Market Intelligence tabs).
 - **Market Intelligence Agent** — a unified sidecar agent covering the Quant/Levels, Catalyst/News, and Liquidity/Positioning planes in **one structured 4-card payload** (CONTROL, KEY LEVELS, POSITIONING, TACTICAL PLAYBOOK) with 1-hour snapshot caching.
+- **Global Market Overview** — a pure data-layer macro deck for the `GLOBAL` workspace (Market Pulse, Top Movers, Funding Heatmap, Macro Positioning), aggregated by `GET /api/binance/global-overview` and polled every 30s.
 
-**Still on the roadmap:** dedicated independent sidecar endpoints per agent (Tactical Signal & Key Levels, Catalyst & News Radar as standalone subscriptions, Liquidity & Risk Sentinel with slippage tiers), richer charting, and additional workspace-deck modules.
+**Still on the roadmap:** dedicated independent sidecar **agent** endpoints (Tactical Signal & Key Levels, Catalyst & News Radar as standalone subscriptions, Liquidity & Risk Sentinel with slippage tiers), richer charting, and additional workspace-deck modules.
 
 ---
 

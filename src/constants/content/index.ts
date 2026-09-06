@@ -3,12 +3,14 @@ import { chatContent } from './chat.content';
 import { processContent } from './process.content';
 import { marketContent } from './market.content';
 import { intelligenceContent } from './intelligence.content';
+import { chartContent } from './chart.content';
 
 export * from './sidebar.content';
 export * from './chat.content';
 export * from './process.content';
 export * from './market.content';
 export * from './intelligence.content';
+export * from './chart.content';
 
 /**
  * Centralized Application UI Copy and Labels
@@ -22,6 +24,7 @@ export const APP_CONTENT = {
   ...processContent,
   ...marketContent,
   ...intelligenceContent,
+  ...chartContent,
 } as const;
 
 export type AppContent = typeof APP_CONTENT;

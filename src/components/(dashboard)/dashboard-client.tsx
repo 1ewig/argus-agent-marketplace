@@ -9,6 +9,7 @@ import { useAppStore } from '@/stores/app-store';
 import { DashboardHeader } from './dashboard-header';
 import { MarketPanel } from './market-panel';
 import { ChatEmptyState, ChatMessageList, ChatDock, type QuickActionItem } from './chat';
+import { ChartClient } from './chart';
 import type { ExecutionMode } from '@/lib/types';
 
 interface DashboardClientProps {
@@ -16,12 +17,14 @@ interface DashboardClientProps {
 }
 
 /**
- * Main orchestrator for the dashboard stage, chat feed, and header controls.
+ * Main orchestrator for the dashboard stage, chat feed, chart telemetry, and header controls.
  * Connects directly to stores and chat hooks, driving pure presentation components via props.
  */
 export function DashboardClient({ mode = 'simulation' }: DashboardClientProps) {
   // Global application UI state
   const selectedSymbol = useAppStore((state) => state.selectedSymbol);
+  const stageView = useAppStore((state) => state.stageView);
+  const setStageView = useAppStore((state) => state.setStageView);
   const isMarketPanelOpen = useAppStore((state) => state.isMarketPanelOpen);
   const toggleMarketPanel = useAppStore((state) => state.toggleMarketPanel);
   const setIsSymbolSearchOpen = useAppStore((state) => state.setIsSymbolSearchOpen);
@@ -78,23 +81,33 @@ export function DashboardClient({ mode = 'simulation' }: DashboardClientProps) {
     handleNewSession();
   }, [handleNewSession]);
 
+  const handleToggleStageView = useCallback(() => {
+    setStageView(stageView === 'agent' ? 'chart' : 'agent');
+  }, [stageView, setStageView]);
+
   return (
     <div className="relative flex flex-col h-full w-full bg-theme-bg-base overflow-hidden">
-      {/* 1. Header Toolbar with Workspace Selector, New Chat & Panel Toggles */}
+      {/* 1. Header Toolbar with Workspace Selector, Chart Switcher, New Chat & Panel Toggles */}
       <DashboardHeader
         symbol={cleanSymbol}
         isGlobal={isGlobalWorkspace}
+        stageView={stageView}
         isNewChatDisabled={isNewChatDisabled}
         isMarketPanelOpen={isMarketPanelOpen}
         onOpenSymbolSearch={handleOpenSymbolSearch}
+        onToggleStageView={handleToggleStageView}
         onNewChat={handleNewChat}
         onToggleMarketPanel={toggleMarketPanel}
       />
 
-      {/* 2. Main Stage Body: Horizontal Flex (Chat Column + Right Market Panel) */}
+      {/* 2. Main Stage Body: Horizontal Flex (Chat Column / Chart Column + Right Market Panel) */}
       <div className="relative flex-1 min-h-0 w-full flex flex-row overflow-hidden">
-        {/* Chat Column */}
-        <div className="relative flex-1 min-h-0 min-w-0 flex flex-col overflow-hidden">
+        {/* Central Stage: Agent Chat View (Zero-flash hidden when stageView === 'chart') */}
+        <div
+          className={`relative flex-1 min-h-0 min-w-0 flex flex-col overflow-hidden ${
+            stageView === 'agent' ? 'flex' : 'hidden'
+          }`}
+        >
           {/* Atmospheric Ambient Depth Glow */}
           <div
             aria-hidden="true"
@@ -135,6 +148,15 @@ export function DashboardClient({ mode = 'simulation' }: DashboardClientProps) {
               onStop={handleStop}
             />
           )}
+        </div>
+
+        {/* Central Stage: Trading Chart View (Zero-flash hidden when stageView === 'agent') */}
+        <div
+          className={`relative flex-1 min-h-0 min-w-0 flex flex-col overflow-hidden ${
+            stageView === 'chart' ? 'flex' : 'hidden'
+          }`}
+        >
+          <ChartClient symbol={cleanSymbol} />
         </div>
 
         {/* Right Collapsible Market Overview Panel */}

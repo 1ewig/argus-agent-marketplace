@@ -2,36 +2,50 @@
 
 import React, { memo } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronDown, Plus, Globe, PanelRightClose, PanelRightOpen } from 'lucide-react';
+import {
+  ChevronDown,
+  Plus,
+  Globe,
+  PanelRightClose,
+  PanelRightOpen,
+  LineChart,
+  Bot,
+} from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
 import { tapScalePill } from '@/constants/animation';
+import type { StageViewMode } from '@/lib/types';
 
 export interface DashboardHeaderProps {
   symbol: string;
   isGlobal: boolean;
+  stageView: StageViewMode;
   isNewChatDisabled: boolean;
   isMarketPanelOpen: boolean;
   onOpenSymbolSearch: () => void;
+  onToggleStageView: () => void;
   onNewChat: () => void;
   onToggleMarketPanel: () => void;
 }
 
 /**
  * Pure presentation header for the dashboard stage.
- * Receives all symbol state, panel status, and action callbacks from DashboardClient.
+ * Receives all symbol state, stage view, panel status, and action callbacks from DashboardClient.
  */
 export const DashboardHeader = memo(function DashboardHeader({
   symbol,
   isGlobal,
+  stageView,
   isNewChatDisabled,
   isMarketPanelOpen,
   onOpenSymbolSearch,
+  onToggleStageView,
   onNewChat,
   onToggleMarketPanel,
 }: DashboardHeaderProps) {
   return (
     <div className="relative z-30 h-14 px-spacing-md sm:px-spacing-lg border-b border-theme-border-subtle bg-theme-bg-base/90 backdrop-blur-xs flex items-center justify-between shrink-0">
-      <div className="flex items-center">
+      {/* Left Header Section: Symbol / Workspace Dropdown + Switch to Charts Toggle */}
+      <div className="flex items-center gap-2">
         {/* Minimal Symbol / Workspace Dropdown Button with Tactile Press */}
         <motion.button
           type="button"
@@ -53,6 +67,36 @@ export const DashboardHeader = memo(function DashboardHeader({
             </span>
           )}
           <ChevronDown className="size-3.5 text-theme-text-muted group-hover:text-theme-text-primary transition-colors" />
+        </motion.button>
+
+        {/* Stage View Switcher Button (Right side of the symbol) */}
+        <motion.button
+          type="button"
+          whileTap={tapScalePill}
+          onClick={onToggleStageView}
+          title={
+            stageView === 'agent'
+              ? APP_CONTENT.chart.switchToChart
+              : APP_CONTENT.chart.switchToAgent
+          }
+          aria-label={APP_CONTENT.chart.stageSwitchAria}
+          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold cursor-pointer select-none transition-colors border ${
+            stageView === 'chart'
+              ? 'bg-theme-bg-elevated text-theme-brand-binance border-theme-border-subtle shadow-2xs font-bold'
+              : 'text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-surface border-theme-border-subtle/50'
+          }`}
+        >
+          {stageView === 'agent' ? (
+            <>
+              <LineChart className="size-3.5 text-theme-brand-binance shrink-0" />
+              <span className="hidden sm:inline font-mono">{APP_CONTENT.sidebar.chartView}</span>
+            </>
+          ) : (
+            <>
+              <Bot className="size-3.5 text-theme-brand-binance shrink-0" />
+              <span className="hidden sm:inline font-mono">{APP_CONTENT.sidebar.agentView}</span>
+            </>
+          )}
         </motion.button>
       </div>
 
