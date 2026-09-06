@@ -157,9 +157,8 @@ src/
 
 ## 5. Agent Engine Details ([`src/agent/`](../src/agent/))
 
-### Streaming vs. batch
+### Streaming architecture
 - `executeAgentStream` — real-time SSE streaming with `smoothStream` (15ms delay, word chunking) and a full step timeline. Used by the chat route (`streamArgusAgent` alias).
-- `executeAgent` — one-shot `generateText` batch inference (aliases `runAgent`, `runArgusAgent`).
 
 ### Model providers ([`providers.ts`](../src/agent/providers.ts))
 - Active provider resolved from `INFERENCE_PROVIDER` env (`groq` default | `fireworks`), overridable per request via `provider`.
