@@ -154,7 +154,7 @@ export class ArgusDatabase extends Dexie {
 export const db = new ArgusDatabase();
 
 /**
- * Synchronous in-memory cache for market intelligence to provide 0ms instant display.
+ * Synchronous in-memory cache for market intelligence to provide 0ms instant display during session.
  */
 const intelligenceCache = new Map<string, MarketIntelligenceResponse>();
 
@@ -167,27 +167,11 @@ export function getCachedIntelligence(symbol: string, maxAgeMs: number = ONE_HOU
     return cached;
   }
 
-  // Check synchronous localStorage for instant 0ms retrieval on page refresh
-  if (typeof window !== 'undefined') {
-    try {
-      const raw = localStorage.getItem(`argus_intel_${clean}`);
-      if (raw) {
-        const parsed = JSON.parse(raw) as MarketIntelligenceResponse;
-        if (parsed && typeof parsed.timestamp === 'number' && Date.now() - parsed.timestamp < maxAgeMs) {
-          intelligenceCache.set(clean, parsed);
-          return parsed;
-        }
-      }
-    } catch {
-      // Ignore JSON or localStorage access error
-    }
-  }
-
   return null;
 }
 
 /**
- * Prewarms the in-memory intelligence cache from Dexie IndexedDB and localStorage.
+ * Prewarms the in-memory intelligence cache from Dexie IndexedDB.
  */
 export async function prewarmIntelligenceCache(): Promise<void> {
   if (typeof window === 'undefined') return;
@@ -197,11 +181,6 @@ export async function prewarmIntelligenceCache(): Promise<void> {
       if (record && record.symbol && Date.now() - record.timestamp < ONE_HOUR_MS) {
         const clean = record.symbol.toUpperCase();
         intelligenceCache.set(clean, record);
-        try {
-          localStorage.setItem(`argus_intel_${clean}`, JSON.stringify(record));
-        } catch {
-          // Ignore storage quota error
-        }
       }
     }
   } catch {
@@ -210,7 +189,7 @@ export async function prewarmIntelligenceCache(): Promise<void> {
 }
 
 /**
- * Retrieves the cached market intelligence analysis for a specific trading symbol from Dexie or localStorage.
+ * Retrieves the cached market intelligence analysis for a specific trading symbol from Dexie IndexedDB.
  * Checks for validity within maxAgeMs (default: 1 hour).
  */
 export async function getStoredIntelligence(
@@ -228,11 +207,6 @@ export async function getStoredIntelligence(
     const record = await db.marketIntelligence.get(clean);
     if (record && typeof record.timestamp === 'number' && Date.now() - record.timestamp < maxAgeMs) {
       intelligenceCache.set(clean, record);
-      try {
-        localStorage.setItem(`argus_intel_${clean}`, JSON.stringify(record));
-      } catch {
-        // Ignore storage quota error
-      }
       return record;
     }
     return null;
@@ -242,7 +216,7 @@ export async function getStoredIntelligence(
 }
 
 /**
- * Persists market intelligence analysis for a specific trading symbol into Dexie IndexedDB and localStorage.
+ * Persists market intelligence analysis for a specific trading symbol into Dexie IndexedDB.
  */
 export async function saveStoredIntelligence(
   data: MarketIntelligenceResponse
@@ -257,12 +231,6 @@ export async function saveStoredIntelligence(
   };
 
   intelligenceCache.set(clean, record);
-
-  try {
-    localStorage.setItem(`argus_intel_${clean}`, JSON.stringify(record));
-  } catch {
-    // Gracefully handle localStorage quota errors
-  }
 
   try {
     await db.marketIntelligence.put(record);

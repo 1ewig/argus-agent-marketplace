@@ -158,12 +158,12 @@ src/
 ### 4.2 Market Intelligence Agent lifecycle
 
 1. User opens the **Market Intelligence** tab (from the right panel tabs or the header trigger) → [`MarketIntelligenceAgentView`](../src/components/(dashboard)/market-panel/agents/market-intelligence-agent-view.tsx) mounts.
-2. TanStack React Query keyed `['market-intelligence', symbol]` resolves from the React Query cache, the synchronous `getCachedIntelligence` (in-memory + `localStorage` `argus_intel_<SYMBOL>`), or Dexie v4 `marketIntelligence` storage while fresh (<1h) — then `POST /api/agent/intelligence` on first miss.
+2. TanStack React Query keyed `['market-intelligence', symbol]` resolves from the React Query cache, the synchronous in-memory `getCachedIntelligence`, or Dexie v4 `marketIntelligence` storage while fresh (<1h) — then `POST /api/agent/intelligence` on first miss.
 3. The route validates `{ symbol, apiKey?, providerOverride? }` and calls `executeMarketIntelligence` ([`src/agent/intelligence/engine.ts`](../src/agent/intelligence/engine.ts)).
 4. The engine fires **9 parallel `Promise.allSettled` fetches**: ticker price, 20-level order book, 15m klines (30), 1h klines (24), 5m VWAP, funding rate, global long/short account ratio (5m×5), top trader long/short (5m×5), and Exa news (3 results, `category: 'news'`).
 5. Quantitative anchors are derived deterministically (best bid/ask, bid/ask volume imbalance, 15m/1h range low/high) and injected — alongside live news snippets — into a grounded prompt.
 6. `generateObject` (primary model, then backup on failure) fills the strict `MarketIntelligencePayloadSchema`. If both models fail, a **deterministic fallback synthesizer** computes the 4-card payload from the same raw exchange math (never hallucinated prices).
-7. The response is returned via JSON, persisted to Dexie v4 (`marketIntelligence` table) + `localStorage` (`argus_intel_<SYMBOL>`), hydrated into React Query (`staleTime: 1h`, `gcTime: 24h`), and rendered as 4 executive cards. The panel header's **Scan Market** button (`handleScan` → `fetchMarketIntelligence({ force: true })`) forces a fresh scan.
+7. The response is returned via JSON, persisted directly to Dexie v4 (`marketIntelligence` table), hydrated into React Query (`staleTime: 1h`, `gcTime: 24h`), and rendered as 4 executive cards. The panel header's **Scan Market** button (`handleScan` → `fetchMarketIntelligence({ force: true })`) forces a fresh scan.
 
 ### 4.3 Live market telemetry (WebSocket)
 
@@ -252,7 +252,7 @@ Key behaviors:
 - **Special conversations:** `DEFAULT_CONVERSATION_ID = 'default'`, `DEFAULT_GLOBAL_CONVERSATION_ID = 'default_global'`, `GLOBAL_WORKSPACE_SYMBOL = 'GLOBAL'`; `ensureDefaultGlobalConversation()` always keeps a permanent Global workspace chat.
 - **Retention pruning:** `MAX_MESSAGES_PER_CONVERSATION = 100` (oldest trimmed after every save).
 - **Message cache** (`prewarmMessagesCache`/`updateCachedMessage`/`useMessages` in [`queries.ts`](../src/lib/db/queries.ts)) eliminates flash-of-empty when switching conversations (0ms switching).
-- **Intelligence cache** — three-tier read path: synchronous in-memory map + `localStorage` (`argus_intel_<SYMBOL>`) for 0ms refresh restore (`getCachedIntelligence`), backed by the Dexie `marketIntelligence` table (`getStoredIntelligence`/`saveStoredIntelligence`), all respecting `ONE_HOUR_MS` freshness; `prewarmIntelligenceCache()` rehydrates memory + `localStorage` on boot.
+- **Intelligence cache** — two-tier read path: synchronous in-memory Map for 0ms within-session switching (`getCachedIntelligence`), backed durably by the Dexie `marketIntelligence` table (`getStoredIntelligence`/`saveStoredIntelligence`), all respecting `ONE_HOUR_MS` freshness; `prewarmIntelligenceCache()` rehydrates memory from Dexie on boot.
 - `normalizeMessageSteps` backfills legacy `toolCalls`-only message records into the new `steps` timeline for rendering.
 - `prepareConversationHistory` ([`src/lib/agents/chat-history.ts`](../src/lib/agents/chat-history.ts)) builds a sliding 10-message context window, filtering `error` states.
 - `useChatSessions` groups conversations into symbol workspaces (`symbolGroups`) via `parseSymbolAssets`, keeps Global pinned at top, and syncs the persisted `selectedSymbol` workspace across refresh/session-switching.
