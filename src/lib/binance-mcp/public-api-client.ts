@@ -58,8 +58,28 @@ export interface FetchBinanceOptions {
 }
 
 /**
- * Executes a Binance public REST request with unified error extraction.
- * Communicates directly with Binance production endpoints (api.binance.com and fapi.binance.com).
+ * Official Spot API Cluster Pool for high availability, rate distribution, and failover
+ */
+export const BINANCE_SPOT_CLUSTER_ENDPOINTS = [
+  'https://api.binance.com',
+  'https://data-api.binance.vision',
+  'https://api1.binance.com',
+  'https://api2.binance.com',
+  'https://api3.binance.com',
+  'https://api-gcp.binance.com',
+] as const;
+
+/**
+ * Official Futures API Cluster Pool
+ */
+export const BINANCE_FUTURES_CLUSTER_ENDPOINTS = [
+  'https://fapi.binance.com',
+] as const;
+
+/**
+ * Executes a Binance public REST request with automatic multi-cluster failover and unified error extraction.
+ * Cycles through official cluster mirrors (api.binance.com, data-api.binance.vision, api1-3, api-gcp)
+ * on network timeouts, 429 rate limits, or 5xx server errors.
  */
 export async function fetchBinancePublic<T, R>(
   path: string,
@@ -68,32 +88,67 @@ export async function fetchBinancePublic<T, R>(
   options: FetchBinanceOptions = {}
 ): Promise<R> {
   const formatted = normalizeSymbol(symbol);
-  const spotBase = process.env.BINANCE_SPOT_API_URL || 'https://api.binance.com';
-  const futuresBase = process.env.BINANCE_FUTURES_API_URL || 'https://fapi.binance.com';
-  const baseUrl = options.isFutures ? futuresBase : spotBase;
-  const url = `${baseUrl}${path}`;
+  const customSpotBase = process.env.BINANCE_SPOT_API_URL;
+  const customFuturesBase = process.env.BINANCE_FUTURES_API_URL;
 
-  const res = await fetch(url, {
-    next: { revalidate: options.revalidateSeconds ?? 2 },
-  });
+  const clusterPool: readonly string[] = options.isFutures
+    ? customFuturesBase
+      ? [customFuturesBase, ...BINANCE_FUTURES_CLUSTER_ENDPOINTS.filter((u) => u !== customFuturesBase)]
+      : BINANCE_FUTURES_CLUSTER_ENDPOINTS
+    : customSpotBase
+    ? [customSpotBase, ...BINANCE_SPOT_CLUSTER_ENDPOINTS.filter((u) => u !== customSpotBase)]
+    : BINANCE_SPOT_CLUSTER_ENDPOINTS;
 
-  if (!res.ok) {
-    if (res.status === 400) {
-      const errData = (await res.json().catch(() => null)) as { msg?: string; code?: number } | null;
-      throw new Error(
-        errData?.msg ? `Binance API error: ${errData.msg} (${formatted})` : `Invalid symbol: ${formatted}`
-      );
+  let lastError: Error | null = null;
+
+  for (let i = 0; i < clusterPool.length; i++) {
+    const baseUrl = clusterPool[i];
+    const url = `${baseUrl}${path}`;
+
+    try {
+      const res = await fetch(url, {
+        next: { revalidate: options.revalidateSeconds ?? 2 },
+        signal: AbortSignal.timeout(6000),
+      });
+
+      if (!res.ok) {
+        // Deterministic validation error (invalid symbol) — do not retry other clusters
+        if (res.status === 400) {
+          const errData = (await res.json().catch(() => null)) as { msg?: string; code?: number } | null;
+          throw new Error(
+            errData?.msg ? `Binance API error: ${errData.msg} (${formatted})` : `Invalid symbol: ${formatted}`
+          );
+        }
+
+        if (res.status === 451) {
+          lastError = new Error(
+            `Binance API geo-restricted (HTTP 451). Vercel Serverless Functions must run in a non-US region (e.g. fra1 Frankfurt).`
+          );
+          // 451 is domain/IP-specific, continue to attempt next cluster candidate (e.g. data-api.binance.vision)
+          continue;
+        }
+
+        lastError = new Error(`Binance API error (${baseUrl}): ${res.status}`);
+        continue;
+      }
+
+      const data = (await res.json()) as T;
+      return transform(data);
+    } catch (err: unknown) {
+      // Deterministic validation errors should throw immediately without retrying clusters
+      if (err instanceof Error && err.message.startsWith('Binance API error:') && err.message.includes('(')) {
+        throw err;
+      }
+      if (err instanceof Error && err.message.startsWith('Invalid symbol:')) {
+        throw err;
+      }
+
+      lastError = err instanceof Error ? err : new Error(String(err));
+      // Continue to next cluster candidate
     }
-    if (res.status === 451) {
-      throw new Error(
-        `Binance API geo-restricted (HTTP 451). Vercel Serverless Functions must run in a non-US region (e.g. fra1 Frankfurt).`
-      );
-    }
-    throw new Error(`Binance API error: ${res.status}`);
   }
 
-  const data = (await res.json()) as T;
-  return transform(data);
+  throw lastError ?? new Error(`All Binance cluster endpoints failed for ${formatted}`);
 }
 
 /**

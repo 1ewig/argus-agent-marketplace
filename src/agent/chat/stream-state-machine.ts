@@ -61,6 +61,9 @@ export class AgentStreamStateMachine {
       };
       this.steps.push(intermediateStep);
       this.onEvent({ type: 'step_start', step: intermediateStep });
+    }
+
+    if (this.currentStepPreToolText.length > 0) {
       this.onEvent({ type: 'clear_text' });
       this.currentStepPreToolText = '';
     }

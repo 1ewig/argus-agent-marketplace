@@ -15,6 +15,7 @@ import {
 import { prepareConversationHistory, streamAgentChat } from '@/lib/chat';
 import {
   sanitizeAgentText,
+  stripIntermediateTextPrefix,
   isDefaultSessionTitle,
   generateFallbackSessionTitle,
   type AgentResult,
@@ -211,15 +212,19 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
       });
 
       // Finalize and persist completed agent message into Dexie
+      const finalSteps = finalResult?.steps ?? currentSteps;
+      const rawContent = finalResult?.analysis ?? sanitizeAgentText(currentText);
+      const cleanContent = stripIntermediateTextPrefix(rawContent, finalSteps);
+
       const finalMessage: ChatMessageRecord = {
         id: streamMessageId,
         conversationId: activeConversationId,
         role: 'assistant',
-        content: finalResult?.analysis ?? sanitizeAgentText(currentText),
+        content: cleanContent,
         status: 'success',
         followUpQuestions: finalResult?.followUpQuestions,
         toolCalls: finalResult?.toolCalls,
-        steps: finalResult?.steps ?? currentSteps,
+        steps: finalSteps,
         stepCount: finalResult?.stepCount ?? currentSteps.length,
         workedDurationMs: finalResult?.workedDurationMs,
         timestamp: finalResult?.timestamp ?? getNowTimestamp(),
@@ -255,7 +260,7 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
             id: streamMessageId,
             conversationId: activeConversationId,
             role: 'assistant',
-            content: sanitizeAgentText(currentText),
+            content: stripIntermediateTextPrefix(sanitizeAgentText(currentText), currentSteps),
             status: 'success',
             steps: currentSteps,
             stepCount: currentSteps.length,

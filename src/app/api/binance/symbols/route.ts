@@ -53,17 +53,40 @@ export async function GET() {
   }
 
   try {
-    // 2. Fetch raw exchangeInfo from Binance with cache: 'no-store'
+    // 2. Fetch raw exchangeInfo with multi-cluster failover with cache: 'no-store'
     // This avoids Next.js's 2MB Data Cache limit (exchangeInfo is ~23.3MB)
-    const res = await fetch('https://api.binance.com/api/v3/exchangeInfo?permissions=SPOT', {
-      cache: 'no-store',
-      headers: {
-        'Accept': 'application/json',
-      },
-    });
+    const clusterBases = [
+      process.env.BINANCE_SPOT_API_URL,
+      'https://api.binance.com',
+      'https://data-api.binance.vision',
+      'https://api1.binance.com',
+      'https://api-gcp.binance.com',
+    ].filter((u): u is string => Boolean(u));
 
-    if (!res.ok) {
-      throw new Error(`Binance API error: ${res.status}`);
+    let res: Response | null = null;
+    let fetchError: Error | null = null;
+
+    for (const base of clusterBases) {
+      try {
+        const response = await fetch(`${base}/api/v3/exchangeInfo?permissions=SPOT`, {
+          cache: 'no-store',
+          headers: {
+            'Accept': 'application/json',
+          },
+          signal: AbortSignal.timeout(8000),
+        });
+
+        if (response.ok) {
+          res = response;
+          break;
+        }
+      } catch (err) {
+        fetchError = err instanceof Error ? err : new Error(String(err));
+      }
+    }
+
+    if (!res) {
+      throw fetchError ?? new Error('All Binance symbol exchangeInfo cluster endpoints failed');
     }
 
     const data = (await res.json()) as BinanceExchangeInfoRaw;

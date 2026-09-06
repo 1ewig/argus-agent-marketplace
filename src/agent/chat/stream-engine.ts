@@ -3,6 +3,7 @@ import { prepareAgentInvocation } from './prepare-invocation';
 import { AgentStreamStateMachine } from './stream-state-machine';
 import { extractSessionTitle } from '../transforms/title-stream-filter';
 import { extractFollowUpQuestions } from '../transforms/follow-up-extractor';
+import { stripIntermediateTextPrefix } from '../transforms/sanitizer';
 import type { AgentOptions, AgentResult, AgentStreamEvent } from '../types';
 
 export const streamArgusAgent = executeAgentStream;
@@ -30,7 +31,16 @@ export async function executeAgentStream(
   const startTime = Date.now();
   let accumulatedText = '';
   let emittedTitle: string | undefined;
-  const stateMachine = new AgentStreamStateMachine(onEvent);
+  let hasProducedOutput = false;
+
+  const handleEvent = (event: AgentStreamEvent) => {
+    if (event.type === 'clear_text') {
+      accumulatedText = '';
+    }
+    onEvent(event);
+  };
+
+  const stateMachine = new AgentStreamStateMachine(handleEvent);
 
   if (process.env.NODE_ENV !== 'production') {
     console.log(
@@ -73,26 +83,29 @@ export async function executeAgentStream(
       }
 
       if (part.type === 'reasoning-delta') {
+        hasProducedOutput = true;
         stateMachine.onReasoningDelta(part.text);
       } else if (part.type === 'start-step') {
         stateMachine.onStartStep();
       } else if (part.type === 'tool-call') {
+        hasProducedOutput = true;
         stateMachine.onToolCall(part);
       } else if (part.type === 'tool-result') {
         stateMachine.onToolResult(part);
       } else if (part.type === 'tool-error' || part.type === 'tool-output-denied') {
         stateMachine.onToolError(part);
       } else if (part.type === 'text-delta') {
+        hasProducedOutput = true;
         stateMachine.onTextDelta(part.text);
         accumulatedText += part.text;
-        onEvent({ type: 'text_delta', delta: part.text });
+        handleEvent({ type: 'text_delta', delta: part.text });
 
         if (!emittedTitle) {
           const match = accumulatedText.match(/<session_title>([\s\S]*?)<\/session_title>/i);
           if (match && match[1]) {
             emittedTitle = match[1].replace(/^["'`]+|["'`]+$/g, '').trim();
             if (emittedTitle) {
-              onEvent({ type: 'session_title', title: emittedTitle });
+              handleEvent({ type: 'session_title', title: emittedTitle });
             }
           }
         }
@@ -107,7 +120,7 @@ export async function executeAgentStream(
       if (abortSignal?.aborted) {
         throw primaryErr;
       }
-      if (accumulatedText.length === 0 && backupModel) {
+      if (!hasProducedOutput && backupModel) {
         console.warn('Primary model error, failing over to backup model:', primaryErr);
         stateMachine.markActiveStepsFailed('Switched to backup model');
         await runStreamWithModel(backupModel);
@@ -140,12 +153,13 @@ export async function executeAgentStream(
     symbol
   );
 
+  const cleanAnalysis = stripIntermediateTextPrefix(cleanedText, steps);
   const workedDurationMs = Math.max(1000, Date.now() - startTime);
 
   const finalResult: AgentResult = {
     symbol: symbol?.toUpperCase(),
     sessionTitle,
-    analysis: cleanedText,
+    analysis: cleanAnalysis,
     followUpQuestions,
     toolCalls: executedToolCalls,
     steps,
@@ -164,7 +178,7 @@ export async function executeAgentStream(
     }
   }
 
-  onEvent({ type: 'done', result: finalResult });
+  handleEvent({ type: 'done', result: finalResult });
   return finalResult;
 }
 

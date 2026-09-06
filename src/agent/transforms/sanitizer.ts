@@ -23,3 +23,24 @@ export function sanitizeAgentText(
 
   return cleaned.trim();
 }
+
+/**
+ * Strips any intermediate pre-tool thoughts or updates that were mistakenly
+ * prepended to the final assistant response text.
+ */
+export function stripIntermediateTextPrefix(
+  content: string,
+  steps?: Array<{ type: string; intermediateText?: string }>
+): string {
+  if (!content || !steps || steps.length === 0) return content;
+  let cleaned = content;
+  for (const step of steps) {
+    if (step.type === 'intermediate_text' && step.intermediateText) {
+      const trimmed = step.intermediateText.trim();
+      if (trimmed && cleaned.startsWith(trimmed)) {
+        cleaned = cleaned.slice(trimmed.length).trimStart();
+      }
+    }
+  }
+  return cleaned;
+}

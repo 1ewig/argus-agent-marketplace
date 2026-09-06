@@ -16,7 +16,11 @@ import { AgentWorkGroup } from './agent-work-group';
 import { AgentProcessTimeline } from './agent-process-timeline';
 import { normalizeMessageSteps } from '@/lib/db';
 import { useActiveTimer } from '@/hooks';
-import type { ExecutedToolCall, AgentExecutionStep } from '@/agent';
+import {
+  stripIntermediateTextPrefix,
+  type ExecutedToolCall,
+  type AgentExecutionStep,
+} from '@/agent';
 
 export interface ChatMessageData {
   id: string;
@@ -110,6 +114,11 @@ export const ChatMessage = memo(function ChatMessage({
 
   const hasSteps = effectiveSteps.length > 0;
 
+  const displayContent = React.useMemo(() => {
+    if (!message.content) return '';
+    return stripIntermediateTextPrefix(message.content, effectiveSteps);
+  }, [message.content, effectiveSteps]);
+
   return (
     <motion.div
       variants={messageEntranceVariants}
@@ -156,7 +165,7 @@ export const ChatMessage = memo(function ChatMessage({
         )}
 
         {/* Main Response Markdown (Frameless directly on page canvas) */}
-        {message.content && (
+        {displayContent && (
           <motion.div
             variants={messageEntranceVariants}
             initial={shouldAnimate ? 'hidden' : false}
@@ -167,7 +176,7 @@ export const ChatMessage = memo(function ChatMessage({
                 : 'text-theme-text-primary text-sm leading-relaxed pt-1 pb-1 px-0.5'
             }
           >
-            <MarkdownView content={message.content} />
+            <MarkdownView content={displayContent} />
           </motion.div>
         )}
 
