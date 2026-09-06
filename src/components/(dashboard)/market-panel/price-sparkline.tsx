@@ -55,24 +55,21 @@ export const PriceSparkline = React.memo(function PriceSparkline({
   );
 
   const [points, setPoints] = useState<number[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(() => Boolean(cleanSymbol && cleanSymbol !== 'GLOBAL'));
   const [error, setError] = useState(false);
 
-  // Keep track of the current minute bucket so the sparkline slides forward
-  const currentBucketMinuteRef = useRef<number>(Math.floor(Date.now() / 60000));
+  // Keep track of the current minute bucket so the sparkline slides forward (initialized on data load or first tick)
+  const currentBucketMinuteRef = useRef<number>(0);
   const lastPriceRef = useRef<number | undefined>(undefined);
 
   // 1. Fetch initial 30 1-minute klines
   useEffect(() => {
     if (!cleanSymbol || cleanSymbol === 'GLOBAL') {
-      setIsLoading(false);
       return;
     }
 
+    let isSubscribed = true;
     const abortController = new AbortController();
-    setIsLoading(true);
-    setError(false);
-    setPoints([]);
 
     const fetchKlines = async () => {
       try {
@@ -84,25 +81,30 @@ export const PriceSparkline = React.memo(function PriceSparkline({
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
         const data = (await res.json()) as Array<[number, string, string, string, string, ...unknown[]]>;
-        if (!Array.isArray(data)) return;
+        if (!isSubscribed || !Array.isArray(data)) return;
 
         // candle[4] = close price, candle[0] = open time
         const closes: number[] = [];
-        let lastCandleTime = Date.now();
+        let lastCandleTime = 0;
 
         for (const candle of data) {
           const close = Number.parseFloat(candle[4]);
           if (Number.isFinite(close) && close > 0) {
             closes.push(close);
-            lastCandleTime = candle[0];
+            lastCandleTime = Number(candle[0]);
           }
         }
 
-        currentBucketMinuteRef.current = Math.floor(lastCandleTime / 60000);
-        setPoints(closes);
-        setIsLoading(false);
+        if (isSubscribed) {
+          if (lastCandleTime > 0) {
+            currentBucketMinuteRef.current = Math.floor(lastCandleTime / 60000);
+          }
+          setPoints(closes);
+          setError(false);
+          setIsLoading(false);
+        }
       } catch (err: unknown) {
-        if (err instanceof DOMException && err.name === 'AbortError') return;
+        if (!isSubscribed || (err instanceof DOMException && err.name === 'AbortError')) return;
         setError(true);
         setIsLoading(false);
       }
@@ -111,6 +113,7 @@ export const PriceSparkline = React.memo(function PriceSparkline({
     fetchKlines();
 
     return () => {
+      isSubscribed = false;
       abortController.abort();
     };
   }, [cleanSymbol]);
@@ -144,6 +147,8 @@ export const PriceSparkline = React.memo(function PriceSparkline({
 
   // 3. Compute sparkline geometry
   const paddingY = 8;
+  const paddingXLeft = 4;
+  const paddingXRight = 10;
   const { minPrice, maxPrice, isUp, pathD, areaD, lastPercentX, lastPercentY, precision } =
     useMemo(() => {
       if (points.length < 2) {
@@ -153,7 +158,7 @@ export const PriceSparkline = React.memo(function PriceSparkline({
           isUp: true,
           pathD: '',
           areaD: '',
-          lastPercentX: 100,
+          lastPercentX: 96,
           lastPercentY: 50,
           precision: 2,
         };
@@ -169,10 +174,11 @@ export const PriceSparkline = React.memo(function PriceSparkline({
       const up = last >= first;
 
       const usableHeight = height - paddingY * 2;
-      const stepX = width / (points.length - 1);
+      const usableWidth = width - paddingXLeft - paddingXRight;
+      const stepX = usableWidth / (points.length - 1);
 
       const coords = points.map((p, i) => {
-        const x = Number((i * stepX).toFixed(1));
+        const x = Number((paddingXLeft + i * stepX).toFixed(1));
         // Guard flatline (range === 0) by centering vertically
         const normalizedY = range === 0 ? 0.5 : 1 - (p - min) / range;
         const y = Number((paddingY + normalizedY * usableHeight).toFixed(1));
