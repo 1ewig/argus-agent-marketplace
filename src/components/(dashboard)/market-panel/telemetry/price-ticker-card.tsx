@@ -4,7 +4,8 @@ import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown, Loader2 } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
-import { parseSymbolAssets } from '@/hooks';
+import { parseSymbolAssets } from '@/lib/symbols';
+import { formatPrice } from '@/lib/utils';
 import type { LiveTickerData, StreamConnectionStatus } from '@/lib/binance-websocket';
 import { PriceSparkline } from './price-sparkline';
 
@@ -23,14 +24,7 @@ export const PriceTickerCard = React.memo(function PriceTickerCard({
   const { baseAsset, quoteAsset } = useMemo(() => parseSymbolAssets(clean), [clean]);
 
   const isPositive = (ticker?.changePercent ?? 0) >= 0;
-
-  const formattedPrice = useMemo(() => {
-    if (!ticker) return '—';
-    return ticker.price.toLocaleString('en-US', {
-      minimumFractionDigits: ticker.precision,
-      maximumFractionDigits: ticker.precision,
-    });
-  }, [ticker]);
+  const formattedPrice = formatPrice(ticker?.price, ticker?.precision ?? 2);
 
   return (
     <div className="flex flex-col gap-3 p-3.5 sm:p-4 rounded-xl bg-theme-bg-surface border border-theme-border-subtle shadow-2xs">

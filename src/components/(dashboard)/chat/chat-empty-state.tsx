@@ -12,7 +12,7 @@ import {
   tapScalePill,
   hoverLiftPill,
 } from '@/constants/animation';
-import { parseSymbolAssets } from '@/hooks';
+import { parseSymbolAssets } from '@/lib/symbols';
 import { ChatInput, type ChatInputHandle } from './chat-input';
 
 interface ChatEmptyStateProps {

@@ -14,8 +14,8 @@ import {
 } from '@/lib/db';
 import { prepareConversationHistory, streamAgentChat } from '@/lib/agents';
 import {
-  FOLLOW_UP_TAG_REGEX,
-  INCOMPLETE_FOLLOW_UP_TAG_REGEX,
+  sanitizeAgentText,
+  isDefaultSessionTitle,
   generateFallbackSessionTitle,
   type AgentResult,
   type AgentExecutionStep,
@@ -23,9 +23,6 @@ import {
 import type { ExecutionMode } from '@/lib/types';
 import { useChatSessions } from './use-chat-sessions';
 import { useChatScroll } from './use-chat-scroll';
-
-const SESSION_TITLE_TAG_REGEX = /<session_title>[\s\S]*?<\/session_title>\s*/gi;
-const INCOMPLETE_SESSION_TITLE_TAG_REGEX = /<session_title[\s\S]*$/gi;
 
 export interface UseAgentChatOptions {
   mode?: ExecutionMode;
@@ -193,11 +190,7 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
           } else if (event.type === 'text_delta') {
             currentText += event.delta;
             // Strip any complete or in-progress session_title and follow-up markup from live markdown display
-            const displayContent = currentText
-              .replace(SESSION_TITLE_TAG_REGEX, '')
-              .replace(INCOMPLETE_SESSION_TITLE_TAG_REGEX, '')
-              .replace(FOLLOW_UP_TAG_REGEX, '')
-              .replace(INCOMPLETE_FOLLOW_UP_TAG_REGEX, '');
+            const displayContent = sanitizeAgentText(currentText, { removeIncomplete: true });
             setActiveStreamMessage((prev) =>
               prev ? { ...prev, content: displayContent } : prev
             );
@@ -208,11 +201,7 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
             );
           } else if (event.type === 'session_title') {
             const convRecord = await getConversation(activeConversationId);
-            const isDefaultTitle =
-              !convRecord ||
-              (APP_CONTENT.chat.defaultSessionTitles as readonly string[]).includes(convRecord.title);
-
-            if (isDefaultTitle) {
+            if (isDefaultSessionTitle(convRecord?.title)) {
               await renameConversation(activeConversationId, event.title);
             }
           } else if (event.type === 'error') {
@@ -226,12 +215,7 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
         id: streamMessageId,
         conversationId: activeConversationId,
         role: 'assistant',
-        content:
-          finalResult?.analysis ??
-          currentText
-            .replace(SESSION_TITLE_TAG_REGEX, '')
-            .replace(FOLLOW_UP_TAG_REGEX, '')
-            .trim(),
+        content: finalResult?.analysis ?? sanitizeAgentText(currentText),
         status: 'success',
         followUpQuestions: finalResult?.followUpQuestions,
         toolCalls: finalResult?.toolCalls,
@@ -255,11 +239,7 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
 
       if (resolvedTitle) {
         const convRecord = await getConversation(activeConversationId);
-        const isDefaultTitle =
-          !convRecord ||
-          (APP_CONTENT.chat.defaultSessionTitles as readonly string[]).includes(convRecord.title);
-
-        if (isDefaultTitle) {
+        if (isDefaultSessionTitle(convRecord?.title)) {
           await renameConversation(activeConversationId, resolvedTitle);
         }
       }
@@ -275,10 +255,7 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
             id: streamMessageId,
             conversationId: activeConversationId,
             role: 'assistant',
-            content: currentText
-              .replace(SESSION_TITLE_TAG_REGEX, '')
-              .replace(FOLLOW_UP_TAG_REGEX, '')
-              .trim(),
+            content: sanitizeAgentText(currentText),
             status: 'success',
             steps: currentSteps,
             stepCount: currentSteps.length,
@@ -290,11 +267,7 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
 
         if (isFirstTurn) {
           const convRecord = await getConversation(activeConversationId);
-          const isDefaultTitle =
-            !convRecord ||
-            (APP_CONTENT.chat.defaultSessionTitles as readonly string[]).includes(convRecord.title);
-
-          if (isDefaultTitle) {
+          if (isDefaultSessionTitle(convRecord?.title)) {
             await renameConversation(
               activeConversationId,
               generateFallbackSessionTitle(prompt, effectiveSymbol)

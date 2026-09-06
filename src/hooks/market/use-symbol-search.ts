@@ -4,10 +4,10 @@ import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAppStore } from '@/stores/app-store';
 import {
-  listConversations,
-  createConversation,
+  openOrCreateConversationForSymbol,
   DEFAULT_CONVERSATION_SYMBOL,
 } from '@/lib/db';
+import { normalizeSymbolForDisplay } from '@/lib/symbols';
 import { symbolsQuery, type SymbolsApiResponse } from '@/lib/queries';
 import type { BinanceSymbolItem } from '@/app/api/binance/symbols/route';
 
@@ -119,7 +119,7 @@ export function useSymbolSearch(): UseSymbolSearchResult {
 
   const handleSelect = useCallback(
     async (rawSymbol: string) => {
-      const targetSymbol = (rawSymbol || DEFAULT_CONVERSATION_SYMBOL).toUpperCase();
+      const targetSymbol = normalizeSymbolForDisplay(rawSymbol) || DEFAULT_CONVERSATION_SYMBOL;
 
       setErrorNotice(null);
       setActiveStreamMessage(null);
@@ -127,22 +127,8 @@ export function useSymbolSearch(): UseSymbolSearchResult {
       handleClose();
 
       try {
-        const allConvs = await listConversations();
-        const matching = allConvs.filter(
-          (c) => (c.symbol || DEFAULT_CONVERSATION_SYMBOL).toUpperCase() === targetSymbol
-        );
-
-        if (matching.length > 0) {
-          // Open the most recently active chat for this symbol
-          const sorted = [...matching].sort(
-            (a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0)
-          );
-          setActiveConversationId(sorted[0].id);
-        } else {
-          // Group doesn't exist yet: create new chat for this symbol
-          const newConv = await createConversation(undefined, targetSymbol);
-          setActiveConversationId(newConv.id);
-        }
+        const targetId = await openOrCreateConversationForSymbol(targetSymbol);
+        setActiveConversationId(targetId);
       } catch {
         // Fallback safely
       }

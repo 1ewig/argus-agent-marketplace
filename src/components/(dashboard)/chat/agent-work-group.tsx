@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, useMemo, useCallback, memo } from 'react';
+import React, { useMemo, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, CheckCircle2 } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
 import { accordionVariants, tapScaleAccordion } from '@/constants/animation';
+import { useAccordionOpenState } from '@/hooks';
 import type { AgentExecutionStep } from '@/agent';
 
 interface AgentWorkGroupProps {
@@ -29,16 +30,10 @@ export const AgentWorkGroup = memo(function AgentWorkGroup({
   workedDurationMs,
   className = '',
 }: AgentWorkGroupProps) {
-  const [userToggledOpen, setUserToggledOpen] = useState<boolean | null>(null);
-
   const isActiveWork = isStreaming && !isCompleted;
 
   // Default is open while actively working, collapsed when completed, unless explicitly toggled by user
-  const isOpen = userToggledOpen !== null ? userToggledOpen : !isCompleted;
-
-  const toggleOpen = useCallback(() => {
-    setUserToggledOpen((prev) => (prev !== null ? !prev : isCompleted));
-  }, [isCompleted]);
+  const { isOpen, toggleOpen } = useAccordionOpenState(!isCompleted);
 
   const finalWorkedSeconds = useMemo(() => {
     return Math.max(

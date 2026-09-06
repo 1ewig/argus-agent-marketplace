@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { isGlobalSymbol } from '@/lib/utils';
+import { normalizeSymbolForDisplay } from '@/lib/symbols';
 import { useTabVisibility } from '@/hooks/ui';
 import {
   buildFuturesMarkPriceStreamUrl,
@@ -49,7 +50,7 @@ export function useBinanceFuturesFunding(
   const { enabled = true } = options;
 
   const isTabVisible = useTabVisibility();
-  const cleanSymbol = (symbol || '').trim().toUpperCase().replace(/[/\\_-]/g, '');
+  const cleanSymbol = normalizeSymbolForDisplay(symbol);
   const isGlobal = isGlobalSymbol(cleanSymbol);
   const isStreamActive = enabled && !isGlobal && isTabVisible;
 

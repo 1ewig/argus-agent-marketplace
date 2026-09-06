@@ -1,4 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie';
+import { normalizeSymbolForDisplay } from '@/lib/symbols';
 import type {
   ExecutedToolCall,
   AgentExecutionStep,
@@ -368,6 +369,36 @@ export async function createConversation(
   }
 
   return conv;
+}
+
+/**
+ * Resolves the most recently active conversation for a given symbol,
+ * or creates a fresh conversation if none exists.
+ */
+export async function openOrCreateConversationForSymbol(
+  rawSymbol?: string | null
+): Promise<string> {
+  const targetSymbol = normalizeSymbolForDisplay(rawSymbol) || DEFAULT_CONVERSATION_SYMBOL;
+
+  if (isGlobalSymbol(targetSymbol)) {
+    const globalConv = await ensureDefaultGlobalConversation();
+    return globalConv.id;
+  }
+
+  const all = await listConversations();
+  const matching = all.filter(
+    (c) => normalizeSymbolForDisplay(c.symbol) === targetSymbol
+  );
+
+  if (matching.length > 0) {
+    const sorted = [...matching].sort(
+      (a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0)
+    );
+    return sorted[0].id;
+  }
+
+  const newConv = await createConversation(undefined, targetSymbol);
+  return newConv.id;
 }
 
 /**

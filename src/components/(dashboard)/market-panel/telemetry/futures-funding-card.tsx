@@ -3,6 +3,7 @@
 import React from 'react';
 import { Gauge, AlertCircle, Clock, Loader2 } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
+import { formatPrice } from '@/lib/utils';
 import type { LiveFuturesFundingData } from '@/lib/binance-websocket';
 
 interface FuturesFundingCardProps {
@@ -112,11 +113,7 @@ export const FuturesFundingCard = React.memo(function FuturesFundingCard({
                 {content.markPriceLabel}
               </span>
               <span className="text-theme-text-primary font-bold mt-0.5">
-                $
-                {data.markPrice.toLocaleString('en-US', {
-                  minimumFractionDigits: data.precision,
-                  maximumFractionDigits: data.precision,
-                })}
+                ${formatPrice(data.markPrice, data.precision)}
               </span>
             </div>
 
@@ -125,11 +122,7 @@ export const FuturesFundingCard = React.memo(function FuturesFundingCard({
                 {content.indexPriceLabel}
               </span>
               <span className="text-theme-text-secondary font-bold mt-0.5">
-                $
-                {data.indexPrice.toLocaleString('en-US', {
-                  minimumFractionDigits: data.precision,
-                  maximumFractionDigits: data.precision,
-                })}
+                ${formatPrice(data.indexPrice, data.precision)}
               </span>
             </div>
 

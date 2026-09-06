@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState, memo } from 'react';
+import React, { memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Brain, ChevronDown, Sparkles } from 'lucide-react';
 import { AgentLoader } from '@/components/common';
 import { APP_CONTENT } from '@/constants/content';
 import { accordionVariants, tapScaleAccordion } from '@/constants/animation';
-import { useActiveTimer } from '@/hooks';
+import { useActiveTimer, useAccordionOpenState } from '@/hooks';
 import { MarkdownView } from '../markdown-view';
 import type { AgentExecutionStep } from '@/agent';
 
@@ -27,9 +27,8 @@ export const AgentThoughtAccordion = memo(function AgentThoughtAccordion({
   const isActive = isStreaming && step.status === 'active';
   const reasoningText = step.reasoningText?.trim() || '';
 
-  // Clean user toggle without setState side-effects during render phase
-  const [userToggled, setUserToggled] = useState<boolean | null>(null);
-  const isExpanded = userToggled !== null ? userToggled : isActive;
+  // Synchronized open state across stream status & user toggle
+  const { isOpen: isExpanded, toggleOpen } = useAccordionOpenState(isActive);
 
   // Unified synchronized timer that only runs while actively thinking
   const elapsedSeconds = useActiveTimer(step.timestamp, isActive);
@@ -57,7 +56,7 @@ export const AgentThoughtAccordion = memo(function AgentThoughtAccordion({
       <motion.button
         type="button"
         whileTap={tapScaleAccordion}
-        onClick={() => setUserToggled(!isExpanded)}
+        onClick={toggleOpen}
         className="inline-flex items-center gap-1.5 py-0.5 px-1 -ml-1 rounded-md text-2xs text-theme-text-secondary hover:text-theme-text-primary active:bg-theme-bg-elevated/60 transition-colors cursor-pointer group select-none w-fit"
       >
         {isActive ? (

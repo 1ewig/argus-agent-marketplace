@@ -68,6 +68,13 @@ export interface AppState {
   setHasHydrated: (hasHydrated: boolean) => void;
 }
 
+/**
+ * Predicate checking whether the right panel is currently displaying Market Intelligence
+ */
+export function isIntelligenceTabActive(tab: AppState['rightPanelTab']): boolean {
+  return tab === 'intelligence' || tab === 'market-data';
+}
+
 export const useAppStore = create<AppState>()(
   persist(
     (set) => ({

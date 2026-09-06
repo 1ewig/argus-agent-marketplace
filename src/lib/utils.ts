@@ -1,5 +1,8 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { normalizeSymbolForDisplay } from './symbols';
+
+export { normalizeSymbolForDisplay };
 
 /**
  * Global workspace symbol identifier
@@ -10,8 +13,7 @@ export const GLOBAL_WORKSPACE_SYMBOL = 'GLOBAL';
  * Checks if a trading symbol represents the global workspace or is unassigned/empty.
  */
 export function isGlobalSymbol(symbol?: string | null): boolean {
-  if (!symbol) return true;
-  const clean = symbol.trim().toUpperCase().replace(/[/\\_-]/g, '');
+  const clean = normalizeSymbolForDisplay(symbol);
   return clean === GLOBAL_WORKSPACE_SYMBOL || clean === '';
 }
 
@@ -59,4 +61,17 @@ export function formatRelativeTime(timestamp?: number): string {
     month: 'short',
     day: 'numeric',
   }).format(new Date(timestamp));
+}
+
+/**
+ * Formats a price value with localized thousands separators and strict decimal precision.
+ */
+export function formatPrice(value?: number | null, precision: number = 2): string {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    return '—';
+  }
+  return value.toLocaleString('en-US', {
+    minimumFractionDigits: precision,
+    maximumFractionDigits: precision,
+  });
 }

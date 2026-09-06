@@ -2,6 +2,7 @@
 
 import React, { useId } from 'react';
 import { APP_CONTENT } from '@/constants/content';
+import { formatPrice } from '@/lib/utils';
 import { useSparklineData, useSparklineGeometry } from '@/hooks';
 
 interface PriceSparklineProps {
@@ -67,19 +68,13 @@ export const PriceSparkline = React.memo(function PriceSparkline({
           <span>
             {content.sparklineLow}:{' '}
             <span className="text-theme-text-secondary font-medium">
-              ${minPrice.toLocaleString('en-US', {
-                minimumFractionDigits: precision,
-                maximumFractionDigits: precision,
-              })}
+              ${formatPrice(minPrice, precision)}
             </span>
           </span>
           <span>
             {content.sparklineHigh}:{' '}
             <span className="text-theme-text-secondary font-medium">
-              ${maxPrice.toLocaleString('en-US', {
-                minimumFractionDigits: precision,
-                maximumFractionDigits: precision,
-              })}
+              ${formatPrice(maxPrice, precision)}
             </span>
           </span>
         </div>

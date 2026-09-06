@@ -10,7 +10,7 @@ import {
   useBinanceFuturesFunding,
   useScanMarketIntelligence,
 } from '@/hooks';
-import { useAppStore } from '@/stores/app-store';
+import { useAppStore, isIntelligenceTabActive } from '@/stores/app-store';
 import {
   PriceTickerCard,
   FuturesFundingCard,
@@ -97,7 +97,7 @@ export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
               whileTap={tapScalePill}
               onClick={() => setRightPanelTab('intelligence')}
               className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold transition-colors cursor-pointer ${
-                rightPanelTab === 'intelligence' || rightPanelTab === 'market-data'
+                isIntelligenceTabActive(rightPanelTab)
                   ? 'bg-theme-bg-surface text-theme-text-primary shadow-2xs'
                   : 'text-theme-text-secondary hover:text-theme-text-primary'
               }`}
@@ -133,7 +133,7 @@ export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
 
           {/* Header Action in Intelligence Tab: Scan Market Button (hidden if analysis is fresh / not older than 1 hour) */}
           {!isGlobal &&
-            (rightPanelTab === 'intelligence' || rightPanelTab === 'market-data') &&
+            isIntelligenceTabActive(rightPanelTab) &&
             !isAnalysisFresh && (
               <motion.button
                 type="button"
@@ -162,7 +162,7 @@ export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
                 {content.globalEmptyNotice}
               </p>
             </div>
-          ) : rightPanelTab === 'intelligence' || rightPanelTab === 'market-data' ? (
+          ) : isIntelligenceTabActive(rightPanelTab) ? (
             <MarketIntelligenceAgentView
               key={`intelligence_${cleanSymbol}`}
               data={intelligenceData}

@@ -1,4 +1,39 @@
 import { APP_CONTENT } from '@/constants/content';
+import { extractBaseAsset } from '@/lib/symbols';
+import { isGlobalSymbol } from '@/lib/utils';
+import { FOLLOW_UP_TAG_REGEX, INCOMPLETE_FOLLOW_UP_TAG_REGEX } from './follow-up-extractor';
+
+export const SESSION_TITLE_TAG_REGEX = /<session_title>[\s\S]*?<\/session_title>\s*/gi;
+export const INCOMPLETE_SESSION_TITLE_TAG_REGEX = /<session_title>[\s\S]*$/i;
+
+/**
+ * Strips complete (and optionally in-flight) XML meta tags from agent text.
+ */
+export function sanitizeAgentText(
+  text: string,
+  options: { removeIncomplete?: boolean } = {}
+): string {
+  if (!text) return '';
+  let cleaned = text
+    .replace(SESSION_TITLE_TAG_REGEX, '')
+    .replace(FOLLOW_UP_TAG_REGEX, '');
+
+  if (options.removeIncomplete) {
+    cleaned = cleaned
+      .replace(INCOMPLETE_SESSION_TITLE_TAG_REGEX, '')
+      .replace(INCOMPLETE_FOLLOW_UP_TAG_REGEX, '');
+  }
+
+  return cleaned.trim();
+}
+
+/**
+ * Checks if a session title matches a placeholder / default name.
+ */
+export function isDefaultSessionTitle(title?: string | null): boolean {
+  if (!title) return true;
+  return (APP_CONTENT.chat.defaultSessionTitles as readonly string[]).includes(title);
+}
 
 /**
  * Result of extracting a session title from raw agent output
@@ -18,9 +53,7 @@ export function generateFallbackSessionTitle(prompt: string, symbol?: string): s
   // Detect coin / symbol in prompt or use provided workspace symbol
   const matchedCoin =
     upperPrompt.match(/\b(BTC|ETH|SOL|BNB|XRP|DOGE|ADA|AVAX|LINK|SUI|PEPE|SHIB|NEAR|APT|RENDER|TAO|FET|ARB|OP|DOT)\b/)?.[1] ||
-    (symbol && symbol.toUpperCase() !== 'GLOBAL'
-      ? symbol.toUpperCase().replace(/USDT$|BUSD$|USD$/, '')
-      : undefined);
+    (symbol && !isGlobalSymbol(symbol) ? extractBaseAsset(symbol) : undefined);
 
   const coinPrefix = matchedCoin ? `${matchedCoin} ` : '';
 

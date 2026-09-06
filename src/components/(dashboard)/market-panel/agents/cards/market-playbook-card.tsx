@@ -1,6 +1,7 @@
 import React from 'react';
 import { Crosshair } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
+import { formatPrice } from '@/lib/utils';
 import type { MarketIntelligencePayload } from '@/agent';
 
 export interface MarketPlaybookCardProps {
@@ -38,7 +39,7 @@ export function MarketPlaybookCard({ playbook }: MarketPlaybookCardProps) {
             {content.targetLabel}
           </span>
           <span className="text-sm sm:text-base font-black font-mono text-theme-text-primary tracking-tight">
-            ${playbook.target.toLocaleString('en-US')}
+            ${formatPrice(playbook.target)}
           </span>
         </div>
 
@@ -48,7 +49,7 @@ export function MarketPlaybookCard({ playbook }: MarketPlaybookCardProps) {
             {content.invalidationLabel}
           </span>
           <span className="text-sm sm:text-base font-black font-mono text-theme-text-primary tracking-tight">
-            ${playbook.invalidation.toLocaleString('en-US')}
+            ${formatPrice(playbook.invalidation)}
           </span>
         </div>
       </div>

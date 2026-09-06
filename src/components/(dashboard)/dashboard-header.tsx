@@ -7,7 +7,7 @@ import { APP_CONTENT } from '@/constants/content';
 import { tapScalePill } from '@/constants/animation';
 import { isGlobalSymbol } from '@/lib/utils';
 import { useChatSessions } from '@/hooks';
-import { useAppStore } from '@/stores/app-store';
+import { useAppStore, isIntelligenceTabActive } from '@/stores/app-store';
 
 export function DashboardHeader() {
   const selectedSymbol = useAppStore((state) => state.selectedSymbol);
@@ -81,7 +81,7 @@ export function DashboardHeader() {
             if (!isMarketPanelOpen) {
               setIsMarketPanelOpen(true);
               setRightPanelTab('intelligence');
-            } else if (rightPanelTab === 'intelligence' || rightPanelTab === 'market-data') {
+            } else if (isIntelligenceTabActive(rightPanelTab)) {
               setRightPanelTab('overview');
             } else {
               setRightPanelTab('intelligence');
@@ -90,7 +90,7 @@ export function DashboardHeader() {
           title={APP_CONTENT.marketIntelligence.headerButtonTooltip}
           aria-label={APP_CONTENT.marketIntelligence.headerButtonLabel}
           className={`h-8 px-2.5 rounded-lg text-xs font-bold inline-flex items-center gap-1.5 select-none transition-colors border cursor-pointer ${
-            isMarketPanelOpen && (rightPanelTab === 'intelligence' || rightPanelTab === 'market-data')
+            isMarketPanelOpen && isIntelligenceTabActive(rightPanelTab)
               ? 'bg-theme-bg-elevated text-theme-brand-binance border-theme-brand-binance/40 shadow-2xs'
               : 'bg-theme-bg-surface text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-elevated border-theme-border-subtle'
           }`}

@@ -3,10 +3,43 @@
 import React from 'react';
 import { Layers, Loader2 } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
-import type { LiveOrderBookData, StreamConnectionStatus } from '@/lib/binance-websocket';
+import { formatPrice } from '@/lib/utils';
+import type { LiveOrderBookData, OrderBookLevel, StreamConnectionStatus } from '@/lib/binance-websocket';
+
+interface OrderBookRowProps {
+  row: OrderBookLevel;
+  precision: number;
+  tone: 'bid' | 'ask';
+}
+
+const OrderBookRow = React.memo(function OrderBookRow({ row, precision, tone }: OrderBookRowProps) {
+  const isBid = tone === 'bid';
+  const textColor = isBid ? 'text-theme-status-success' : 'text-theme-status-danger';
+  const barColor = isBid ? 'bg-theme-status-success/15' : 'bg-theme-status-danger/15';
+
+  return (
+    <div className="group relative grid grid-cols-3 items-center py-0.5 px-1 rounded text-2xs font-mono overflow-hidden">
+      {/* Liquidity Depth Bar */}
+      <div
+        className={`absolute inset-y-0 right-0 ${barColor} rounded pointer-events-none transition-all duration-150`}
+        style={{ width: `${row.depthPercent}%` }}
+      />
+
+      <span className={`relative z-10 ${textColor} font-bold`}>
+        {formatPrice(row.price, precision)}
+      </span>
+      <span className="relative z-10 text-right text-theme-text-secondary">
+        {row.qty.toFixed(precision === 4 ? 2 : 3)}
+      </span>
+      <span className="relative z-10 text-right text-theme-text-muted text-[11px]">
+        {row.total.toFixed(precision === 4 ? 2 : 3)}
+      </span>
+    </div>
+  );
+});
 
 interface OrderBookDepthCardProps {
-  symbol: string;
+  symbol?: string;
   orderBook: LiveOrderBookData | null;
   status?: StreamConnectionStatus;
 }
@@ -66,29 +99,12 @@ export const OrderBookDepthCard = React.memo(function OrderBookDepthCard({
           {/* Asks (Sell Orders - Top of Book descending to best ask) */}
           <div className="flex flex-col gap-0.5">
             {orderBook.asks.map((row, idx) => (
-              <div
+              <OrderBookRow
                 key={`ask_${idx}_${row.price}`}
-                className="group relative grid grid-cols-3 items-center py-0.5 px-1 rounded text-2xs font-mono overflow-hidden"
-              >
-                {/* Liquidity Depth Bar */}
-                <div
-                  className="absolute inset-y-0 right-0 bg-theme-status-danger/15 rounded pointer-events-none transition-all duration-150"
-                  style={{ width: `${row.depthPercent}%` }}
-                />
-
-                <span className="relative z-10 text-theme-status-danger font-bold">
-                  {row.price.toLocaleString('en-US', {
-                    minimumFractionDigits: orderBook.precision,
-                    maximumFractionDigits: orderBook.precision,
-                  })}
-                </span>
-                <span className="relative z-10 text-right text-theme-text-secondary">
-                  {row.qty.toFixed(orderBook.precision === 4 ? 2 : 3)}
-                </span>
-                <span className="relative z-10 text-right text-theme-text-muted text-[11px]">
-                  {row.total.toFixed(orderBook.precision === 4 ? 2 : 3)}
-                </span>
-              </div>
+                row={row}
+                precision={orderBook.precision}
+                tone="ask"
+              />
             ))}
           </div>
 
@@ -110,29 +126,12 @@ export const OrderBookDepthCard = React.memo(function OrderBookDepthCard({
           {/* Bids (Buy Orders - Bottom of Book starting from best bid down) */}
           <div className="flex flex-col gap-0.5">
             {orderBook.bids.map((row, idx) => (
-              <div
+              <OrderBookRow
                 key={`bid_${idx}_${row.price}`}
-                className="group relative grid grid-cols-3 items-center py-0.5 px-1 rounded text-2xs font-mono overflow-hidden"
-              >
-                {/* Liquidity Depth Bar */}
-                <div
-                  className="absolute inset-y-0 right-0 bg-theme-status-success/15 rounded pointer-events-none transition-all duration-150"
-                  style={{ width: `${row.depthPercent}%` }}
-                />
-
-                <span className="relative z-10 text-theme-status-success font-bold">
-                  {row.price.toLocaleString('en-US', {
-                    minimumFractionDigits: orderBook.precision,
-                    maximumFractionDigits: orderBook.precision,
-                  })}
-                </span>
-                <span className="relative z-10 text-right text-theme-text-secondary">
-                  {row.qty.toFixed(orderBook.precision === 4 ? 2 : 3)}
-                </span>
-                <span className="relative z-10 text-right text-theme-text-muted text-[11px]">
-                  {row.total.toFixed(orderBook.precision === 4 ? 2 : 3)}
-                </span>
-              </div>
+                row={row}
+                precision={orderBook.precision}
+                tone="bid"
+              />
             ))}
           </div>
         </>

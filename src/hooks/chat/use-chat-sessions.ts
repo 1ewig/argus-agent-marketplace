@@ -12,6 +12,7 @@ import {
   DEFAULT_CONVERSATION_SYMBOL,
   GLOBAL_WORKSPACE_SYMBOL,
   isGlobalSymbol,
+  openOrCreateConversationForSymbol,
   createConversation,
   deleteConversation,
   renameConversation,
@@ -20,6 +21,8 @@ import {
   clearMessagesCache,
   type ConversationRecord,
 } from '@/lib/db';
+import { parseSymbolAssets } from '@/lib/symbols';
+export { parseSymbolAssets };
 
 export interface SymbolWorkspaceGroup {
   symbol: string;
@@ -28,25 +31,6 @@ export interface SymbolWorkspaceGroup {
   conversations: ConversationRecord[];
   latestTimestamp: number;
   isGlobal?: boolean;
-}
-
-const KNOWN_QUOTE_ASSETS = ['USDT', 'USDC', 'FDUSD', 'BUSD', 'EUR', 'TRY', 'BTC', 'ETH', 'BNB'] as const;
-
-/**
- * Splits a standard Binance trading pair (e.g. BTCUSDT) into base and quote assets,
- * or handles the special 'GLOBAL' workspace identifier.
- */
-export function parseSymbolAssets(symbol: string): { baseAsset: string; quoteAsset: string } {
-  const upper = (symbol || DEFAULT_CONVERSATION_SYMBOL).toUpperCase();
-  if (isGlobalSymbol(upper)) {
-    return { baseAsset: GLOBAL_WORKSPACE_SYMBOL, quoteAsset: '' };
-  }
-  for (const quote of KNOWN_QUOTE_ASSETS) {
-    if (upper.endsWith(quote) && upper.length > quote.length) {
-      return { baseAsset: upper.slice(0, -quote.length), quoteAsset: quote };
-    }
-  }
-  return { baseAsset: upper, quoteAsset: '' };
 }
 
 let isSessionInitStarted = false;
@@ -375,23 +359,8 @@ export function useChatSessions() {
 
       setSelectedSymbol(targetSymbol);
 
-      const all = await listConversations();
-      const matching = all.filter(
-        (c) => (c.symbol || DEFAULT_CONVERSATION_SYMBOL).toUpperCase() === targetSymbol
-      );
-
-      if (matching.length > 0) {
-        const sorted = [...matching].sort(
-          (a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0)
-        );
-        setActiveConversationId(sorted[0].id);
-      } else if (isGlobalSymbol(targetSymbol)) {
-        const globalConv = await ensureDefaultGlobalConversation();
-        setActiveConversationId(globalConv.id);
-      } else {
-        const newConv = await createConversation(undefined, targetSymbol);
-        setActiveConversationId(newConv.id);
-      }
+      const targetId = await openOrCreateConversationForSymbol(targetSymbol);
+      setActiveConversationId(targetId);
     },
     [
       setErrorNotice,

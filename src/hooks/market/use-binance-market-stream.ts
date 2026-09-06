@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { isGlobalSymbol } from '@/lib/utils';
+import { normalizeSymbolForDisplay } from '@/lib/symbols';
 import { useTabVisibility } from '@/hooks/ui';
 import {
   buildCombinedStreamUrl,
@@ -40,7 +41,7 @@ export function useBinanceMarketStream(
 
   const isTabVisible = useTabVisibility();
 
-  const cleanSymbol = (symbol || '').trim().toUpperCase();
+  const cleanSymbol = normalizeSymbolForDisplay(symbol);
   const isGlobal = isGlobalSymbol(cleanSymbol);
   const isStreamActive = enabled && !isGlobal && isTabVisible;
 

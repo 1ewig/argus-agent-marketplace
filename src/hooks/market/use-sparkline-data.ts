@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { isGlobalSymbol } from '@/lib/utils';
+import { normalizeSymbolForDisplay } from '@/lib/symbols';
 
 export interface UseSparklineDataResult {
   points: number[];
@@ -18,7 +19,7 @@ export function useSparklineData(
   currentPrice?: number
 ): UseSparklineDataResult {
   const cleanSymbol = useMemo(
-    () => symbol.trim().toUpperCase().replace(/[/\\_-]/g, ''),
+    () => normalizeSymbolForDisplay(symbol),
     [symbol]
   );
 
