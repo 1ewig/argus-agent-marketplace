@@ -1,18 +1,22 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import { motion } from 'framer-motion';
 import { PanelLeftOpen, PanelLeftClose } from 'lucide-react';
 import { ArgusIcon } from '@/components/common';
 import { APP_CONTENT } from '@/constants/content';
 import { sidebarHorizontalCollapseVariants, sidebarSpringTransition, tapScalePill } from '@/constants/animation';
 
-interface SidebarHeaderProps {
+export interface SidebarHeaderProps {
   isCollapsed: boolean;
   onToggle: () => void;
 }
 
-export function SidebarHeader({ isCollapsed, onToggle }: SidebarHeaderProps) {
+/**
+ * Pure presentation header for LeftSidebar.
+ * Renders logo, brand title, and sidebar collapse/expand controls.
+ */
+export const SidebarHeader = memo(function SidebarHeader({ isCollapsed, onToggle }: SidebarHeaderProps) {
   const [isLogoHovered, setIsLogoHovered] = useState(false);
 
   return (
@@ -80,4 +84,4 @@ export function SidebarHeader({ isCollapsed, onToggle }: SidebarHeaderProps) {
       </div>
     </div>
   );
-}
+});

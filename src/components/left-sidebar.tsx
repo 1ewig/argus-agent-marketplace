@@ -5,9 +5,8 @@ import { motion } from 'framer-motion';
 import { ConfirmDialog } from '@/components/common/confirm-dialog';
 import { APP_CONTENT } from '@/constants/content';
 import { sidebarSpringTransition } from '@/constants/animation';
-import { useTheme, useSidebar } from '@/hooks';
+import { useTheme, useSidebar, useChatSessions } from '@/hooks';
 import { useAppStore } from '@/stores/app-store';
-import { useChatSessions } from '@/hooks';
 import {
   SidebarHeader,
   SidebarNavViews,
@@ -20,14 +19,13 @@ const noopSubscribe = () => () => {};
 /**
  * LeftSidebar Orchestrator Component
  *
- * Coordinates layout width animations, theme toggling, symbol workspace navigation,
- * and deletion confirmation while delegating presentation to modular subcomponents.
+ * Single orchestrator for sidebar layout animations, stage views, theme toggles,
+ * symbol workspace collapsing, session selections, and deletion confirmation dialogs.
+ * Delegates presentation exclusively to pure reusable subcomponents.
  */
 export function LeftSidebar() {
+  // Theme & sidebar layout hooks
   const { isDark, toggleTheme } = useTheme();
-  const stageView = useAppStore((state) => state.stageView);
-  const setStageView = useAppStore((state) => state.setStageView);
-  const selectedSymbol = useAppStore((state) => state.selectedSymbol);
   const { isSidebarCollapsed, toggleSidebar } = useSidebar();
   const hasMounted = useSyncExternalStore(
     noopSubscribe,
@@ -35,6 +33,15 @@ export function LeftSidebar() {
     () => false
   );
 
+  // App store subscriptions
+  const stageView = useAppStore((state) => state.stageView);
+  const setStageView = useAppStore((state) => state.setStageView);
+  const selectedSymbol = useAppStore((state) => state.selectedSymbol);
+  const collapsedWorkspaceGroups = useAppStore((state) => state.collapsedWorkspaceGroups);
+  const toggleWorkspaceGroupCollapsed = useAppStore((state) => state.toggleWorkspaceGroupCollapsed);
+  const setWorkspaceGroupCollapsed = useAppStore((state) => state.setWorkspaceGroupCollapsed);
+
+  // Chat sessions orchestration hook
   const {
     conversations,
     symbolGroups,
@@ -76,7 +83,12 @@ export function LeftSidebar() {
     setDeleteTargetId(null);
   }, []);
 
-  const setWorkspaceGroupCollapsed = useAppStore((state) => state.setWorkspaceGroupCollapsed);
+  const handleToggleWorkspaceGroup = useCallback(
+    (symbol: string) => {
+      toggleWorkspaceGroupCollapsed(symbol);
+    },
+    [toggleWorkspaceGroupCollapsed]
+  );
 
   const handleSelectSessionClick = useCallback(
     (id: string) => {
@@ -116,10 +128,12 @@ export function LeftSidebar() {
           groups={symbolGroups}
           activeConversationId={activeConversationId}
           activeSymbol={selectedSymbol}
+          collapsedWorkspaceGroups={collapsedWorkspaceGroups}
           editingId={editingId}
           editTitle={editTitle}
           isCollapsed={isSidebarCollapsed}
           onSelectSession={handleSelectSessionClick}
+          onToggleWorkspaceGroup={handleToggleWorkspaceGroup}
           onStartRename={handleStartRename}
           onSaveRename={handleSaveRename}
           onCancelRename={handleCancelRename}

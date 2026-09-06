@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { memo } from 'react';
 import { motion } from 'framer-motion';
 import { Bot, LineChart } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
@@ -11,13 +11,17 @@ import {
 } from '@/constants/animation';
 import type { StageViewMode } from '@/lib/types';
 
-interface SidebarNavViewsProps {
+export interface SidebarNavViewsProps {
   isCollapsed: boolean;
   stageView: StageViewMode;
   onViewSelect: (mode: StageViewMode) => void;
 }
 
-export function SidebarNavViews({
+/**
+ * Pure presentation navigation switcher for stage views (Agent vs Chart).
+ * Driven exclusively by props from LeftSidebar.
+ */
+export const SidebarNavViews = memo(function SidebarNavViews({
   isCollapsed,
   stageView,
   onViewSelect,
@@ -97,4 +101,4 @@ export function SidebarNavViews({
       </motion.button>
     </div>
   );
-}
+});

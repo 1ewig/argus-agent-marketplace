@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { memo } from 'react';
 import { motion, AnimatePresence, type Transition } from 'framer-motion';
 import { ChevronRight, Globe } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
@@ -12,7 +12,7 @@ import { isGlobalSymbol } from '@/lib/utils';
 import type { SymbolWorkspaceGroup } from '@/hooks';
 import { SidebarSessionItem } from './sidebar-session-item';
 
-interface SidebarWorkspaceGroupProps {
+export interface SidebarWorkspaceGroupProps {
   group: SymbolWorkspaceGroup;
   activeConversationId: string;
   activeSymbol: string;
@@ -41,7 +41,11 @@ const accordionTransition: Transition = {
   },
 };
 
-export function SidebarWorkspaceGroup({
+/**
+ * Pure presentation accordion container for an individual symbol workspace.
+ * Renders the symbol header row and the collapsible list of conversation threads.
+ */
+export const SidebarWorkspaceGroup = memo(function SidebarWorkspaceGroup({
   group,
   activeConversationId,
   activeSymbol,
@@ -200,4 +204,4 @@ export function SidebarWorkspaceGroup({
       </AnimatePresence>
     </div>
   );
-}
+});

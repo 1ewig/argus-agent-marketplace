@@ -1,18 +1,22 @@
 'use client';
 
-import React from 'react';
+import React, { memo } from 'react';
 import { motion } from 'framer-motion';
 import { Sun, Moon } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
 import { sidebarHorizontalCollapseVariants, tapScalePill } from '@/constants/animation';
 
-interface SidebarThemeToggleProps {
+export interface SidebarThemeToggleProps {
   isCollapsed: boolean;
   isDark: boolean;
   onToggle: () => void;
 }
 
-export function SidebarThemeToggle({
+/**
+ * Pure presentation button to toggle color mode theme between light and dark.
+ * Driven exclusively by props from LeftSidebar.
+ */
+export const SidebarThemeToggle = memo(function SidebarThemeToggle({
   isCollapsed,
   isDark,
   onToggle,
@@ -54,4 +58,4 @@ export function SidebarThemeToggle({
       </motion.button>
     </div>
   );
-}
+});

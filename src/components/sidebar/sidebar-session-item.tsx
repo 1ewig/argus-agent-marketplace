@@ -1,13 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, { memo } from 'react';
 import { motion } from 'framer-motion';
 import { MessageSquare, Edit2, Trash2, Check, X } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
 import { sidebarHorizontalCollapseVariants, tapScalePill } from '@/constants/animation';
 import type { ConversationRecord } from '@/lib/db';
 
-interface SidebarSessionItemProps {
+export interface SidebarSessionItemProps {
   conversation: ConversationRecord;
   isActive: boolean;
   isEditing: boolean;
@@ -21,7 +21,11 @@ interface SidebarSessionItemProps {
   onOpenDelete: (e: React.MouseEvent) => void;
 }
 
-export function SidebarSessionItem({
+/**
+ * Pure presentation list item representing an individual chat session thread.
+ * Memoized to prevent re-renders when other conversations update.
+ */
+export const SidebarSessionItem = memo(function SidebarSessionItem({
   conversation,
   isActive,
   isEditing,
@@ -137,4 +141,4 @@ export function SidebarSessionItem({
       </motion.div>
     </motion.div>
   );
-}
+});

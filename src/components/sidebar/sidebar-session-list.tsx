@@ -1,21 +1,22 @@
 'use client';
 
-import React from 'react';
+import React, { memo } from 'react';
 import { motion } from 'framer-motion';
 import { APP_CONTENT } from '@/constants/content';
 import { sidebarHeadingCollapseVariants } from '@/constants/animation';
-import { useAppStore } from '@/stores/app-store';
 import type { SymbolWorkspaceGroup } from '@/hooks';
 import { SidebarWorkspaceGroup } from './sidebar-workspace-group';
 
-interface SidebarSessionListProps {
+export interface SidebarSessionListProps {
   groups: SymbolWorkspaceGroup[];
   activeConversationId: string;
   activeSymbol: string;
+  collapsedWorkspaceGroups: Record<string, boolean>;
   editingId: string | null;
   editTitle: string;
   isCollapsed: boolean;
   onSelectSession: (id: string) => void;
+  onToggleWorkspaceGroup: (symbol: string) => void;
   onStartRename: (id: string, title: string, e: React.MouseEvent) => void;
   onSaveRename: (id: string, e?: React.FormEvent | React.MouseEvent) => void;
   onCancelRename: () => void;
@@ -23,27 +24,26 @@ interface SidebarSessionListProps {
   onOpenDelete: (id: string, e: React.MouseEvent) => void;
 }
 
-export function SidebarSessionList({
+/**
+ * Pure presentation list component rendering symbol workspace groups.
+ * Driven exclusively by props passed down from LeftSidebar.
+ */
+export const SidebarSessionList = memo(function SidebarSessionList({
   groups,
   activeConversationId,
   activeSymbol,
+  collapsedWorkspaceGroups,
   editingId,
   editTitle,
   isCollapsed,
   onSelectSession,
+  onToggleWorkspaceGroup,
   onStartRename,
   onSaveRename,
   onCancelRename,
   onEditTitleChange,
   onOpenDelete,
 }: SidebarSessionListProps) {
-  const collapsedWorkspaceGroups = useAppStore((state) => state.collapsedWorkspaceGroups);
-  const toggleWorkspaceGroupCollapsed = useAppStore((state) => state.toggleWorkspaceGroupCollapsed);
-
-  const handleToggleGroup = (symbol: string) => {
-    toggleWorkspaceGroupCollapsed(symbol);
-  };
-
   return (
     <div className="flex-1 flex flex-col min-h-0 py-spacing-sm px-3.5 overflow-hidden">
       {/* Section Heading: Collapses height to 0 */}
@@ -89,7 +89,7 @@ export function SidebarSessionList({
                 activeConversationId={activeConversationId}
                 activeSymbol={activeSymbol}
                 isExpanded={isGroupExpanded}
-                onToggleExpand={() => handleToggleGroup(group.symbol)}
+                onToggleExpand={() => onToggleWorkspaceGroup(group.symbol)}
                 editingId={editingId}
                 editTitle={editTitle}
                 isCollapsed={isCollapsed}
@@ -106,4 +106,4 @@ export function SidebarSessionList({
       </div>
     </div>
   );
-}
+});
