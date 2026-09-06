@@ -28,6 +28,7 @@ export function DashboardClient({ mode = 'simulation' }: DashboardClientProps) {
   const chartTimeframe = useAppStore((state) => state.chartTimeframe);
   const setChartTimeframe = useAppStore((state) => state.setChartTimeframe);
   const isMarketPanelOpen = useAppStore((state) => state.isMarketPanelOpen);
+  const rightPanelTab = useAppStore((state) => state.rightPanelTab);
   const toggleMarketPanel = useAppStore((state) => state.toggleMarketPanel);
   const setIsSymbolSearchOpen = useAppStore((state) => state.setIsSymbolSearchOpen);
 
@@ -35,9 +36,14 @@ export function DashboardClient({ mode = 'simulation' }: DashboardClientProps) {
   const cleanSymbol = normalizeSymbolForDisplay(selectedSymbol) || 'BTCUSDT';
   const isGlobalWorkspace = isGlobalSymbol(cleanSymbol);
 
-  // Live market ticker for chart header telemetry
-  const { ticker } = useBinanceMarketStream(cleanSymbol, {
-    enabled: stageView === 'chart' && !isGlobalWorkspace,
+  // Shared real-time client-direct Binance Spot WebSocket connection (powers chart header + telemetry cards)
+  const isSpotStreamActive =
+    !isGlobalWorkspace &&
+    (stageView === 'chart' || (isMarketPanelOpen && rightPanelTab === 'overview'));
+
+  const { ticker, orderBook, status: spotStatus } = useBinanceMarketStream(cleanSymbol, {
+    enabled: isSpotStreamActive,
+    depthLevels: 8,
   });
 
   // Agent chat orchestration hook (handles persistence, SSE streams, scroll refs, session actions)
@@ -174,6 +180,9 @@ export function DashboardClient({ mode = 'simulation' }: DashboardClientProps) {
           isOpen={isMarketPanelOpen}
           symbol={cleanSymbol}
           isGlobal={isGlobalWorkspace}
+          ticker={ticker}
+          orderBook={orderBook}
+          spotStatus={spotStatus}
         />
       </div>
     </div>

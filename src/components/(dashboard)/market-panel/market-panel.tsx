@@ -5,8 +5,12 @@ import { motion } from 'framer-motion';
 import { Globe, Loader2, Bot, Activity, RefreshCw, Clock } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
 import { sidebarSpringTransition, tapScalePill } from '@/constants/animation';
+import type {
+  LiveTickerData,
+  LiveOrderBookData,
+  StreamConnectionStatus,
+} from '@/lib/binance-websocket';
 import {
-  useBinanceMarketStream,
   useBinanceFuturesFunding,
   useScanMarketIntelligence,
   useGlobalMarketOverview,
@@ -24,9 +28,19 @@ interface MarketPanelProps {
   isOpen: boolean;
   symbol: string;
   isGlobal: boolean;
+  ticker?: LiveTickerData | null;
+  orderBook?: LiveOrderBookData | null;
+  spotStatus?: StreamConnectionStatus;
 }
 
-export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
+export function MarketPanel({
+  isOpen,
+  symbol,
+  isGlobal,
+  ticker = null,
+  orderBook = null,
+  spotStatus = 'idle',
+}: MarketPanelProps) {
   const content = APP_CONTENT.marketPanel;
   const globalContent = APP_CONTENT.globalMarket;
   const intelligence = APP_CONTENT.marketIntelligence;
@@ -60,12 +74,6 @@ export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
     handleScan,
   } = useScanMarketIntelligence(symbol, {
     enabled: isOpen && !isGlobal && isIntelligenceActive,
-  });
-
-  // Real-time client-direct Binance Spot WebSocket connection
-  const { ticker, orderBook, status: spotStatus } = useBinanceMarketStream(symbol, {
-    enabled: isOpen && !isGlobal,
-    depthLevels: 8,
   });
 
   // Real-time Binance Futures WebSocket / Funding stream
