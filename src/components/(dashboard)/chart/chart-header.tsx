@@ -15,7 +15,6 @@ export interface ChartTickerStats {
 }
 
 export interface ChartHeaderProps {
-  symbol: string;
   livePrice: number | null;
   flashDirection: 'up' | 'down' | null;
   tickerStats: ChartTickerStats | null;

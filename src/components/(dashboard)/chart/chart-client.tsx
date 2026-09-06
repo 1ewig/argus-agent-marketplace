@@ -23,7 +23,6 @@ export function ChartClient({ symbol: propSymbol }: ChartClientProps) {
   const storeSymbol = useAppStore((state) => state.selectedSymbol);
   const lastActiveSymbol = useAppStore((state) => state.lastActiveSymbol);
   const chartTimeframe = useAppStore((state) => state.chartTimeframe);
-  const setIsSymbolSearchOpen = useAppStore((state) => state.setIsSymbolSearchOpen);
 
   const rawSymbol = propSymbol || storeSymbol || 'BTCUSDT';
   const isGlobal = isGlobalSymbol(rawSymbol);
@@ -298,10 +297,8 @@ export function ChartClient({ symbol: propSymbol }: ChartClientProps) {
         {/* Floating Top-Left Dynamic Legend */}
         <div className="absolute top-3 left-4 z-10 pointer-events-none">
           <ChartLegend
-            symbol={cleanSymbol}
             candle={displayedCandle}
             precision={precision}
-            onOpenSymbolSearch={() => setIsSymbolSearchOpen(true)}
           />
         </div>
 
