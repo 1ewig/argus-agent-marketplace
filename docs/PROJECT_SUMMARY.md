@@ -71,8 +71,12 @@ src/
 │   │   └── types.ts
 │   ├── exa/                      # Exa search client + input/output types + Zod schema
 │   ├── db/                       # Dexie IndexedDB schema + reactive queries
-│   │   ├── chat-db.ts            # v1→v4 migrations, pruning, intel cache, workspace globals
-│   │   └── queries.ts            # useConversations / useMessages (+prewarm cache)
+│   │   ├── schema.ts             # record types, constants, v1→v4 migrations, db singleton
+│   │   ├── conversations.ts      # session CRUD, default/global workspaces, symbol resolution
+│   │   ├── messages.ts           # message persistence, retention pruning, normalizeMessageSteps
+│   │   ├── intelligence.ts       # Market Intelligence in-memory Map + Dexie v4 snapshot cache
+│   │   ├── queries.ts            # useConversations / useMessages (+prewarm cache)
+│   │   └── index.ts              # barrel export (public API for the db layer)
 │   ├── queries/                  # TanStack queryOptions factories
 │   │   ├── market-intelligence.query.ts # 4-card scan cache (1h stale / 24h GC)
 │   │   └── symbols.query.ts      # cached USDT symbol catalog

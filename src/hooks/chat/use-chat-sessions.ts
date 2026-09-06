@@ -10,8 +10,6 @@ import {
   getConversationMessageCount,
   listConversations,
   DEFAULT_CONVERSATION_SYMBOL,
-  GLOBAL_WORKSPACE_SYMBOL,
-  isGlobalSymbol,
   openOrCreateConversationForSymbol,
   createConversation,
   deleteConversation,
@@ -21,6 +19,7 @@ import {
   clearMessagesCache,
   type ConversationRecord,
 } from '@/lib/db';
+import { GLOBAL_WORKSPACE_SYMBOL, isGlobalSymbol } from '@/lib/utils';
 import { parseSymbolAssets } from '@/lib/symbols';
 export { parseSymbolAssets };
 

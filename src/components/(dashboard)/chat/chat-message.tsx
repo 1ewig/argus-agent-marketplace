@@ -105,12 +105,7 @@ export const ChatMessage = memo(function ChatMessage({
 
   // 2. Assistant Message
   const effectiveSteps: AgentExecutionStep[] = React.useMemo(() => {
-    return normalizeMessageSteps(message, APP_CONTENT.process.thinking, isStreaming).filter((step) => {
-      if (step.type === 'thinking') {
-        return Boolean(step.reasoningText?.trim()) || (isStreaming && step.status === 'active');
-      }
-      return true;
-    });
+    return normalizeMessageSteps(message, isStreaming);
   }, [message, isStreaming]);
 
   const hasSteps = effectiveSteps.length > 0;

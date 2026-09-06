@@ -4,14 +4,20 @@ import { useMemo, useEffect } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import {
   listConversations,
+} from './conversations';
+import {
   getConversationMessages,
   getConversationMessageCount,
+} from './messages';
+import {
+  prewarmIntelligenceCache,
+} from './intelligence';
+import {
   type ConversationRecord,
   type ChatMessageRecord,
   DEFAULT_CONVERSATION_ID,
-  prewarmIntelligenceCache,
   db,
-} from './chat-db';
+} from './schema';
 
 /**
  * In-memory message cache to eliminate flash of empty state when switching conversations.
