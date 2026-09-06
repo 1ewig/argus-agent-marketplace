@@ -8,14 +8,10 @@ import {
   createConversation,
   DEFAULT_CONVERSATION_SYMBOL,
 } from '@/lib/db';
+import { symbolsQuery, type SymbolsApiResponse } from '@/lib/queries';
 import type { BinanceSymbolItem } from '@/app/api/binance/symbols/route';
 
-export interface SymbolsApiResponse {
-  success: boolean;
-  count: number;
-  symbols: BinanceSymbolItem[];
-  warning?: string;
-}
+export type { SymbolsApiResponse };
 
 const EMPTY_SYMBOLS: BinanceSymbolItem[] = [];
 const INITIAL_VISIBLE_COUNT = 30;
@@ -61,18 +57,8 @@ export function useSymbolSearch(): UseSymbolSearchResult {
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
-  // TanStack Query (1 hour server + client cache)
-  const { data, isLoading, isError } = useQuery<SymbolsApiResponse>({
-    queryKey: ['binance-usdt-symbols'],
-    queryFn: async () => {
-      const res = await fetch('/api/binance/symbols');
-      if (!res.ok) throw new Error('Failed to fetch trading symbols');
-      return res.json();
-    },
-    staleTime: 1000 * 60 * 60, // 1 hour fresh
-    gcTime: 1000 * 60 * 60 * 24, // 24 hours client memory retention
-    enabled: isSymbolSearchOpen,
-  });
+  // TanStack Query via symbolsQuery options factory
+  const { data, isLoading, isError } = useQuery(symbolsQuery.options(isSymbolSearchOpen));
 
   const allSymbols = data?.symbols ?? EMPTY_SYMBOLS;
 

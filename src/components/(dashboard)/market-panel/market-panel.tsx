@@ -8,6 +8,7 @@ import { useQueryClient, useIsFetching } from '@tanstack/react-query';
 import { sidebarSpringTransition, tapScalePill } from '@/constants/animation';
 import { useBinanceMarketStream } from '@/hooks/use-binance-market-stream';
 import { useAppStore } from '@/stores/app-store';
+import { marketIntelligenceQuery } from '@/lib/queries';
 import {
   PriceTickerCard,
   FuturesFundingCard,
@@ -32,7 +33,7 @@ export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
   const cleanSymbol = symbol.trim().toUpperCase();
 
   const isFetchingIntelligence = useIsFetching({
-    queryKey: ['market-intelligence', cleanSymbol],
+    queryKey: marketIntelligenceQuery.detail(cleanSymbol),
   }) > 0;
 
   const isAnalyzing = isScanning || isFetchingIntelligence;
@@ -42,7 +43,7 @@ export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
     setIsScanning(true);
     try {
       await queryClient.refetchQueries({
-        queryKey: ['market-intelligence', cleanSymbol],
+        queryKey: marketIntelligenceQuery.detail(cleanSymbol),
       });
     } finally {
       setIsScanning(false);

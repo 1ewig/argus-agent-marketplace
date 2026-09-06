@@ -8,3 +8,4 @@ export * from './use-sidebar';
 export * from './use-symbol-search';
 export * from './use-url-symbol-sync';
 export * from './use-binance-market-stream';
+export * from './use-market-intelligence';

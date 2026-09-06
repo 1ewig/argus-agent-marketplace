@@ -1,5 +1,10 @@
 import Dexie, { type EntityTable } from 'dexie';
-import type { ExecutedToolCall, AgentExecutionStep } from '@/agent';
+import type {
+  ExecutedToolCall,
+  AgentExecutionStep,
+  MarketIntelligencePayload,
+  MarketIntelligenceResponse,
+} from '@/agent';
 
 export interface ConversationRecord {
   id: string;
@@ -22,6 +27,14 @@ export interface ChatMessageRecord {
   stepCount?: number;
   workedDurationMs?: number;
   timestamp: number;
+}
+
+export interface MarketIntelligenceRecord {
+  symbol: string; // e.g. "BTCUSDT" (Primary Key)
+  timestamp: number;
+  data: MarketIntelligencePayload;
+  newsCount: number;
+  sources: string[];
 }
 
 /**
@@ -76,14 +89,16 @@ export const MAX_MESSAGES_PER_CONVERSATION = 100;
 export const DEFAULT_CONVERSATION_ID = 'default';
 export const DEFAULT_CONVERSATION_SYMBOL = 'BTCUSDT';
 export const GLOBAL_WORKSPACE_SYMBOL = 'GLOBAL';
+export const ONE_HOUR_MS = 60 * 60 * 1000;
 
 /**
  * Institutional Dexie IndexedDB Database for Argus multi-session chat history,
- * telemetry persistence, and automatic retention pruning.
+ * telemetry persistence, symbol-specific market intelligence snapshots, and retention pruning.
  */
 export class ArgusDatabase extends Dexie {
   conversations!: EntityTable<ConversationRecord, 'id'>;
   messages!: EntityTable<ChatMessageRecord, 'id'>;
+  marketIntelligence!: EntityTable<MarketIntelligenceRecord, 'symbol'>;
 
   constructor() {
     super('ArgusDatabase');
@@ -122,11 +137,105 @@ export class ArgusDatabase extends Dexie {
         }
       });
     });
+
+    // Schema v4: Symbol-specific Market Intelligence snapshots
+    this.version(4).stores({
+      conversations: 'id, symbol, createdAt, updatedAt',
+      messages: 'id, conversationId, symbol, timestamp, role, status',
+      marketIntelligence: 'symbol, timestamp',
+    });
   }
 }
 
 // Singleton database instance
 export const db = new ArgusDatabase();
+
+/**
+ * Synchronous in-memory cache for market intelligence to provide 0ms instant display.
+ */
+const intelligenceCache = new Map<string, MarketIntelligenceResponse>();
+
+export function getCachedIntelligence(symbol: string, maxAgeMs: number = ONE_HOUR_MS): MarketIntelligenceResponse | null {
+  const clean = symbol.trim().toUpperCase();
+  const cached = intelligenceCache.get(clean);
+  if (cached && typeof cached.timestamp === 'number' && Date.now() - cached.timestamp < maxAgeMs) {
+    return cached;
+  }
+  return null;
+}
+
+/**
+ * Prewarms the in-memory intelligence cache from Dexie IndexedDB.
+ */
+export async function prewarmIntelligenceCache(): Promise<void> {
+  if (typeof window === 'undefined') return;
+  try {
+    const all = await db.marketIntelligence.toArray();
+    for (const record of all) {
+      if (record && record.symbol && Date.now() - record.timestamp < ONE_HOUR_MS) {
+        intelligenceCache.set(record.symbol.toUpperCase(), record);
+      }
+    }
+  } catch {
+    // Graceful handling
+  }
+}
+
+/**
+ * Retrieves the cached market intelligence analysis for a specific trading symbol from Dexie.
+ * Checks for validity within maxAgeMs (default: 1 hour) and migrates any legacy localStorage snapshot.
+ */
+export async function getStoredIntelligence(
+  symbol: string,
+  maxAgeMs: number = ONE_HOUR_MS
+): Promise<MarketIntelligenceResponse | null> {
+  if (typeof window === 'undefined') return null;
+  const clean = symbol.trim().toUpperCase();
+  const memoryHit = getCachedIntelligence(clean, maxAgeMs);
+  if (memoryHit) return memoryHit;
+
+  try {
+    const record = await db.marketIntelligence.get(clean);
+    if (record && typeof record.timestamp === 'number' && Date.now() - record.timestamp < maxAgeMs) {
+      intelligenceCache.set(clean, record);
+      return record;
+    }
+    // Backward-compatibility: migrate legacy localStorage snapshot if present
+    const legacyRaw = localStorage.getItem(`argus_intel_${clean}`);
+    if (legacyRaw) {
+      const parsed = JSON.parse(legacyRaw) as MarketIntelligenceResponse;
+      if (parsed && typeof parsed.timestamp === 'number' && Date.now() - parsed.timestamp < maxAgeMs) {
+        await db.marketIntelligence.put(parsed);
+        localStorage.removeItem(`argus_intel_${clean}`);
+        intelligenceCache.set(clean, parsed);
+        return parsed;
+      }
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Persists market intelligence analysis for a specific trading symbol into Dexie IndexedDB.
+ */
+export async function saveStoredIntelligence(
+  data: MarketIntelligenceResponse
+): Promise<void> {
+  if (typeof window === 'undefined') return;
+  const clean = data.symbol.trim().toUpperCase();
+  const record: MarketIntelligenceResponse = {
+    ...data,
+    symbol: clean,
+  };
+  intelligenceCache.set(clean, record);
+  try {
+    await db.marketIntelligence.put(record);
+  } catch {
+    // Gracefully handle storage errors
+  }
+}
 
 /**
  * Ensures the default conversation exists
