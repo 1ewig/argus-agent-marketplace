@@ -1,12 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { memo } from 'react';
 import { AgentLoader } from '@/components/common';
 import { APP_CONTENT } from '@/constants/content';
 import { ChatMessage } from './chat-message';
 import type { ChatMessageRecord } from '@/lib/db';
 
-interface ChatMessageListProps {
+export interface ChatMessageListProps {
   messages: ChatMessageRecord[];
   activeStreamMessage?: ChatMessageRecord | null;
   isLoading: boolean;
@@ -19,7 +19,12 @@ interface ChatMessageListProps {
   onSend: (text: string) => Promise<void> | void;
 }
 
-export function ChatMessageList({
+/**
+ * Pure presentation list component rendering the chronological message history,
+ * active streaming message, draft loader, and error banners.
+ * Memoized to avoid re-rendering message trees when sibling panel states change.
+ */
+export const ChatMessageList = memo(function ChatMessageList({
   messages,
   activeStreamMessage,
   isLoading,
@@ -79,4 +84,4 @@ export function ChatMessageList({
       </div>
     </div>
   );
-}
+});

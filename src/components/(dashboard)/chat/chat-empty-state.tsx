@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useCallback, useMemo } from 'react';
+import React, { useRef, useCallback, memo } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowUpRight } from 'lucide-react';
 import { ArgusIcon } from '@/components/common';
@@ -12,33 +12,32 @@ import {
   tapScalePill,
   hoverLiftPill,
 } from '@/constants/animation';
-import { parseSymbolAssets } from '@/lib/symbols';
 import { ChatInput, type ChatInputHandle } from './chat-input';
 
-interface ChatEmptyStateProps {
+export interface QuickActionItem {
+  id: string;
+  label: string;
+  template: string;
+}
+
+export interface ChatEmptyStateProps {
   isLoading: boolean;
   onSend: (text: string) => Promise<void> | void;
   onStop: () => void;
-  cleanSymbol: string;
-  isGlobalWorkspace: boolean;
+  quickActions: QuickActionItem[];
 }
 
-export function ChatEmptyState({
+/**
+ * Pure presentation component rendering the hero empty chat state,
+ * hero input dock, and quick-action template buttons.
+ */
+export const ChatEmptyState = memo(function ChatEmptyState({
   isLoading,
   onSend,
   onStop,
-  cleanSymbol,
-  isGlobalWorkspace,
+  quickActions,
 }: ChatEmptyStateProps) {
   const inputRef = useRef<ChatInputHandle>(null);
-
-  const quickActions = useMemo(() => {
-    if (isGlobalWorkspace) {
-      return APP_CONTENT.chat.globalQuickActions;
-    }
-    const { baseAsset, quoteAsset } = parseSymbolAssets(cleanSymbol);
-    return APP_CONTENT.chat.getSymbolQuickActions(cleanSymbol, baseAsset, quoteAsset);
-  }, [isGlobalWorkspace, cleanSymbol]);
 
   const handleSelectTemplate = useCallback((template: string) => {
     inputRef.current?.setInputText(template);
@@ -109,7 +108,7 @@ export function ChatEmptyState({
             <div className="flex flex-wrap items-center justify-center gap-2 max-w-xl">
               {quickActions.map((action) => (
                 <motion.button
-                  key={`${cleanSymbol}_${action.id}`}
+                  key={action.id}
                   type="button"
                   whileHover={hoverLiftPill}
                   whileTap={tapScalePill}
@@ -126,4 +125,4 @@ export function ChatEmptyState({
       </motion.div>
     </>
   );
-}
+});

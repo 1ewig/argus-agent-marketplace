@@ -1,27 +1,38 @@
 'use client';
 
-import React from 'react';
+import React, { memo } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronDown, Plus, Globe, PanelRightClose, PanelRightOpen, Bot } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
 import { tapScalePill } from '@/constants/animation';
-import { isGlobalSymbol } from '@/lib/utils';
-import { useChatSessions } from '@/hooks';
-import { useAppStore, isIntelligenceTabActive } from '@/stores/app-store';
 
-export function DashboardHeader() {
-  const selectedSymbol = useAppStore((state) => state.selectedSymbol);
-  const setIsSymbolSearchOpen = useAppStore((state) => state.setIsSymbolSearchOpen);
-  const isMarketPanelOpen = useAppStore((state) => state.isMarketPanelOpen);
-  const setIsMarketPanelOpen = useAppStore((state) => state.setIsMarketPanelOpen);
-  const toggleMarketPanel = useAppStore((state) => state.toggleMarketPanel);
-  const rightPanelTab = useAppStore((state) => state.rightPanelTab);
-  const setRightPanelTab = useAppStore((state) => state.setRightPanelTab);
-  const { handleNewSession, isNewChatDisabled } = useChatSessions();
+export interface DashboardHeaderProps {
+  symbol: string;
+  isGlobal: boolean;
+  isNewChatDisabled: boolean;
+  isMarketPanelOpen: boolean;
+  isMarketIntelligenceActive: boolean;
+  onOpenSymbolSearch: () => void;
+  onNewChat: () => void;
+  onToggleMarketIntelligence: () => void;
+  onToggleMarketPanel: () => void;
+}
 
-  const isGlobalWorkspace = isGlobalSymbol(selectedSymbol);
-  const cleanSymbol = (selectedSymbol || 'BTCUSDT').toUpperCase();
-
+/**
+ * Pure presentation header for the dashboard stage.
+ * Receives all symbol state, panel status, and action callbacks from DashboardClient.
+ */
+export const DashboardHeader = memo(function DashboardHeader({
+  symbol,
+  isGlobal,
+  isNewChatDisabled,
+  isMarketPanelOpen,
+  isMarketIntelligenceActive,
+  onOpenSymbolSearch,
+  onNewChat,
+  onToggleMarketIntelligence,
+  onToggleMarketPanel,
+}: DashboardHeaderProps) {
   return (
     <div className="relative z-30 h-14 px-spacing-md sm:px-spacing-lg border-b border-theme-border-subtle bg-theme-bg-base/90 backdrop-blur-xs flex items-center justify-between shrink-0">
       <div className="flex items-center">
@@ -29,11 +40,11 @@ export function DashboardHeader() {
         <motion.button
           type="button"
           whileTap={tapScalePill}
-          onClick={() => setIsSymbolSearchOpen(true)}
+          onClick={onOpenSymbolSearch}
           title={APP_CONTENT.chat.switchSymbolTooltip}
           className="group inline-flex items-center gap-1.5 px-2.5 py-1.5 -ml-2 rounded-lg text-theme-text-primary hover:bg-theme-bg-surface active:bg-theme-bg-elevated border border-transparent hover:border-theme-border-subtle transition-colors cursor-pointer select-none"
         >
-          {isGlobalWorkspace ? (
+          {isGlobal ? (
             <>
               <Globe className="size-3.5 text-theme-brand-binance shrink-0" />
               <span className="text-xs sm:text-sm font-bold tracking-wider">
@@ -42,7 +53,7 @@ export function DashboardHeader() {
             </>
           ) : (
             <span className="text-xs sm:text-sm font-bold tracking-wider">
-              {cleanSymbol}
+              {symbol}
             </span>
           )}
           <ChevronDown className="size-3.5 text-theme-text-muted group-hover:text-theme-text-primary transition-colors" />
@@ -55,7 +66,7 @@ export function DashboardHeader() {
         <motion.button
           type="button"
           whileTap={isNewChatDisabled ? undefined : tapScalePill}
-          onClick={() => handleNewSession()}
+          onClick={onNewChat}
           disabled={isNewChatDisabled}
           title={
             isNewChatDisabled
@@ -77,20 +88,11 @@ export function DashboardHeader() {
         <motion.button
           type="button"
           whileTap={tapScalePill}
-          onClick={() => {
-            if (!isMarketPanelOpen) {
-              setIsMarketPanelOpen(true);
-              setRightPanelTab('intelligence');
-            } else if (isIntelligenceTabActive(rightPanelTab)) {
-              setRightPanelTab('overview');
-            } else {
-              setRightPanelTab('intelligence');
-            }
-          }}
+          onClick={onToggleMarketIntelligence}
           title={APP_CONTENT.marketIntelligence.headerButtonTooltip}
           aria-label={APP_CONTENT.marketIntelligence.headerButtonLabel}
           className={`h-8 px-2.5 rounded-lg text-xs font-bold inline-flex items-center gap-1.5 select-none transition-colors border cursor-pointer ${
-            isMarketPanelOpen && isIntelligenceTabActive(rightPanelTab)
+            isMarketPanelOpen && isMarketIntelligenceActive
               ? 'bg-theme-bg-elevated text-theme-brand-binance border-theme-brand-binance/40 shadow-2xs'
               : 'bg-theme-bg-surface text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-elevated border-theme-border-subtle'
           }`}
@@ -103,7 +105,7 @@ export function DashboardHeader() {
         <motion.button
           type="button"
           whileTap={tapScalePill}
-          onClick={toggleMarketPanel}
+          onClick={onToggleMarketPanel}
           title={
             isMarketPanelOpen
               ? APP_CONTENT.marketPanel.collapsePanel
@@ -129,4 +131,4 @@ export function DashboardHeader() {
       </div>
     </div>
   );
-}
+});
