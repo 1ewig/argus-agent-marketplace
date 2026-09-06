@@ -128,30 +128,26 @@ export const APP_CONTENT = {
       { id: 'news', label: 'BTC News & Catalysts', template: 'Search latest crypto news, catalysts, and sentiment for BTC' },
     ],
     globalQuickActions: [
-      { id: 'movers', label: 'Top Market Movers', template: 'What are the top crypto gainers and biggest market movers today across Binance?' },
-      { id: 'news', label: 'Crypto Macro News', template: 'Search latest crypto macro news, regulatory catalysts, and protocol roadmaps' },
-      { id: 'funding', label: 'Funding Comparison', template: 'Compare perpetual futures funding rates and open interest for BTC, ETH, and SOL' },
+      { id: 'movers', label: 'Top Market Movers', template: 'What are the biggest crypto gainers, losers, and top volume movers today across Binance?' },
+      { id: 'news', label: 'Breaking Crypto News', template: 'Surface the most important breaking crypto headlines, regulatory updates, and catalysts right now.' },
+      { id: 'risk', label: 'Liquidation & Risk Watch', template: 'Check for unusual open interest spikes, crowded positioning, or funding rate extremes across major perpetuals.' },
+      { id: 'pulse', label: 'Market Pulse', template: 'Give me a fast market pulse across BTC, ETH, SOL, and BNB with 24h price change, volume, and funding rates.' },
     ],
-    getSymbolQuickActions: (symbol: string, baseAsset: string, quoteAsset?: string) => [
-      {
-        id: 'depth',
-        label: quoteAsset ? `${baseAsset}/${quoteAsset} Depth` : `${baseAsset} Depth`,
-        template: `Check ${symbol} live price, spread, and order book depth`,
-      },
-      {
-        id: 'stats',
-        label: `${baseAsset} 24h Stats`,
-        template: `Show 24h market stats and volume for ${symbol}`,
-      },
-      {
-        id: 'oi',
-        label: `${baseAsset} Funding & OI`,
-        template: `Check ${symbol} live open interest and funding rate`,
-      },
+    getSymbolQuickActions: (symbol: string, baseAsset: string, _quoteAsset?: string) => [
       {
         id: 'news',
         label: `${baseAsset} News & Catalysts`,
-        template: `Search latest crypto news, catalysts, and sentiment for ${baseAsset}`,
+        template: `Search latest relevant crypto news, protocol upgrades, and catalysts for ${baseAsset}`,
+      },
+      {
+        id: 'timeframe',
+        label: `${baseAsset} Multi-Timeframe Bias`,
+        template: `Analyze ${symbol} market structure and trend bias across 15m, 1h, and 4h intervals`,
+      },
+      {
+        id: 'momentum',
+        label: `${baseAsset} 24h Momentum`,
+        template: `Show ${symbol} full 24h picture: high/low range, volume, 24h change %, and VWAP benchmark`,
       },
     ],
     quickPromptsTitle: 'Quick Actions',
