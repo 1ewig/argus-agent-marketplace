@@ -3,7 +3,7 @@
 import React from 'react';
 import { Gauge, AlertCircle, Clock, Loader2 } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
-import { useBinanceFuturesFunding } from '@/hooks/use-binance-futures-funding';
+import { useBinanceFuturesFunding } from '@/hooks';
 
 interface FuturesFundingCardProps {
   symbol: string;

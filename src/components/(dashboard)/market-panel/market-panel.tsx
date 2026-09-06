@@ -6,7 +6,7 @@ import { Globe, Loader2, Bot, Activity, RefreshCw } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
 import { useQueryClient, useIsFetching } from '@tanstack/react-query';
 import { sidebarSpringTransition, tapScalePill } from '@/constants/animation';
-import { useBinanceMarketStream } from '@/hooks/use-binance-market-stream';
+import { useBinanceMarketStream } from '@/hooks';
 import { useAppStore } from '@/stores/app-store';
 import { marketIntelligenceQuery } from '@/lib/queries';
 import {

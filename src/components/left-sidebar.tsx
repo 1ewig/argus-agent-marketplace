@@ -7,7 +7,7 @@ import { APP_CONTENT } from '@/constants/content';
 import { sidebarSpringTransition } from '@/constants/animation';
 import { useTheme, useSidebar } from '@/hooks';
 import { useAppStore } from '@/stores/app-store';
-import { useChatSessions } from '@/hooks/use-chat-sessions';
+import { useChatSessions } from '@/hooks';
 import {
   SidebarHeader,
   SidebarNavViews,

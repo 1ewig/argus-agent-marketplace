@@ -8,7 +8,7 @@ import {
   sidebarHorizontalCollapseVariants,
   tapScalePill,
 } from '@/constants/animation';
-import type { SymbolWorkspaceGroup } from '@/hooks/use-chat-sessions';
+import type { SymbolWorkspaceGroup } from '@/hooks';
 import { SidebarSessionItem } from './sidebar-session-item';
 
 interface SidebarWorkspaceGroupProps {

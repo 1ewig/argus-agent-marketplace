@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { APP_CONTENT } from '@/constants/content';
 import { sidebarHeadingCollapseVariants } from '@/constants/animation';
 import { useAppStore } from '@/stores/app-store';
-import type { SymbolWorkspaceGroup } from '@/hooks/use-chat-sessions';
+import type { SymbolWorkspaceGroup } from '@/hooks';
 import { SidebarWorkspaceGroup } from './sidebar-workspace-group';
 
 interface SidebarSessionListProps {

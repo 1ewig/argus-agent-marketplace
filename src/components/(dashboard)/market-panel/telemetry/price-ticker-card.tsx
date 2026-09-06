@@ -4,7 +4,7 @@ import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown, Loader2 } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
-import { parseSymbolAssets } from '@/hooks/use-chat-sessions';
+import { parseSymbolAssets } from '@/hooks';
 import type { LiveTickerData, StreamConnectionStatus } from '@/lib/binance-websocket';
 import { PriceSparkline } from './price-sparkline';
 
