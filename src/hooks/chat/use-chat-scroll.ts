@@ -39,16 +39,16 @@ export function useChatScroll({
       return;
     }
 
-    const targetTop = container.scrollHeight;
-    if (container.scrollTop !== targetTop) {
+    const maxScrollTop = Math.max(0, container.scrollHeight - container.clientHeight);
+    if (Math.abs(container.scrollTop - maxScrollTop) > 1) {
       isProgrammaticScrollRef.current = true;
-      if (smooth && container.scrollHeight > container.clientHeight) {
+      if (smooth && maxScrollTop > 0) {
         container.scrollTo({
-          top: targetTop,
+          top: maxScrollTop,
           behavior: 'smooth',
         });
       } else {
-        container.scrollTop = targetTop;
+        container.scrollTop = maxScrollTop;
       }
     }
     lastScrollTopRef.current = container.scrollTop;

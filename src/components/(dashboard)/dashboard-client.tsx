@@ -1,17 +1,16 @@
 'use client';
 
-import React, { useMemo, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bot, LineChart } from 'lucide-react';
-import { useAgentChat, useBinanceMarketStream } from '@/hooks';
+import { useBinanceMarketStream, useChatSessions } from '@/hooks';
 import { isGlobalSymbol, normalizeSymbolForDisplay } from '@/lib/utils';
-import { parseSymbolAssets } from '@/lib/symbols';
 import { APP_CONTENT } from '@/constants/content';
 import { tapScalePill } from '@/constants/animation';
 import { useAppStore } from '@/stores/app-store';
 import { DashboardHeader } from './dashboard-header';
 import { MarketPanel } from './market-panel';
-import { ChatEmptyState, ChatMessageList, ChatDock, type QuickActionItem } from './chat';
+import { ChatClient } from './chat';
 import { ChartClient } from './chart';
 import type { ExecutionMode } from '@/lib/types';
 
@@ -20,8 +19,8 @@ interface DashboardClientProps {
 }
 
 /**
- * Main orchestrator for the dashboard stage, chat feed, chart telemetry, and header controls.
- * Connects directly to stores and chat hooks, driving pure presentation components via props.
+ * Main orchestrator for the dashboard stage layout, header controls, and stage switching.
+ * Pure layout shell that isolates ChatClient and ChartClient sub-trees from cascade renders.
  */
 export function DashboardClient({ mode = 'simulation' }: DashboardClientProps) {
   // Global application UI state
@@ -50,44 +49,9 @@ export function DashboardClient({ mode = 'simulation' }: DashboardClientProps) {
     depthLevels: 8,
   });
 
-  // Agent chat orchestration hook (handles persistence, SSE streams, scroll refs, session actions)
-  const {
-    messages,
-    isMessagesLoading,
-    activeStreamMessage,
-    isLoading,
-    errorNotice,
-    messagesEndRef,
-    scrollContainerRef,
-    handleScroll,
-    handleSend,
-    handleStop,
-    handleNewSession,
-    isNewChatDisabled,
-  } = useAgentChat({ mode });
-
-  // Derive empty state indicator
-  const isChatEmpty = !isMessagesLoading && messages.length === 0 && !activeStreamMessage;
-
-  // Prepare quick-action prompt templates for empty state
-  const quickActions = useMemo<QuickActionItem[]>(() => {
-    if (isGlobalWorkspace) {
-      return APP_CONTENT.chat.globalQuickActions;
-    }
-    const { baseAsset, quoteAsset } = parseSymbolAssets(cleanSymbol);
-    return APP_CONTENT.chat.getSymbolQuickActions(cleanSymbol, baseAsset, quoteAsset);
-  }, [isGlobalWorkspace, cleanSymbol]);
-
-  // Identify latest completed assistant message to host interactive follow-up chips
-  const lastAssistantMessageId = useMemo(() => {
-    if (activeStreamMessage) return null;
-    for (let i = messages.length - 1; i >= 0; i--) {
-      if (messages[i].role === 'assistant' && messages[i].status === 'success') {
-        return messages[i].id;
-      }
-    }
-    return null;
-  }, [messages, activeStreamMessage]);
+  // Session management for DashboardHeader and mobile FAB positioning
+  const { isNewChatDisabled, handleNewSession, activeMessageCount } = useChatSessions();
+  const hasBottomDock = activeMessageCount > 0;
 
   // Header interaction handlers
   const handleOpenSymbolSearch = useCallback(() => {
@@ -129,46 +93,7 @@ export function DashboardClient({ mode = 'simulation' }: DashboardClientProps) {
             stageView === 'agent' ? 'flex' : 'hidden'
           }`}
         >
-          {/* Atmospheric Ambient Depth Glow */}
-          <div
-            aria-hidden="true"
-            className={`pointer-events-none absolute inset-0 ambient-glow-gemini transition-opacity duration-500 ease-out ${
-              isChatEmpty ? 'opacity-90' : 'opacity-30'
-            }`}
-          />
-
-          {/* Empty State Overlay */}
-          {isChatEmpty && (
-            <ChatEmptyState
-              isLoading={isLoading}
-              onSend={handleSend}
-              onStop={handleStop}
-              quickActions={quickActions}
-            />
-          )}
-
-          {/* Messages Scroll Feed */}
-          <ChatMessageList
-            messages={messages}
-            activeStreamMessage={activeStreamMessage}
-            isLoading={isLoading}
-            errorNotice={errorNotice}
-            lastAssistantMessageId={lastAssistantMessageId}
-            isChatEmpty={isChatEmpty}
-            scrollContainerRef={scrollContainerRef}
-            messagesEndRef={messagesEndRef}
-            onScroll={handleScroll}
-            onSend={handleSend}
-          />
-
-          {/* Persistent Bottom Dock Input */}
-          {!isChatEmpty && (
-            <ChatDock
-              isLoading={isLoading}
-              onSend={handleSend}
-              onStop={handleStop}
-            />
-          )}
+          <ChatClient mode={mode} />
         </div>
 
         {/* Central Stage: Trading Chart View (Zero-flash hidden when stageView === 'agent') */}
@@ -213,7 +138,7 @@ export function DashboardClient({ mode = 'simulation' }: DashboardClientProps) {
               : APP_CONTENT.chart.switchToAgent
           }
           className={`md:hidden fixed z-40 size-12 rounded-full bg-theme-brand-binance text-theme-bg-overlay shadow-xl shadow-black/40 flex items-center justify-center cursor-pointer border border-theme-brand-binance/50 hover:brightness-110 active:scale-95 transition-all select-none ${
-            stageView === 'agent' && !isChatEmpty
+            stageView === 'agent' && hasBottomDock
               ? 'bottom-[calc(env(safe-area-inset-bottom,0px)+5.5rem)] right-4'
               : 'bottom-[calc(env(safe-area-inset-bottom,0px)+1.25rem)] right-4'
           }`}

@@ -3,6 +3,7 @@ export * from './chat-input';
 export * from './chat-empty-state';
 export * from './chat-message-list';
 export * from './chat-dock';
+export * from './chat-client';
 export * from './agent-process-timeline';
 export * from './agent-thought-accordion';
 export * from './agent-work-group';

@@ -142,6 +142,49 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
 
     let currentSteps: AgentExecutionStep[] = [];
     let currentText = '';
+    let updateRafId: number | null = null;
+    let needsContentUpdate = false;
+    let needsStepsUpdate = false;
+
+    const scheduleThrottledUpdate = () => {
+      if (updateRafId !== null) return;
+      updateRafId = requestAnimationFrame(() => {
+        updateRafId = null;
+        const displayContent = needsContentUpdate
+          ? sanitizeAgentText(currentText, { removeIncomplete: true })
+          : undefined;
+        const nextSteps = needsStepsUpdate ? [...currentSteps] : undefined;
+
+        setActiveStreamMessage((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            ...(nextSteps !== undefined ? { steps: nextSteps } : {}),
+            ...(displayContent !== undefined ? { content: displayContent } : {}),
+          };
+        });
+        needsContentUpdate = false;
+        needsStepsUpdate = false;
+      });
+    };
+
+    const flushStreamUpdatesImmediate = () => {
+      if (updateRafId !== null) {
+        cancelAnimationFrame(updateRafId);
+        updateRafId = null;
+      }
+      const displayContent = sanitizeAgentText(currentText, { removeIncomplete: true });
+      setActiveStreamMessage((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          steps: [...currentSteps],
+          content: displayContent,
+        };
+      });
+      needsContentUpdate = false;
+      needsStepsUpdate = false;
+    };
 
     const conversationHistory = prepareConversationHistory(messages);
     const isFirstTurn = conversationHistory.length === 0;
@@ -159,9 +202,7 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
         onEvent: async (event) => {
           if (event.type === 'step_start') {
             currentSteps = [...currentSteps, event.step];
-            setActiveStreamMessage((prev) =>
-              prev ? { ...prev, steps: currentSteps } : prev
-            );
+            flushStreamUpdatesImmediate();
           } else if (event.type === 'step_update') {
             currentSteps = currentSteps.map((s) =>
               s.id === event.stepId
@@ -176,40 +217,41 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
                   }
                 : s
             );
-            setActiveStreamMessage((prev) =>
-              prev ? { ...prev, steps: currentSteps } : prev
-            );
+            flushStreamUpdatesImmediate();
           } else if (event.type === 'reasoning_delta') {
             currentSteps = currentSteps.map((s) =>
               s.id === event.stepId
                 ? { ...s, reasoningText: (s.reasoningText ?? '') + event.delta }
                 : s
             );
-            setActiveStreamMessage((prev) =>
-              prev ? { ...prev, steps: currentSteps } : prev
-            );
+            needsStepsUpdate = true;
+            scheduleThrottledUpdate();
           } else if (event.type === 'text_delta') {
             currentText += event.delta;
-            // Strip any complete or in-progress session_title and follow-up markup from live markdown display
-            const displayContent = sanitizeAgentText(currentText, { removeIncomplete: true });
-            setActiveStreamMessage((prev) =>
-              prev ? { ...prev, content: displayContent } : prev
-            );
+            needsContentUpdate = true;
+            scheduleThrottledUpdate();
           } else if (event.type === 'clear_text') {
             currentText = '';
-            setActiveStreamMessage((prev) =>
-              prev ? { ...prev, content: '' } : prev
-            );
+            flushStreamUpdatesImmediate();
           } else if (event.type === 'session_title') {
             const convRecord = await getConversation(activeConversationId);
             if (isDefaultSessionTitle(convRecord?.title)) {
               await renameConversation(activeConversationId, event.title);
             }
           } else if (event.type === 'error') {
+            if (updateRafId !== null) {
+              cancelAnimationFrame(updateRafId);
+              updateRafId = null;
+            }
             throw new Error(event.message);
           }
         },
       });
+
+      if (updateRafId !== null) {
+        cancelAnimationFrame(updateRafId);
+        updateRafId = null;
+      }
 
       // Finalize and persist completed agent message into Dexie
       const finalSteps = finalResult?.steps ?? currentSteps;

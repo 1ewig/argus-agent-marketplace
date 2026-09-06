@@ -76,7 +76,7 @@ export const ChatMessage = memo(function ChatMessage({
   const isUser = message.role === 'user';
   const isError = message.status === 'error';
 
-  const shouldAnimate = isStreaming || animateEntrance;
+  const shouldAnimate = animateEntrance;
 
   const formattedTime = new Date(message.timestamp).toLocaleTimeString([], {
     hour: '2-digit',
@@ -166,10 +166,7 @@ export const ChatMessage = memo(function ChatMessage({
 
         {/* Main Response Markdown (Frameless directly on page canvas) */}
         {displayContent && (
-          <motion.div
-            variants={messageEntranceVariants}
-            initial={shouldAnimate ? 'hidden' : false}
-            animate="visible"
+          <div
             className={
               isError
                 ? 'p-4 rounded-xl border border-theme-status-danger bg-theme-bg-surface text-theme-status-danger text-sm leading-relaxed'
@@ -177,7 +174,7 @@ export const ChatMessage = memo(function ChatMessage({
             }
           >
             <MarkdownView content={displayContent} />
-          </motion.div>
+          </div>
         )}
 
         {/* Suggested Next Steps / Follow-up Questions (Only on latest completed assistant message) */}

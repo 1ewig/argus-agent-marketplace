@@ -44,7 +44,7 @@ export function useChatSessions() {
   const selectedSymbol = useAppStore((state) => state.selectedSymbol);
   const setSelectedSymbol = useAppStore((state) => state.setSelectedSymbol);
   const lastActiveSymbol = useAppStore((state) => state.lastActiveSymbol);
-  const activeStreamMessage = useAppStore((state) => state.activeStreamMessage);
+  const isStreamingActive = useAppStore((state) => state.activeStreamMessage !== null);
   const setActiveStreamMessage = useAppStore((state) => state.setActiveStreamMessage);
   const setErrorNotice = useAppStore((state) => state.setErrorNotice);
   const hasHydrated = useAppStore((state) => state._hasHydrated);
@@ -131,7 +131,7 @@ export function useChatSessions() {
   const isNewChatDisabled = Boolean(
     isActiveConversationInSelectedSymbol &&
     activeMessageCount === 0 &&
-    !activeStreamMessage
+    !isStreamingActive
   );
 
   // Group conversations by symbol workspaces
@@ -226,7 +226,7 @@ export function useChatSessions() {
       const currentActiveSymbol = (currentActive?.symbol || DEFAULT_CONVERSATION_SYMBOL).toUpperCase();
       if (currentActive && currentActiveSymbol === targetSymbol) {
         const activeCount = await getConversationMessageCount(currentActive.id);
-        if (activeCount === 0 && !activeStreamMessage) {
+        if (activeCount === 0 && !isStreamingActive) {
           return;
         }
       }
@@ -252,7 +252,7 @@ export function useChatSessions() {
       selectedSymbol,
       activeConversationId,
       conversations,
-      activeStreamMessage,
+      isStreamingActive,
       setErrorNotice,
       setActiveStreamMessage,
       setSelectedSymbol,
