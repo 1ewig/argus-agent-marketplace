@@ -82,13 +82,15 @@ export function normalizeMessageSteps(
   return [];
 }
 
+import { GLOBAL_WORKSPACE_SYMBOL, isGlobalSymbol } from '@/lib/utils';
+export { GLOBAL_WORKSPACE_SYMBOL, isGlobalSymbol };
+
 /**
  * Maximum messages retained per conversation to prevent IndexedDB bloat
  */
 export const MAX_MESSAGES_PER_CONVERSATION = 100;
 export const DEFAULT_CONVERSATION_ID = 'default';
 export const DEFAULT_CONVERSATION_SYMBOL = 'BTCUSDT';
-export const GLOBAL_WORKSPACE_SYMBOL = 'GLOBAL';
 export const ONE_HOUR_MS = 60 * 60 * 1000;
 
 /**
@@ -326,7 +328,7 @@ export async function ensureDefaultGlobalConversation(): Promise<ConversationRec
 
   const allConvs = await db.conversations.toArray();
   const existingGlobal = allConvs.find(
-    (c) => (c.symbol || '').toUpperCase() === GLOBAL_WORKSPACE_SYMBOL
+    (c) => isGlobalSymbol(c.symbol)
   );
   if (existingGlobal) {
     return existingGlobal;

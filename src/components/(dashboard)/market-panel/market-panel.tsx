@@ -1,15 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { Globe, Loader2, Bot, Activity, RefreshCw } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
-import { useQueryClient, useIsFetching } from '@tanstack/react-query';
 import { sidebarSpringTransition, tapScalePill } from '@/constants/animation';
-import { useBinanceMarketStream, useMarketIntelligence } from '@/hooks';
+import { useBinanceMarketStream, useScanMarketIntelligence } from '@/hooks';
 import { useAppStore } from '@/stores/app-store';
-import { marketIntelligenceQuery, fetchMarketIntelligence } from '@/lib/queries';
-import { ONE_HOUR_MS } from '@/lib/db';
 import {
   PriceTickerCard,
   FuturesFundingCard,
@@ -28,49 +25,15 @@ export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
   const intelligence = APP_CONTENT.marketIntelligence;
   const rightPanelTab = useAppStore((state) => state.rightPanelTab);
   const setRightPanelTab = useAppStore((state) => state.setRightPanelTab);
-  const queryClient = useQueryClient();
 
-  const [isScanning, setIsScanning] = useState(false);
-  const [now, setNow] = useState(() => Date.now());
-  const cleanSymbol = symbol.trim().toUpperCase();
-
-  // Tick every 10 seconds so button visibility updates reactively when analysis hits 1-hour threshold
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setNow(Date.now());
-    }, 10_000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const { response: intelligenceResponse } = useMarketIntelligence(cleanSymbol, {
-    enabled: isOpen && !isGlobal && cleanSymbol !== 'GLOBAL',
+  const {
+    cleanSymbol,
+    isAnalyzing,
+    isAnalysisFresh,
+    handleScan,
+  } = useScanMarketIntelligence(symbol, {
+    enabled: isOpen && !isGlobal,
   });
-
-  const isFetchingIntelligence = useIsFetching({
-    queryKey: marketIntelligenceQuery.detail(cleanSymbol),
-  }) > 0;
-
-  const isAnalyzing = isScanning || isFetchingIntelligence;
-
-  // Analysis is fresh if it exists and was conducted less than 1 hour ago
-  const isAnalysisFresh = Boolean(
-    intelligenceResponse?.timestamp && now - intelligenceResponse.timestamp < ONE_HOUR_MS
-  );
-
-  const handleScan = async () => {
-    if (isAnalyzing) return;
-    setIsScanning(true);
-    try {
-      const freshData = await fetchMarketIntelligence(cleanSymbol, { force: true });
-      queryClient.setQueryData(marketIntelligenceQuery.detail(cleanSymbol), freshData);
-    } catch (err) {
-      if (process.env.NODE_ENV !== 'production') {
-        console.error('[Argus:MarketIntelligence] Scan failed:', err);
-      }
-    } finally {
-      setIsScanning(false);
-    }
-  };
 
   // Real-time client-direct Binance WebSocket connection
   const { ticker, orderBook, status } = useBinanceMarketStream(symbol, {

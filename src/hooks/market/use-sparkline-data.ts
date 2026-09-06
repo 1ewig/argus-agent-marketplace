@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
+import { isGlobalSymbol } from '@/lib/utils';
 
 export interface UseSparklineDataResult {
   points: number[];
@@ -22,7 +23,7 @@ export function useSparklineData(
   );
 
   const [points, setPoints] = useState<number[]>([]);
-  const [isLoading, setIsLoading] = useState(() => Boolean(cleanSymbol && cleanSymbol !== 'GLOBAL'));
+  const [isLoading, setIsLoading] = useState(() => !isGlobalSymbol(cleanSymbol));
   const [error, setError] = useState(false);
 
   // Keep track of the current minute bucket so the sparkline slides forward
@@ -31,7 +32,7 @@ export function useSparklineData(
 
   // 1. Fetch initial 30 1-minute klines
   useEffect(() => {
-    if (!cleanSymbol || cleanSymbol === 'GLOBAL') {
+    if (isGlobalSymbol(cleanSymbol)) {
       return;
     }
 

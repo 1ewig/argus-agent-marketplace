@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { isGlobalSymbol } from '@/lib/utils';
 import { getStoredIntelligence } from '@/lib/db';
 import {
   marketIntelligenceQuery,
@@ -44,7 +45,7 @@ export function useMarketIntelligence(
 
   // Async Dexie hydration if not in memory cache yet
   useEffect(() => {
-    if (!response && cleanSymbol && cleanSymbol !== 'GLOBAL') {
+    if (!response && !isGlobalSymbol(cleanSymbol)) {
       void getStoredIntelligence(cleanSymbol).then((persisted) => {
         if (persisted) {
           queryClient.setQueryData(marketIntelligenceQuery.detail(cleanSymbol), persisted);

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useSyncExternalStore, useMemo } from 'react';
+import { isGlobalSymbol } from '@/lib/utils';
 import {
   buildFuturesMarkPriceStreamUrl,
   parseBinanceFuturesMarkPrice,
@@ -57,7 +58,7 @@ export function useBinanceFuturesFunding(
 
   const isTabVisible = useSyncExternalStore(subscribeVisibility, getIsTabVisible, () => true);
   const cleanSymbol = (symbol || '').trim().toUpperCase().replace(/[/\\_-]/g, '');
-  const isGlobal = cleanSymbol === 'GLOBAL' || cleanSymbol === '';
+  const isGlobal = isGlobalSymbol(cleanSymbol);
   const isStreamActive = enabled && !isGlobal && isTabVisible;
 
   const [prevSymbol, setPrevSymbol] = useState(cleanSymbol);

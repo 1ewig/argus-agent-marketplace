@@ -2,6 +2,7 @@
 
 import React, { useMemo } from 'react';
 import { useAgentChat } from '@/hooks';
+import { isGlobalSymbol } from '@/lib/utils';
 import { useAppStore } from '@/stores/app-store';
 import { DashboardHeader } from './dashboard-header';
 import { MarketPanel } from './market-panel';
@@ -16,7 +17,7 @@ export function DashboardClient({ mode = 'simulation' }: DashboardClientProps) {
   const selectedSymbol = useAppStore((state) => state.selectedSymbol);
   const isMarketPanelOpen = useAppStore((state) => state.isMarketPanelOpen);
 
-  const isGlobalWorkspace = (selectedSymbol || '').toUpperCase() === 'GLOBAL';
+  const isGlobalWorkspace = isGlobalSymbol(selectedSymbol);
   const cleanSymbol = (selectedSymbol || 'BTCUSDT').toUpperCase();
 
   const {

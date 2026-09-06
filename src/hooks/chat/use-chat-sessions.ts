@@ -11,6 +11,7 @@ import {
   listConversations,
   DEFAULT_CONVERSATION_SYMBOL,
   GLOBAL_WORKSPACE_SYMBOL,
+  isGlobalSymbol,
   createConversation,
   deleteConversation,
   renameConversation,
@@ -37,7 +38,7 @@ const KNOWN_QUOTE_ASSETS = ['USDT', 'USDC', 'FDUSD', 'BUSD', 'EUR', 'TRY', 'BTC'
  */
 export function parseSymbolAssets(symbol: string): { baseAsset: string; quoteAsset: string } {
   const upper = (symbol || DEFAULT_CONVERSATION_SYMBOL).toUpperCase();
-  if (upper === GLOBAL_WORKSPACE_SYMBOL) {
+  if (isGlobalSymbol(upper)) {
     return { baseAsset: GLOBAL_WORKSPACE_SYMBOL, quoteAsset: '' };
   }
   for (const quote of KNOWN_QUOTE_ASSETS) {
@@ -162,7 +163,7 @@ export function useChatSessions() {
 
     const groups: SymbolWorkspaceGroup[] = [];
     for (const [sym, convs] of groupsMap.entries()) {
-      const isGlobal = sym === GLOBAL_WORKSPACE_SYMBOL;
+      const isGlobal = isGlobalSymbol(sym);
       const { baseAsset, quoteAsset } = parseSymbolAssets(sym);
       const sortedConvs = [...convs].sort(
         (a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0)
@@ -329,7 +330,7 @@ export function useChatSessions() {
 
       // If all chats in GLOBAL were deleted, guarantee a fresh default one is restored
       const hasGlobal = freshConvs.some(
-        (c) => (c.symbol || '').toUpperCase() === GLOBAL_WORKSPACE_SYMBOL
+        (c) => isGlobalSymbol(c.symbol)
       );
       if (!hasGlobal) {
         const restoredGlobal = await ensureDefaultGlobalConversation();
@@ -384,7 +385,7 @@ export function useChatSessions() {
           (a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0)
         );
         setActiveConversationId(sorted[0].id);
-      } else if (targetSymbol === GLOBAL_WORKSPACE_SYMBOL) {
+      } else if (isGlobalSymbol(targetSymbol)) {
         const globalConv = await ensureDefaultGlobalConversation();
         setActiveConversationId(globalConv.id);
       } else {
@@ -400,7 +401,7 @@ export function useChatSessions() {
     ]
   );
 
-  const isGlobalActive = (selectedSymbol || '').toUpperCase() === GLOBAL_WORKSPACE_SYMBOL;
+  const isGlobalActive = isGlobalSymbol(selectedSymbol);
 
   // Open or switch to the Global Workspace
   const handleSelectGlobalWorkspace = useCallback(async () => {
@@ -410,7 +411,7 @@ export function useChatSessions() {
   // Return from Global Workspace back to the last active symbol workspace
   const handleReturnToSymbolWorkspace = useCallback(async () => {
     const target =
-      lastActiveSymbol && lastActiveSymbol.toUpperCase() !== GLOBAL_WORKSPACE_SYMBOL
+      lastActiveSymbol && !isGlobalSymbol(lastActiveSymbol)
         ? lastActiveSymbol
         : DEFAULT_CONVERSATION_SYMBOL;
     await handleSelectSymbolWorkspace(target);

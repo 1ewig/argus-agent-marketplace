@@ -8,6 +8,7 @@ import {
   sidebarHorizontalCollapseVariants,
   tapScalePill,
 } from '@/constants/animation';
+import { isGlobalSymbol } from '@/lib/utils';
 import type { SymbolWorkspaceGroup } from '@/hooks';
 import { SidebarSessionItem } from './sidebar-session-item';
 
@@ -56,7 +57,7 @@ export function SidebarWorkspaceGroup({
   onEditTitleChange,
   onOpenDelete,
 }: SidebarWorkspaceGroupProps) {
-  const isGlobal = Boolean(group.isGlobal || group.symbol.toUpperCase() === 'GLOBAL');
+  const isGlobal = isGlobalSymbol(group.symbol);
   const isCurrentActiveGroup =
     group.symbol.toUpperCase() === (activeSymbol || 'BTCUSDT').toUpperCase();
   const pairLabel = isGlobal

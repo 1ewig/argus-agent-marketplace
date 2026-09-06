@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useSyncExternalStore } from 'react';
+import { isGlobalSymbol } from '@/lib/utils';
 import {
   buildCombinedStreamUrl,
   parseBinanceTickerMessage,
@@ -48,7 +49,7 @@ export function useBinanceMarketStream(
   const isTabVisible = useSyncExternalStore(subscribeVisibility, getIsTabVisible, () => true);
 
   const cleanSymbol = (symbol || '').trim().toUpperCase();
-  const isGlobal = cleanSymbol === 'GLOBAL' || cleanSymbol === '';
+  const isGlobal = isGlobalSymbol(cleanSymbol);
   const isStreamActive = enabled && !isGlobal && isTabVisible;
 
   const [prevSymbol, setPrevSymbol] = useState(cleanSymbol);

@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import type { ExecutionMode, StageViewMode } from '@/lib/types';
 import type { ChatMessageRecord } from '@/lib/db';
 import { DEFAULT_CONVERSATION_ID } from '@/lib/db';
+import { isGlobalSymbol } from '@/lib/utils';
 
 export interface AppState {
   // Execution Mode ('simulation')
@@ -101,7 +102,7 @@ export const useAppStore = create<AppState>()(
       setSelectedSymbol: (selectedSymbol) =>
         set((state) => {
           if (state.selectedSymbol === selectedSymbol) return state;
-          const isGlobal = selectedSymbol.toUpperCase() === 'GLOBAL';
+          const isGlobal = isGlobalSymbol(selectedSymbol);
           return {
             selectedSymbol,
             lastActiveSymbol: !isGlobal ? selectedSymbol : state.lastActiveSymbol,

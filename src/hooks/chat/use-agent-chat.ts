@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useEffect } from 'react';
 import { APP_CONTENT } from '@/constants/content';
-import { generateMessageId, getNowTimestamp } from '@/lib/utils';
+import { generateMessageId, getNowTimestamp, isGlobalSymbol } from '@/lib/utils';
 import { useAppStore } from '@/stores/app-store';
 import {
   getConversation,
@@ -147,7 +147,7 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
 
     const conversationHistory = prepareConversationHistory(messages);
     const isFirstTurn = conversationHistory.length === 0;
-    const isGlobal = (selectedSymbol || '').toUpperCase() === 'GLOBAL';
+    const isGlobal = isGlobalSymbol(selectedSymbol);
     const effectiveSymbol = isGlobal ? undefined : selectedSymbol;
 
     try {

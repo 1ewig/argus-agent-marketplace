@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { ChevronDown, Plus, Globe, PanelRightClose, PanelRightOpen, Bot } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
 import { tapScalePill } from '@/constants/animation';
+import { isGlobalSymbol } from '@/lib/utils';
 import { useChatSessions } from '@/hooks';
 import { useAppStore } from '@/stores/app-store';
 
@@ -18,7 +19,7 @@ export function DashboardHeader() {
   const setRightPanelTab = useAppStore((state) => state.setRightPanelTab);
   const { handleNewSession, isNewChatDisabled } = useChatSessions();
 
-  const isGlobalWorkspace = (selectedSymbol || '').toUpperCase() === 'GLOBAL';
+  const isGlobalWorkspace = isGlobalSymbol(selectedSymbol);
   const cleanSymbol = (selectedSymbol || 'BTCUSDT').toUpperCase();
 
   return (

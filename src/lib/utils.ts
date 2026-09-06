@@ -2,6 +2,20 @@ import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 /**
+ * Global workspace symbol identifier
+ */
+export const GLOBAL_WORKSPACE_SYMBOL = 'GLOBAL';
+
+/**
+ * Checks if a trading symbol represents the global workspace or is unassigned/empty.
+ */
+export function isGlobalSymbol(symbol?: string | null): boolean {
+  if (!symbol) return true;
+  const clean = symbol.trim().toUpperCase().replace(/[/\\_-]/g, '');
+  return clean === GLOBAL_WORKSPACE_SYMBOL || clean === '';
+}
+
+/**
  * Combines multiple Tailwind CSS classes with proper precedence
  */
 export function cn(...inputs: ClassValue[]) {
@@ -46,4 +60,3 @@ export function formatRelativeTime(timestamp?: number): string {
     day: 'numeric',
   }).format(new Date(timestamp));
 }
-
