@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Globe, Loader2, Bot, Activity } from 'lucide-react';
+import { Globe, Loader2, Bot, Activity, RefreshCw } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
 import { sidebarSpringTransition, tapScalePill } from '@/constants/animation';
 import { useBinanceMarketStream } from '@/hooks/use-binance-market-stream';
@@ -22,6 +22,18 @@ export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
   const rightPanelTab = useAppStore((state) => state.rightPanelTab);
   const setRightPanelTab = useAppStore((state) => state.setRightPanelTab);
 
+  const [isScanning, setIsScanning] = useState(false);
+  const [scanKey, setScanKey] = useState(0);
+
+  const handleScan = () => {
+    if (isScanning) return;
+    setIsScanning(true);
+    setTimeout(() => {
+      setIsScanning(false);
+      setScanKey((k) => k + 1);
+    }, 500);
+  };
+
   // Real-time client-direct Binance WebSocket connection
   const { ticker, orderBook, status } = useBinanceMarketStream(symbol, {
     enabled: isOpen && !isGlobal,
@@ -40,7 +52,7 @@ export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
       aria-label={content.title}
     >
       <div className="w-full min-w-[340px] h-full flex flex-col overflow-hidden">
-        {/* Panel Header with Multi-Tab Switcher (1 Telemetry + 1 Market Intelligence Agent) */}
+        {/* Panel Header with Multi-Tab Switcher & Action Controls */}
         <div className="h-14 px-3 sm:px-4 flex items-center justify-between border-b border-theme-border-subtle shrink-0 gap-2">
           {/* Tabs Segmented Control */}
           <div className="flex items-center gap-1 p-0.5 rounded-lg bg-theme-bg-elevated/70 border border-theme-border-subtle/80">
@@ -75,7 +87,7 @@ export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
             </motion.button>
           </div>
 
-          {/* Connection Status Badge (only shown during connecting, reconnecting, or error) */}
+          {/* Connection Status Badge (only shown during connecting, reconnecting, or error in overview) */}
           {!isGlobal && rightPanelTab === 'overview' && status !== 'connected' && (
             <div
               className={`flex items-center gap-1 px-2 py-0.5 rounded-full border transition-colors shrink-0 ${
@@ -99,13 +111,18 @@ export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
             </div>
           )}
 
+          {/* Header Action in Intelligence Tab: Scan Market Button */}
           {!isGlobal && (rightPanelTab === 'intelligence' || rightPanelTab === 'market-data') && (
-            <div className="flex items-center gap-1 px-2 py-0.5 rounded-full border bg-theme-brand-binance/10 border-theme-brand-binance/30 text-theme-brand-binance shrink-0">
-              <span className="size-1.5 rounded-full bg-theme-brand-binance animate-pulse" />
-              <span className="text-[10px] font-mono font-bold tracking-tight">
-                {intelligence.agentActiveBadge}
-              </span>
-            </div>
+            <motion.button
+              type="button"
+              whileTap={tapScalePill}
+              onClick={handleScan}
+              disabled={isScanning}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-theme-bg-elevated hover:bg-theme-bg-elevated/80 active:bg-theme-bg-surface border border-theme-border-subtle text-theme-text-primary transition-colors cursor-pointer disabled:opacity-50 shadow-2xs shrink-0"
+            >
+              <RefreshCw className={`size-3 text-theme-brand-binance ${isScanning ? 'animate-spin' : ''}`} />
+              <span>{isScanning ? intelligence.refreshing : intelligence.refreshButton}</span>
+            </motion.button>
           )}
         </div>
 
@@ -124,7 +141,7 @@ export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
               </p>
             </div>
           ) : rightPanelTab === 'intelligence' || rightPanelTab === 'market-data' ? (
-            <MarketIntelligenceAgentView symbol={symbol} />
+            <MarketIntelligenceAgentView key={`intelligence_${symbol}_${scanKey}`} symbol={symbol} />
           ) : (
             <>
               {/* Module 1: Price & 24h Ticker Pulse with Micro Sparkline */}

@@ -1,6 +1,6 @@
 /**
  * Market Intelligence Agent copy and structured schema constants.
- * Single Agent -> Single Structured JSON -> 3 Executive Cards.
+ * Single Agent -> Single Structured JSON -> 4 Executive Cards.
  */
 
 export const intelligenceContent = {
@@ -16,7 +16,7 @@ export const intelligenceContent = {
     refreshButton: 'Scan Market',
     refreshing: 'Analyzing...',
     lastUpdated: (time: string) => `Updated ${time}`,
-    subtitle: 'Order flow, key levels, and market sentiment',
+    subtitle: 'Order flow, key levels, and tactical playbook',
     controlCard: {
       title: 'CONTROL',
       buyersLabel: 'Buyers in control',
@@ -47,13 +47,16 @@ export const intelligenceContent = {
       sentimentMildlyBearish: 'Mildly bearish',
       sentimentBearish: 'Bearish',
     },
-    jsonDrawer: {
-      title: 'Structured Output (JSON)',
-      subtitle: 'Single synthesized payload parsed into 3 cards',
-      copyJson: 'Copy JSON',
-      copiedJson: 'Copied!',
-      viewJson: 'View Structured JSON',
-      hideJson: 'Hide JSON',
+    playbookCard: {
+      title: 'TACTICAL PLAYBOOK',
+      targetLabel: 'Target',
+      invalidationLabel: 'Invalidation',
+      biases: {
+        dip_buyer: 'Buy Dips',
+        breakout: 'Breakout',
+        range_scalp: 'Range Scalp',
+        risk_off: 'Risk Off',
+      },
     },
   },
 } as const;
