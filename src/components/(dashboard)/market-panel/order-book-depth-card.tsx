@@ -1,19 +1,18 @@
 'use client';
 
 import React from 'react';
-import { Layers, Activity, Loader2 } from 'lucide-react';
+import { Layers, Loader2 } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
 import type { LiveOrderBookData, StreamConnectionStatus } from '@/lib/binance-websocket';
 
 interface OrderBookDepthCardProps {
   symbol: string;
   orderBook: LiveOrderBookData | null;
-  status: StreamConnectionStatus;
+  status?: StreamConnectionStatus;
 }
 
 export const OrderBookDepthCard = React.memo(function OrderBookDepthCard({
   orderBook,
-  status,
 }: OrderBookDepthCardProps) {
   const content = APP_CONTENT.marketPanel;
 
@@ -26,15 +25,6 @@ export const OrderBookDepthCard = React.memo(function OrderBookDepthCard({
           <span className="text-xs sm:text-sm font-bold text-theme-text-primary tracking-wide">
             {content.orderBookTitle}
           </span>
-        </div>
-
-        <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-theme-bg-elevated border border-theme-border-subtle text-2xs font-mono font-semibold text-theme-text-muted">
-          {status === 'connected' ? (
-            <Activity className="size-2.5 text-theme-brand-binance animate-pulse" />
-          ) : (
-            <Loader2 className="size-2.5 text-theme-text-muted animate-spin" />
-          )}
-          <span>{content.streamRateDepth}</span>
         </div>
       </div>
 

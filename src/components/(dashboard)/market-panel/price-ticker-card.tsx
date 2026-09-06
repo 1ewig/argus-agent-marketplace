@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { TrendingUp, TrendingDown, Radio, Loader2 } from 'lucide-react';
+import { TrendingUp, TrendingDown, Loader2 } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
 import { parseSymbolAssets } from '@/hooks/use-chat-sessions';
 import type { LiveTickerData, StreamConnectionStatus } from '@/lib/binance-websocket';
@@ -11,13 +11,12 @@ import { PriceSparkline } from './price-sparkline';
 interface PriceTickerCardProps {
   symbol: string;
   ticker: LiveTickerData | null;
-  status: StreamConnectionStatus;
+  status?: StreamConnectionStatus;
 }
 
 export const PriceTickerCard = React.memo(function PriceTickerCard({
   symbol,
   ticker,
-  status,
 }: PriceTickerCardProps) {
   const content = APP_CONTENT.marketPanel;
   const clean = symbol.toUpperCase();
@@ -35,7 +34,7 @@ export const PriceTickerCard = React.memo(function PriceTickerCard({
 
   return (
     <div className="flex flex-col gap-3 p-3.5 sm:p-4 rounded-xl bg-theme-bg-surface border border-theme-border-subtle shadow-2xs">
-      {/* Top Header: Pair & Live Stream Badge */}
+      {/* Top Header: Pair */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
           <span className="text-xs sm:text-sm font-extrabold tracking-wider text-theme-text-primary">
@@ -43,19 +42,6 @@ export const PriceTickerCard = React.memo(function PriceTickerCard({
           </span>
           <span className="text-2xs font-mono font-bold text-theme-brand-binance bg-theme-brand-binance/10 border border-theme-brand-binance/25 px-1.5 py-0.5 rounded">
             SPOT
-          </span>
-        </div>
-
-        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-theme-bg-elevated border border-theme-border-subtle">
-          {status === 'connected' ? (
-            <Radio className="size-3 text-theme-status-success animate-pulse" />
-          ) : status === 'reconnecting' || status === 'connecting' ? (
-            <Loader2 className="size-3 text-theme-brand-binance animate-spin" />
-          ) : (
-            <span className="size-2 rounded-full bg-theme-status-danger" />
-          )}
-          <span className="text-2xs font-mono font-semibold text-theme-text-muted">
-            {content.streamRateTicker}
           </span>
         </div>
       </div>

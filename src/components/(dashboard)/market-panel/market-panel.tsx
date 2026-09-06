@@ -74,10 +74,6 @@ export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
               </div>
             )}
           </div>
-
-          <span className="text-2xs font-mono text-theme-text-muted font-bold tracking-wide">
-            {isGlobal ? '' : symbol.toUpperCase()}
-          </span>
         </div>
 
         {/* Scrollable Panel Body */}

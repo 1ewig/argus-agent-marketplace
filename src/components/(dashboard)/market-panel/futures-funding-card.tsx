@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Clock, Radio, Loader2, Gauge, AlertCircle } from 'lucide-react';
+import { Gauge, AlertCircle, Clock, Loader2 } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
 import { useBinanceFuturesFunding } from '@/hooks/use-binance-futures-funding';
 
@@ -16,7 +16,7 @@ export const FuturesFundingCard = React.memo(function FuturesFundingCard({
 }: FuturesFundingCardProps) {
   const content = APP_CONTENT.marketPanel;
 
-  const { data, status, isAvailable, countdownFormatted } = useBinanceFuturesFunding(symbol, {
+  const { data, isAvailable, countdownFormatted } = useBinanceFuturesFunding(symbol, {
     enabled: isOpen,
   });
 
@@ -25,7 +25,7 @@ export const FuturesFundingCard = React.memo(function FuturesFundingCard({
 
   return (
     <div className="flex flex-col gap-3 p-3.5 sm:p-4 rounded-xl bg-theme-bg-surface border border-theme-border-subtle shadow-2xs">
-      {/* Top Header: Title & Stream Status */}
+      {/* Top Header: Title */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
           <Gauge className="size-3.5 text-theme-brand-binance" />
@@ -36,21 +36,6 @@ export const FuturesFundingCard = React.memo(function FuturesFundingCard({
             {content.futuresBadge}
           </span>
         </div>
-
-        {isAvailable && (
-          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-theme-bg-elevated border border-theme-border-subtle">
-            {status === 'connected' ? (
-              <Radio className="size-2.5 text-theme-status-success animate-pulse" />
-            ) : status === 'reconnecting' || status === 'connecting' ? (
-              <Loader2 className="size-2.5 text-theme-brand-binance animate-spin" />
-            ) : (
-              <span className="size-1.5 rounded-full bg-theme-status-danger" />
-            )}
-            <span className="text-2xs font-mono font-semibold text-theme-text-muted">
-              {content.streamRateFutures}
-            </span>
-          </div>
-        )}
       </div>
 
       {!isAvailable ? (
