@@ -33,6 +33,7 @@ export function DashboardClient({ mode = 'simulation' }: DashboardClientProps) {
   const isMarketPanelOpen = useAppStore((state) => state.isMarketPanelOpen);
   const rightPanelTab = useAppStore((state) => state.rightPanelTab);
   const toggleMarketPanel = useAppStore((state) => state.toggleMarketPanel);
+  const toggleMobileSidebar = useAppStore((state) => state.toggleMobileSidebar);
   const setIsSymbolSearchOpen = useAppStore((state) => state.setIsSymbolSearchOpen);
 
   // Symbol domain parsing
@@ -112,6 +113,7 @@ export function DashboardClient({ mode = 'simulation' }: DashboardClientProps) {
         ticker={ticker}
         isNewChatDisabled={isNewChatDisabled}
         isMarketPanelOpen={isMarketPanelOpen}
+        onToggleMobileSidebar={toggleMobileSidebar}
         onOpenSymbolSearch={handleOpenSymbolSearch}
         onToggleStageView={handleToggleStageView}
         onSelectChartTimeframe={setChartTimeframe}
@@ -211,7 +213,9 @@ export function DashboardClient({ mode = 'simulation' }: DashboardClientProps) {
               : APP_CONTENT.chart.switchToAgent
           }
           className={`md:hidden fixed z-40 size-12 rounded-full bg-theme-brand-binance text-theme-bg-overlay shadow-xl shadow-black/40 flex items-center justify-center cursor-pointer border border-theme-brand-binance/50 hover:brightness-110 active:scale-95 transition-all select-none ${
-            stageView === 'agent' && !isChatEmpty ? 'bottom-22 right-4' : 'bottom-5 right-5'
+            stageView === 'agent' && !isChatEmpty
+              ? 'bottom-[calc(env(safe-area-inset-bottom,0px)+5.5rem)] right-4'
+              : 'bottom-[calc(env(safe-area-inset-bottom,0px)+1.25rem)] right-4'
           }`}
         >
           {stageView === 'agent' ? (

@@ -49,12 +49,12 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${plusJakartaSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${plusJakartaSans.variable} ${geistMono.variable} h-full h-dvh antialiased`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: PRE_HYDRATION_SCRIPT }} />
       </head>
-      <body className="h-full bg-theme-bg-base flex flex-row overflow-hidden">
+      <body className="h-full h-dvh bg-theme-bg-base flex flex-row overflow-hidden">
         <QueryProvider>
           <LeftSidebar />
           <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden">

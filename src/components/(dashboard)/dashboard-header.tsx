@@ -11,6 +11,7 @@ import {
   LineChart,
   Bot,
   Check,
+  Menu,
 } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
 import { tapScalePill } from '@/constants/animation';
@@ -25,6 +26,7 @@ export interface DashboardHeaderProps {
   ticker?: LiveTickerData | null;
   isNewChatDisabled: boolean;
   isMarketPanelOpen: boolean;
+  onToggleMobileSidebar?: () => void;
   onOpenSymbolSearch: () => void;
   onToggleStageView: () => void;
   onSelectChartTimeframe?: (tfId: string) => void;
@@ -44,6 +46,7 @@ export const DashboardHeader = memo(function DashboardHeader({
   ticker,
   isNewChatDisabled,
   isMarketPanelOpen,
+  onToggleMobileSidebar,
   onOpenSymbolSearch,
   onToggleStageView,
   onSelectChartTimeframe,
@@ -82,8 +85,20 @@ export const DashboardHeader = memo(function DashboardHeader({
 
   return (
     <div className="relative z-30 h-14 px-spacing-md sm:px-spacing-lg border-b border-theme-border-subtle bg-theme-bg-base/90 backdrop-blur-xs flex items-center justify-between shrink-0 gap-3">
-      {/* Left Header Section: Symbol Dropdown + Live Price + 24h Stats + Minimal Timeframe Switcher */}
-      <div className="flex items-center gap-2.5 min-w-0">
+      {/* Left Header Section: Mobile Menu Trigger + Symbol Dropdown + Live Price + 24h Stats + Minimal Timeframe Switcher */}
+      <div className="flex items-center gap-2 min-w-0">
+        {/* 3-Line Hamburger Menu Trigger (Mobile only) */}
+        <motion.button
+          type="button"
+          whileTap={tapScalePill}
+          onClick={onToggleMobileSidebar}
+          title={APP_CONTENT.sidebar.openMobileSidebar}
+          aria-label={APP_CONTENT.sidebar.openMobileSidebar}
+          className="md:hidden size-8 -ml-1 rounded-lg flex items-center justify-center text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-surface active:bg-theme-bg-elevated border border-transparent hover:border-theme-border-subtle transition-colors cursor-pointer select-none shrink-0"
+        >
+          <Menu className="size-5 stroke-[2]" />
+        </motion.button>
+
         <div className="flex items-center gap-2.5 overflow-x-auto no-scrollbar py-1">
           {/* Minimal Symbol / Workspace Dropdown Button with Tactile Press */}
           <motion.button

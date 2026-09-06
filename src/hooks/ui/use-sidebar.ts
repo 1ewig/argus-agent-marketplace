@@ -1,6 +1,7 @@
 'use client';
 
 import { useSyncExternalStore, useCallback } from 'react';
+import { useAppStore } from '@/stores/app-store';
 
 export const SIDEBAR_STORAGE_KEY = 'argus-sidebar-collapsed';
 
@@ -40,7 +41,8 @@ function notifyListeners() {
 }
 
 /**
- * Custom hook managing sidebar collapsed state via useSyncExternalStore.
+ * Custom hook managing sidebar collapsed state via useSyncExternalStore
+ * and mobile drawer state via Zustand app-store.
  * Synchronously reads persisted state from localStorage on first render to eliminate
  * any expanded->collapsed flash on page reload, while broadcasting updates across tabs.
  */
@@ -50,6 +52,11 @@ export function useSidebar() {
     getSidebarSnapshot,
     getServerSnapshot
   );
+
+  const isMobileSidebarOpen = useAppStore((state) => state.isMobileSidebarOpen);
+  const setIsMobileSidebarOpen = useAppStore((state) => state.setIsMobileSidebarOpen);
+  const toggleMobileSidebar = useAppStore((state) => state.toggleMobileSidebar);
+  const closeMobileSidebar = useAppStore((state) => state.closeMobileSidebar);
 
   const setIsSidebarCollapsed = useCallback((collapsed: boolean) => {
     try {
@@ -76,5 +83,9 @@ export function useSidebar() {
     isSidebarCollapsed,
     setIsSidebarCollapsed,
     toggleSidebar,
+    isMobileSidebarOpen,
+    setIsMobileSidebarOpen,
+    toggleMobileSidebar,
+    closeMobileSidebar,
   };
 }

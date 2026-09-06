@@ -51,6 +51,12 @@ export interface AppState {
   setIsSidebarCollapsed: (collapsed: boolean) => void;
   toggleSidebar: () => void;
 
+  // Mobile Sidebar Drawer State (Ephemerally managed, not persisted)
+  isMobileSidebarOpen: boolean;
+  setIsMobileSidebarOpen: (open: boolean) => void;
+  toggleMobileSidebar: () => void;
+  closeMobileSidebar: () => void;
+
   // Workspace Groups Collapsed State (Persisted in localStorage)
   collapsedWorkspaceGroups: Record<string, boolean>;
   setWorkspaceGroupCollapsed: (symbol: string, collapsed: boolean) => void;
@@ -133,6 +139,12 @@ export const useAppStore = create<AppState>()(
       isSidebarCollapsed: false,
       setIsSidebarCollapsed: (isSidebarCollapsed) => set({ isSidebarCollapsed }),
       toggleSidebar: () => set((state) => ({ isSidebarCollapsed: !state.isSidebarCollapsed })),
+
+      // Mobile Sidebar Drawer State
+      isMobileSidebarOpen: false,
+      setIsMobileSidebarOpen: (isMobileSidebarOpen) => set({ isMobileSidebarOpen }),
+      toggleMobileSidebar: () => set((state) => ({ isMobileSidebarOpen: !state.isMobileSidebarOpen })),
+      closeMobileSidebar: () => set({ isMobileSidebarOpen: false }),
 
       // Workspace Groups Collapsed State
       collapsedWorkspaceGroups: {},

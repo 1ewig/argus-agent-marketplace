@@ -7,6 +7,7 @@ import { APP_CONTENT } from '@/constants/content';
 import {
   sidebarHorizontalCollapseVariants,
   tapScalePill,
+  tapScaleIcon,
 } from '@/constants/animation';
 import { isGlobalSymbol } from '@/lib/utils';
 import type { SymbolWorkspaceGroup } from '@/hooks';
@@ -88,7 +89,11 @@ export const SidebarWorkspaceGroup = memo(function SidebarWorkspaceGroup({
           onToggleExpand();
         }
       } else {
-        onToggleExpand();
+        const activeInGroup = group.conversations.find((c) => c.id === activeConversationId);
+        const targetId = activeInGroup?.id || group.conversations[0]?.id;
+        if (targetId) {
+          onSelectSession(targetId);
+        }
       }
     }
   };
@@ -137,14 +142,14 @@ export const SidebarWorkspaceGroup = memo(function SidebarWorkspaceGroup({
           )}
         </div>
 
-        {/* Expanded Workspace Label, Count Badge & Chevron */}
+        {/* Expanded Workspace Label, Count Badge & Chevron Button */}
         <motion.div
           initial={false}
           variants={sidebarHorizontalCollapseVariants}
           animate={isCollapsed ? 'collapsed' : 'expanded'}
           className="flex-1 flex items-center justify-between min-w-0 overflow-hidden pr-2"
         >
-          {/* Pair Label & Active Dot */}
+          {/* Pair Label & Conversation Count Badge (Replaces Yellow Dot) */}
           <div className="flex items-center gap-1.5 min-w-0 flex-1">
             <span
               className={`text-2xs font-bold uppercase tracking-wide truncate ${
@@ -155,16 +160,29 @@ export const SidebarWorkspaceGroup = memo(function SidebarWorkspaceGroup({
             >
               {pairLabel}
             </span>
-            {isCurrentActiveGroup && (
-              <span className="size-1.5 rounded-full bg-theme-brand-binance shrink-0" />
-            )}
-          </div>
-
-          {/* Right Section: Session Count & Chevron */}
-          <div className="flex items-center gap-1 shrink-0">
-            <span className="text-2xs font-mono font-medium text-theme-text-muted tabular-nums">
+            <span
+              className={`text-2xs font-mono font-semibold px-1.5 py-0.2 rounded-md shrink-0 tabular-nums transition-colors ${
+                isCurrentActiveGroup
+                  ? 'bg-theme-brand-binance/20 text-theme-brand-binance border border-theme-brand-binance/30 font-bold'
+                  : 'bg-theme-bg-surface text-theme-text-muted border border-theme-border-subtle/60'
+              }`}
+            >
               {group.conversations.length}
             </span>
+          </div>
+
+          {/* Dedicated Expand/Collapse Chevron Button (Toggles without switching workspace) */}
+          <motion.button
+            type="button"
+            whileTap={tapScaleIcon}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleExpand();
+            }}
+            aria-label={isExpanded ? APP_CONTENT.sidebar.collapseGroup : APP_CONTENT.sidebar.expandGroup}
+            title={isExpanded ? APP_CONTENT.sidebar.collapseGroup : APP_CONTENT.sidebar.expandGroup}
+            className="size-7 rounded-lg flex items-center justify-center text-theme-text-muted hover:text-theme-text-primary hover:bg-theme-bg-surface active:bg-theme-bg-elevated transition-colors cursor-pointer select-none shrink-0"
+          >
             <motion.div
               animate={{ rotate: isExpanded ? 90 : 0 }}
               transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
@@ -176,7 +194,7 @@ export const SidebarWorkspaceGroup = memo(function SidebarWorkspaceGroup({
                 }`}
               />
             </motion.div>
-          </div>
+          </motion.button>
         </motion.div>
       </motion.div>
 
