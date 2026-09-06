@@ -15,7 +15,7 @@ import type {
 } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
-export const preferredRegion = ['fra1', 'sin1', 'lhr1'];
+export const preferredRegion = 'fra1';
 
 const CORE_MAJORS = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'BNBUSDT'] as const;
 const UNIVERSE = [

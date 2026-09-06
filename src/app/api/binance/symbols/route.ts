@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-static';
-export const preferredRegion = ['fra1', 'sin1', 'lhr1'];
+export const preferredRegion = 'fra1';
 export const revalidate = 3600; // Cache on the server for 1 hour
 
 export interface BinanceSymbolItem {
