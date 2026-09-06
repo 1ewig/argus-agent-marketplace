@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
   Scale,
   Layers,
@@ -9,32 +10,52 @@ import {
   TrendingUp,
   TrendingDown,
   Minus,
+  Sparkles,
+  RefreshCw,
+  AlertCircle,
+  Radio,
 } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
+import type { MarketIntelligencePayload, MarketIntelligenceResponse } from '@/agent';
 
-export interface MarketIntelligencePayload {
-  control: {
-    side: 'buyers' | 'sellers' | 'neutral';
-    imbalance: number;
-    summary: string;
-  };
-  levels: {
-    support: number;
-    resistance: number;
-    bias: 'bullish' | 'bearish' | 'neutral';
-    summary: string;
-  };
-  positioning: {
-    fundingBias: 'longs_paying' | 'shorts_paying' | 'neutral';
-    sentiment: 'bullish' | 'mildly_bullish' | 'neutral' | 'mildly_bearish' | 'bearish';
-    summary: string;
-  };
-  playbook: {
-    target: number;
-    invalidation: number;
-    bias: 'dip_buyer' | 'breakout' | 'range_scalp' | 'risk_off';
-    summary: string;
-  };
+export const ONE_HOUR_MS = 60 * 60 * 1000;
+
+export function getStoredIntelligence(symbol: string): MarketIntelligenceResponse | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(`argus_intel_${symbol.trim().toUpperCase()}`);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as MarketIntelligenceResponse;
+    if (parsed && typeof parsed.timestamp === 'number' && Date.now() - parsed.timestamp < ONE_HOUR_MS) {
+      return parsed;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+export function setStoredIntelligence(symbol: string, data: MarketIntelligenceResponse) {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(`argus_intel_${symbol.trim().toUpperCase()}`, JSON.stringify(data));
+  } catch {
+    // ignore quota errors
+  }
+}
+
+const subscribeMinuteTimer = (callback: () => void) => {
+  if (typeof window === 'undefined') return () => {};
+  const timer = setInterval(callback, 30_000);
+  return () => clearInterval(timer);
+};
+
+export function useIsFresh(timestamp?: number, thresholdMs: number = ONE_HOUR_MS): boolean {
+  return React.useSyncExternalStore(
+    subscribeMinuteTimer,
+    () => (timestamp ? Date.now() - timestamp < thresholdMs : false),
+    () => false
+  );
 }
 
 interface MarketIntelligenceAgentViewProps {
@@ -45,91 +66,134 @@ export function MarketIntelligenceAgentView({ symbol }: MarketIntelligenceAgentV
   const content = APP_CONTENT.marketIntelligence;
   const cleanSymbol = symbol.trim().toUpperCase();
 
-  // 1 Structured JSON Output (Tailored dynamically by symbol)
-  const structuredData: MarketIntelligencePayload = useMemo(() => {
-    if (cleanSymbol.startsWith('BTC')) {
-      return {
-        control: {
-          side: 'buyers',
-          imbalance: 1.42,
-          summary: 'Buyers in control with strong bid support across top 20 depth levels',
-        },
-        levels: {
-          support: 92450.0,
-          resistance: 95800.0,
-          bias: 'bullish',
-          summary: 'Holding above 92,450 pivot, next major resistance at 95,800',
-        },
-        positioning: {
-          fundingBias: 'longs_paying',
-          sentiment: 'mildly_bullish',
-          summary: 'Retail long, whales neutral, funding positive but well within safe baseline',
-        },
-        playbook: {
-          target: 95800.0,
-          invalidation: 91800.0,
-          bias: 'dip_buyer',
-          summary: 'Favorable risk/reward on pullbacks toward 92,450 support with 95,800 primary target',
-        },
-      };
-    }
+  const {
+    data: response,
+    isLoading,
+    isFetching,
+    isError,
+    refetch,
+  } = useQuery<MarketIntelligenceResponse>({
+    queryKey: ['market-intelligence', cleanSymbol],
+    queryFn: async () => {
+      const res = await fetch('/api/agent/intelligence', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ symbol: cleanSymbol }),
+      });
+      if (!res.ok) {
+        throw new Error(`Failed to fetch market intelligence (${res.status})`);
+      }
+      const data: MarketIntelligenceResponse = await res.json();
+      setStoredIntelligence(cleanSymbol, data);
+      return data;
+    },
+    initialData: () => getStoredIntelligence(cleanSymbol) ?? undefined,
+    initialDataUpdatedAt: () => getStoredIntelligence(cleanSymbol)?.timestamp,
+    staleTime: ONE_HOUR_MS,
+    gcTime: 24 * 60 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+  });
 
-    if (cleanSymbol.startsWith('SOL')) {
-      return {
-        control: {
-          side: 'buyers',
-          imbalance: 1.31,
-          summary: 'Buyers in control with firm bid volume defending local range low',
-        },
-        levels: {
-          support: 182.5,
-          resistance: 196.0,
-          bias: 'bullish',
-          summary: 'Holding above 182.50, next resistance test at 196.00',
-        },
-        positioning: {
-          fundingBias: 'longs_paying',
-          sentiment: 'mildly_bullish',
-          summary: 'Long positioning steady, funding rates balanced across perpetual desks',
-        },
-        playbook: {
-          target: 196.0,
-          invalidation: 178.0,
-          bias: 'dip_buyer',
-          summary: 'Look for liquidity sweeps toward 182.50 to build longs targeting 196.00',
-        },
-      };
-    }
+  const structuredData: MarketIntelligencePayload | undefined = response?.data;
+  const newsCount = response?.newsCount ?? 0;
+  const isCached = useIsFresh(response?.timestamp, ONE_HOUR_MS);
 
-    // Default / ETH / other pairs
-    return {
-      control: {
-        side: 'buyers',
-        imbalance: 1.38,
-        summary: 'Buyers in control with strong bid support',
-      },
-      levels: {
-        support: 2482.0,
-        resistance: 2518.0,
-        bias: 'bullish',
-        summary: 'Holding above 2482, next resistance at 2518',
-      },
-      positioning: {
-        fundingBias: 'longs_paying',
-        sentiment: 'mildly_bullish',
-        summary: 'Retail long, whales neutral, funding positive but mild',
-      },
-      playbook: {
-        target: 2518.0,
-        invalidation: 2450.0,
-        bias: 'dip_buyer',
-        summary: 'Favorable risk/reward on pullbacks toward 2482 support while buyer imbalance holds',
-      },
-    };
-  }, [cleanSymbol]);
+  const lastUpdatedTime = response?.timestamp
+    ? new Date(response.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    : null;
 
+  // 1. Loading Skeleton State
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-3.5 sm:gap-4 select-none animate-pulse">
+        {/* Skeleton Header Notice */}
+        <div className="flex items-center justify-between p-3 rounded-xl bg-theme-bg-elevated/40 border border-theme-border-subtle/80">
+          <div className="flex items-center gap-2">
+            <Sparkles className="size-4 text-theme-brand-binance animate-spin" />
+            <span className="text-xs font-bold text-theme-text-primary">
+              {content.scanningTitle}
+            </span>
+          </div>
+          <span className="text-[10px] font-mono text-theme-text-muted">
+            {content.statusRunning}
+          </span>
+        </div>
+
+        {/* 4 Skeleton Card Placeholders */}
+        {[1, 2, 3, 4].map((i) => (
+          <div
+            key={i}
+            className="p-3.5 sm:p-4 rounded-xl bg-theme-bg-surface border border-theme-border-subtle shadow-2xs flex flex-col gap-2.5"
+          >
+            <div className="h-4 w-28 bg-theme-bg-elevated rounded" />
+            <div className="h-10 w-full bg-theme-bg-elevated/60 rounded-lg" />
+            <div className="h-3 w-3/4 bg-theme-bg-elevated/40 rounded" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // 2. Error State with Retry
+  if (isError || !structuredData) {
+    return (
+      <div className="flex flex-col items-center justify-center text-center p-6 rounded-xl bg-theme-bg-surface border border-theme-border-subtle shadow-2xs gap-3">
+        <div className="size-10 rounded-xl bg-theme-status-danger/10 text-theme-status-danger flex items-center justify-center">
+          <AlertCircle className="size-5" />
+        </div>
+        <div className="flex flex-col gap-1">
+          <h4 className="text-sm font-bold text-theme-text-primary">
+            {content.errorTitle}
+          </h4>
+          <p className="text-xs text-theme-text-secondary max-w-xs leading-relaxed">
+            {content.errorSubtitle}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => refetch()}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-theme-brand-binance text-theme-bg-overlay hover:brightness-105 active:brightness-95 transition-all cursor-pointer shadow-2xs"
+        >
+          <RefreshCw className="size-3" />
+          <span>{content.retryButton}</span>
+        </button>
+      </div>
+    );
+  }
+
+  // 3. Render Grounded 4-Card Executive Market Intelligence
   return (
     <div className="flex flex-col gap-3.5 sm:gap-4 select-none">
+      {/* Sentinel Status Banner & Web News Radar */}
+      <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-theme-bg-elevated/50 border border-theme-border-subtle/80">
+        <div className="flex items-center gap-2">
+          <Radio className="size-3.5 text-theme-status-success animate-pulse" />
+          <span className="text-[11px] font-bold font-mono tracking-tight text-theme-text-primary" title={isCached ? content.cachedTooltip : undefined}>
+            {isCached ? content.cachedBadge : content.statusLive}
+          </span>
+          {isFetching && (
+            <RefreshCw className="size-2.5 text-theme-brand-binance animate-spin" />
+          )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-theme-brand-binance/10 border border-theme-brand-binance/20 text-[10px] font-mono font-bold text-theme-brand-binance">
+            <span>
+              {newsCount > 0
+                ? content.catalystsDetected(newsCount)
+                : content.noCatalystsDetected}
+            </span>
+          </div>
+          {lastUpdatedTime && (
+            <span className="text-[10px] font-mono text-theme-text-muted">
+              {lastUpdatedTime}
+            </span>
+          )}
+        </div>
+      </div>
+
       {/* 1. CARD 1: CONTROL */}
       <div className="p-3.5 sm:p-4 rounded-xl bg-theme-bg-surface border border-theme-border-subtle shadow-2xs flex flex-col gap-2.5">
         <div className="flex items-center justify-between">
@@ -268,7 +332,15 @@ export function MarketIntelligenceAgentView({ symbol }: MarketIntelligenceAgentV
             <span className="text-[10px] font-mono font-semibold uppercase text-theme-text-muted">
               Sentiment
             </span>
-            <span className="text-xs font-bold font-mono text-theme-status-success">
+            <span
+              className={`text-xs font-bold font-mono ${
+                structuredData.positioning.sentiment.includes('bullish')
+                  ? 'text-theme-status-success'
+                  : structuredData.positioning.sentiment.includes('bearish')
+                  ? 'text-theme-status-danger'
+                  : 'text-theme-text-secondary'
+              }`}
+            >
               {structuredData.positioning.sentiment === 'mildly_bullish'
                 ? content.positioningCard.sentimentMildlyBullish
                 : structuredData.positioning.sentiment === 'bullish'

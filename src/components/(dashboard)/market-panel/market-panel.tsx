@@ -4,11 +4,22 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Globe, Loader2, Bot, Activity, RefreshCw } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
+import { useQueryClient } from '@tanstack/react-query';
 import { sidebarSpringTransition, tapScalePill } from '@/constants/animation';
 import { useBinanceMarketStream } from '@/hooks/use-binance-market-stream';
 import { useAppStore } from '@/stores/app-store';
-import { PriceTickerCard, FuturesFundingCard, OrderBookDepthCard } from './telemetry';
-import { MarketIntelligenceAgentView } from './agents';
+import {
+  PriceTickerCard,
+  FuturesFundingCard,
+  OrderBookDepthCard,
+} from './telemetry';
+import {
+  MarketIntelligenceAgentView,
+  getStoredIntelligence,
+  useIsFresh,
+  ONE_HOUR_MS,
+} from './agents';
+import type { MarketIntelligenceResponse } from '@/agent';
 
 interface MarketPanelProps {
   isOpen: boolean;
@@ -21,17 +32,33 @@ export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
   const intelligence = APP_CONTENT.marketIntelligence;
   const rightPanelTab = useAppStore((state) => state.rightPanelTab);
   const setRightPanelTab = useAppStore((state) => state.setRightPanelTab);
+  const queryClient = useQueryClient();
 
   const [isScanning, setIsScanning] = useState(false);
   const [scanKey, setScanKey] = useState(0);
 
-  const handleScan = () => {
+  const cleanSymbol = symbol.trim().toUpperCase();
+
+  // Check if market intelligence for this coin was analyzed within the past 1 hour
+  const cachedIntelligence =
+    queryClient.getQueryData<MarketIntelligenceResponse>([
+      'market-intelligence',
+      cleanSymbol,
+    ]) ?? (typeof window !== 'undefined' ? getStoredIntelligence(cleanSymbol) : null);
+
+  const isIntelligenceFresh = useIsFresh(cachedIntelligence?.timestamp, ONE_HOUR_MS);
+
+  const handleScan = async () => {
     if (isScanning) return;
     setIsScanning(true);
-    setTimeout(() => {
-      setIsScanning(false);
+    try {
+      await queryClient.invalidateQueries({
+        queryKey: ['market-intelligence', cleanSymbol],
+      });
       setScanKey((k) => k + 1);
-    }, 500);
+    } finally {
+      setIsScanning(false);
+    }
   };
 
   // Real-time client-direct Binance WebSocket connection
@@ -111,18 +138,20 @@ export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
             </div>
           )}
 
-          {/* Header Action in Intelligence Tab: Scan Market Button */}
-          {!isGlobal && (rightPanelTab === 'intelligence' || rightPanelTab === 'market-data') && (
-            <motion.button
-              type="button"
-              whileTap={tapScalePill}
-              onClick={handleScan}
-              disabled={isScanning}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-theme-bg-elevated hover:bg-theme-bg-elevated/80 active:bg-theme-bg-surface border border-theme-border-subtle text-theme-text-primary transition-colors cursor-pointer disabled:opacity-50 shadow-2xs shrink-0"
-            >
-              <RefreshCw className={`size-3 text-theme-brand-binance ${isScanning ? 'animate-spin' : ''}`} />
-              <span>{isScanning ? intelligence.refreshing : intelligence.refreshButton}</span>
-            </motion.button>
+          {/* Header Action in Intelligence Tab: Scan Market Button (Removed for 1 hour once cached) */}
+          {!isGlobal &&
+            (rightPanelTab === 'intelligence' || rightPanelTab === 'market-data') &&
+            !isIntelligenceFresh && (
+              <motion.button
+                type="button"
+                whileTap={tapScalePill}
+                onClick={handleScan}
+                disabled={isScanning}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-theme-bg-elevated hover:bg-theme-bg-elevated/80 active:bg-theme-bg-surface border border-theme-border-subtle text-theme-text-primary transition-colors cursor-pointer disabled:opacity-50 shadow-2xs shrink-0"
+              >
+                <RefreshCw className={`size-3 text-theme-brand-binance ${isScanning ? 'animate-spin' : ''}`} />
+                <span>{isScanning ? intelligence.refreshing : intelligence.refreshButton}</span>
+              </motion.button>
           )}
         </div>
 
