@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { ExecutionMode, StageViewMode } from '@/lib/types';
+import type { ExecutionMode, StageViewMode, RightPanelTab } from '@/lib/types';
 import type { ChatMessageRecord } from '@/lib/db';
 import { DEFAULT_CONVERSATION_ID } from '@/lib/db';
 import { isGlobalSymbol } from '@/lib/utils';
@@ -58,10 +58,8 @@ export interface AppState {
   toggleMarketPanel: () => void;
 
   // Right Panel Active Tab
-  rightPanelTab: 'overview' | 'intelligence' | 'market-data' | 'technical-analysis' | 'risk-volatility' | 'sentiment-context' | 'decision';
-  setRightPanelTab: (
-    tab: 'overview' | 'intelligence' | 'market-data' | 'technical-analysis' | 'risk-volatility' | 'sentiment-context' | 'decision'
-  ) => void;
+  rightPanelTab: RightPanelTab;
+  setRightPanelTab: (tab: RightPanelTab) => void;
 
   // Hydration state tracking
   _hasHydrated: boolean;
