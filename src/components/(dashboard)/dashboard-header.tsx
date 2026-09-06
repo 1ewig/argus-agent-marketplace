@@ -2,7 +2,7 @@
 
 import React, { memo } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronDown, Plus, Globe, PanelRightClose, PanelRightOpen, Bot } from 'lucide-react';
+import { ChevronDown, Plus, Globe, PanelRightClose, PanelRightOpen } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
 import { tapScalePill } from '@/constants/animation';
 
@@ -11,10 +11,8 @@ export interface DashboardHeaderProps {
   isGlobal: boolean;
   isNewChatDisabled: boolean;
   isMarketPanelOpen: boolean;
-  isMarketIntelligenceActive: boolean;
   onOpenSymbolSearch: () => void;
   onNewChat: () => void;
-  onToggleMarketIntelligence: () => void;
   onToggleMarketPanel: () => void;
 }
 
@@ -27,10 +25,8 @@ export const DashboardHeader = memo(function DashboardHeader({
   isGlobal,
   isNewChatDisabled,
   isMarketPanelOpen,
-  isMarketIntelligenceActive,
   onOpenSymbolSearch,
   onNewChat,
-  onToggleMarketIntelligence,
   onToggleMarketPanel,
 }: DashboardHeaderProps) {
   return (
@@ -60,7 +56,7 @@ export const DashboardHeader = memo(function DashboardHeader({
         </motion.button>
       </div>
 
-      {/* Right Header Section: New Chat Button, Sub-Agents Toggle, Market Panel Toggle */}
+      {/* Right Header Section: New Chat Button, Market Panel Toggle */}
       <div className="flex items-center gap-2">
         {/* New Chat Primary Action Button */}
         <motion.button
@@ -82,23 +78,6 @@ export const DashboardHeader = memo(function DashboardHeader({
         >
           <Plus className="size-3.5 stroke-[2.75]" />
           <span className="font-bold">{APP_CONTENT.chat.newChatButton}</span>
-        </motion.button>
-
-        {/* Dedicated Market Intelligence Agent Trigger Button */}
-        <motion.button
-          type="button"
-          whileTap={tapScalePill}
-          onClick={onToggleMarketIntelligence}
-          title={APP_CONTENT.marketIntelligence.headerButtonTooltip}
-          aria-label={APP_CONTENT.marketIntelligence.headerButtonLabel}
-          className={`h-8 px-2.5 rounded-lg text-xs font-bold inline-flex items-center gap-1.5 select-none transition-colors border cursor-pointer ${
-            isMarketPanelOpen && isMarketIntelligenceActive
-              ? 'bg-theme-bg-elevated text-theme-brand-binance border-theme-brand-binance/40 shadow-2xs'
-              : 'bg-theme-bg-surface text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-elevated border-theme-border-subtle'
-          }`}
-        >
-          <Bot className="size-3.5 text-theme-brand-binance" />
-          <span className="font-semibold">{APP_CONTENT.marketIntelligence.headerButtonLabel}</span>
         </motion.button>
 
         {/* Collapsible Market Panel Toggle Button */}

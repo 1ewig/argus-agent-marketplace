@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Globe, Loader2, Bot, Activity, RefreshCw } from 'lucide-react';
+import { Globe, Loader2, Bot, Activity, RefreshCw, Clock } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
 import { sidebarSpringTransition, tapScalePill } from '@/constants/animation';
 import {
@@ -40,6 +40,7 @@ export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
     refetch: refetchIntelligence,
     isAnalyzing,
     isAnalysisFresh,
+    nextRunCountdown,
     handleScan,
   } = useScanMarketIntelligence(symbol, {
     enabled: isOpen && !isGlobal,
@@ -131,20 +132,38 @@ export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
             </div>
           )}
 
-          {/* Header Action in Intelligence Tab: Scan Market Button (hidden if analysis is fresh / not older than 1 hour) */}
-          {!isGlobal &&
-            isIntelligenceTabActive(rightPanelTab) &&
-            !isAnalysisFresh && (
-              <motion.button
-                type="button"
-                whileTap={tapScalePill}
-                onClick={handleScan}
-                disabled={isAnalyzing}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-theme-bg-elevated hover:bg-theme-bg-elevated/80 active:bg-theme-bg-surface border border-theme-border-subtle text-theme-text-primary transition-colors cursor-pointer disabled:opacity-50 shadow-2xs shrink-0"
-              >
-                <RefreshCw className={`size-3 text-theme-brand-binance ${isAnalyzing ? 'animate-spin' : ''}`} />
-                <span>{isAnalyzing ? intelligence.refreshing : intelligence.refreshButton}</span>
-              </motion.button>
+          {/* Header Action in Intelligence Tab: Next Run countdown when fresh, or Scan Market Button when ready */}
+          {!isGlobal && isIntelligenceTabActive(rightPanelTab) && (
+            <div className="flex items-center gap-1.5 shrink-0">
+              {isAnalyzing ? (
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-theme-bg-elevated text-theme-text-secondary border border-theme-border-subtle shadow-2xs">
+                  <RefreshCw className="size-3 text-theme-brand-binance animate-spin shrink-0" />
+                  <span>{intelligence.refreshing}</span>
+                </div>
+              ) : isAnalysisFresh && nextRunCountdown ? (
+                <div
+                  title={intelligence.nextRunTooltip}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono font-bold bg-theme-bg-elevated/80 border border-theme-border-subtle text-theme-text-secondary select-none shadow-2xs"
+                >
+                  <Clock className="size-3 text-theme-brand-binance shrink-0" />
+                  <span className="text-theme-text-muted text-[11px] font-sans font-semibold uppercase tracking-wider">
+                    {intelligence.nextRunPrefix}
+                  </span>
+                  <span className="text-theme-text-primary">{nextRunCountdown}</span>
+                </div>
+              ) : (
+                <motion.button
+                  type="button"
+                  whileTap={tapScalePill}
+                  onClick={handleScan}
+                  disabled={isAnalyzing}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-theme-bg-elevated hover:bg-theme-bg-elevated/80 active:bg-theme-bg-surface border border-theme-border-subtle text-theme-text-primary transition-colors cursor-pointer disabled:opacity-50 shadow-2xs"
+                >
+                  <RefreshCw className={`size-3 text-theme-brand-binance ${isAnalyzing ? 'animate-spin' : ''}`} />
+                  <span>{intelligence.refreshButton}</span>
+                </motion.button>
+              )}
+            </div>
           )}
         </div>
 

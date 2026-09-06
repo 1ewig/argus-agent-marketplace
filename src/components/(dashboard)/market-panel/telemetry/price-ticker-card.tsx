@@ -28,8 +28,8 @@ export const PriceTickerCard = React.memo(function PriceTickerCard({
 
   return (
     <div className="flex flex-col gap-3 p-3.5 sm:p-4 rounded-xl bg-theme-bg-surface border border-theme-border-subtle shadow-2xs">
-      {/* Top Header: Pair */}
-      <div className="flex items-center justify-between">
+      {/* Top Header: Pair (Left) & 24h Change Pill (Far Right) */}
+      <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5">
           <span className="text-xs sm:text-sm font-extrabold tracking-wider text-theme-text-primary">
             {quoteAsset ? `${baseAsset} / ${quoteAsset}` : baseAsset}
@@ -38,42 +38,40 @@ export const PriceTickerCard = React.memo(function PriceTickerCard({
             SPOT
           </span>
         </div>
+
+        {ticker && (
+          <div
+            className={`inline-flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg text-xs font-bold font-mono select-none shrink-0 ${isPositive
+                ? 'bg-theme-status-success/15 text-theme-status-success border border-theme-status-success/20'
+                : 'bg-theme-status-danger/15 text-theme-status-danger border border-theme-status-danger/20'
+              }`}
+          >
+            {isPositive ? <TrendingUp className="size-3.5" /> : <TrendingDown className="size-3.5" />}
+            <span>
+              {isPositive ? '+' : ''}
+              {ticker.changePercent.toFixed(2)}%
+            </span>
+          </div>
+        )}
       </div>
 
-      {/* Hero Price & 24h Change Pill */}
+      {/* Hero Price */}
       {ticker ? (
         <>
-          <div className="flex items-baseline justify-between gap-2">
-            <div className="flex flex-col">
-              <motion.span
-                key={ticker.price}
-                initial={{ opacity: 0.85 }}
-                animate={{ opacity: 1 }}
-                className={`text-2xl sm:text-3xl font-black font-mono tracking-tight transition-colors duration-300 ${
-                  ticker.flashDirection === 'up'
-                    ? 'text-theme-status-success'
-                    : ticker.flashDirection === 'down'
+          <div className="flex flex-col">
+            <motion.span
+              key={ticker.price}
+              initial={{ opacity: 0.85 }}
+              animate={{ opacity: 1 }}
+              className={`text-2xl sm:text-3xl font-black font-mono tracking-tight transition-colors duration-300 ${ticker.flashDirection === 'up'
+                  ? 'text-theme-status-success'
+                  : ticker.flashDirection === 'down'
                     ? 'text-theme-status-danger'
                     : 'text-theme-text-primary'
                 }`}
-              >
-                ${formattedPrice}
-              </motion.span>
-            </div>
-
-            <div
-              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold font-mono select-none ${
-                isPositive
-                  ? 'bg-theme-status-success/15 text-theme-status-success border border-theme-status-success/20'
-                  : 'bg-theme-status-danger/15 text-theme-status-danger border border-theme-status-danger/20'
-              }`}
             >
-              {isPositive ? <TrendingUp className="size-3.5" /> : <TrendingDown className="size-3.5" />}
-              <span>
-                {isPositive ? '+' : ''}
-                {ticker.changePercent.toFixed(2)}%
-              </span>
-            </div>
+              ${formattedPrice}
+            </motion.span>
           </div>
 
           {/* 24h High / Low Visual Range Bar */}

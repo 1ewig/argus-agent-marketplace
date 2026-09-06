@@ -67,5 +67,7 @@ export const intelligenceContent = {
     scanningSubtitle: 'Scanning order books, calculating pivot levels, and evaluating news catalysts',
     cachedBadge: '1H SNAPSHOT',
     cachedTooltip: 'Intelligence snapshot cached for 1 hour to prevent redundant LLM queries',
+    nextRunPrefix: 'Next Run',
+    nextRunTooltip: 'Next automated intelligence scan (1-hour cache window)',
   },
 } as const;

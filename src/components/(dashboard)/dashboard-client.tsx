@@ -5,7 +5,7 @@ import { useAgentChat } from '@/hooks';
 import { isGlobalSymbol, normalizeSymbolForDisplay } from '@/lib/utils';
 import { parseSymbolAssets } from '@/lib/symbols';
 import { APP_CONTENT } from '@/constants/content';
-import { useAppStore, isIntelligenceTabActive } from '@/stores/app-store';
+import { useAppStore } from '@/stores/app-store';
 import { DashboardHeader } from './dashboard-header';
 import { MarketPanel } from './market-panel';
 import { ChatEmptyState, ChatMessageList, ChatDock, type QuickActionItem } from './chat';
@@ -23,10 +23,7 @@ export function DashboardClient({ mode = 'simulation' }: DashboardClientProps) {
   // Global application UI state
   const selectedSymbol = useAppStore((state) => state.selectedSymbol);
   const isMarketPanelOpen = useAppStore((state) => state.isMarketPanelOpen);
-  const setIsMarketPanelOpen = useAppStore((state) => state.setIsMarketPanelOpen);
   const toggleMarketPanel = useAppStore((state) => state.toggleMarketPanel);
-  const rightPanelTab = useAppStore((state) => state.rightPanelTab);
-  const setRightPanelTab = useAppStore((state) => state.setRightPanelTab);
   const setIsSymbolSearchOpen = useAppStore((state) => state.setIsSymbolSearchOpen);
 
   // Symbol domain parsing
@@ -72,23 +69,10 @@ export function DashboardClient({ mode = 'simulation' }: DashboardClientProps) {
     return null;
   }, [messages, activeStreamMessage]);
 
-  const isMarketIntelligenceActive = isIntelligenceTabActive(rightPanelTab);
-
   // Header interaction handlers
   const handleOpenSymbolSearch = useCallback(() => {
     setIsSymbolSearchOpen(true);
   }, [setIsSymbolSearchOpen]);
-
-  const handleToggleMarketIntelligence = useCallback(() => {
-    if (!isMarketPanelOpen) {
-      setIsMarketPanelOpen(true);
-      setRightPanelTab('intelligence');
-    } else if (isIntelligenceTabActive(rightPanelTab)) {
-      setRightPanelTab('overview');
-    } else {
-      setRightPanelTab('intelligence');
-    }
-  }, [isMarketPanelOpen, rightPanelTab, setIsMarketPanelOpen, setRightPanelTab]);
 
   const handleNewChat = useCallback(() => {
     handleNewSession();
@@ -102,10 +86,8 @@ export function DashboardClient({ mode = 'simulation' }: DashboardClientProps) {
         isGlobal={isGlobalWorkspace}
         isNewChatDisabled={isNewChatDisabled}
         isMarketPanelOpen={isMarketPanelOpen}
-        isMarketIntelligenceActive={isMarketIntelligenceActive}
         onOpenSymbolSearch={handleOpenSymbolSearch}
         onNewChat={handleNewChat}
-        onToggleMarketIntelligence={handleToggleMarketIntelligence}
         onToggleMarketPanel={toggleMarketPanel}
       />
 

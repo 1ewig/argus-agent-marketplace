@@ -24,6 +24,8 @@ export interface UseScanMarketIntelligenceResult {
   isScanning: boolean;
   isAnalyzing: boolean;
   isAnalysisFresh: boolean;
+  nextRunCountdown: string | null;
+  nextRunTimestamp: number | null;
   handleScan: () => Promise<void>;
   intelligenceResponse: MarketIntelligenceResponse | undefined;
 }
@@ -44,13 +46,14 @@ export function useScanMarketIntelligence(
   const [isScanning, setIsScanning] = useState(false);
   const [now, setNow] = useState(() => Date.now());
 
-  // Tick every 10 seconds so fresh/stale state updates reactively when analysis hits the 1-hour threshold
+  // Tick every 1 second when active so countdown and freshness state update in real-time
   useEffect(() => {
+    if (!enabled || isGlobal) return;
     const interval = setInterval(() => {
       setNow(Date.now());
-    }, 10_000);
+    }, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [enabled, isGlobal]);
 
   const {
     response: intelligenceResponse,
@@ -74,6 +77,20 @@ export function useScanMarketIntelligence(
   const isAnalysisFresh = Boolean(
     intelligenceResponse?.timestamp && now - intelligenceResponse.timestamp < ONE_HOUR_MS
   );
+
+  const nextRunTimestamp = useMemo(() => {
+    if (!intelligenceResponse?.timestamp) return null;
+    return intelligenceResponse.timestamp + ONE_HOUR_MS;
+  }, [intelligenceResponse?.timestamp]);
+
+  const nextRunCountdown = useMemo(() => {
+    if (!nextRunTimestamp || !isAnalysisFresh) return null;
+    const diff = Math.max(0, nextRunTimestamp - now);
+    const totalSeconds = Math.floor(diff / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  }, [nextRunTimestamp, isAnalysisFresh, now]);
 
   const handleScan = useCallback(async () => {
     if (isAnalyzing || isGlobal) return;
@@ -102,6 +119,8 @@ export function useScanMarketIntelligence(
     isScanning,
     isAnalyzing,
     isAnalysisFresh,
+    nextRunCountdown,
+    nextRunTimestamp,
     handleScan,
     intelligenceResponse,
   };

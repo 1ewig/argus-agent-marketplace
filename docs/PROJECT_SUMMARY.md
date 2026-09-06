@@ -108,7 +108,7 @@ src/
 ├── components/                   # pure presentation (decoupled from transports)
 │   ├── (dashboard)/
 │   │   ├── dashboard-client.tsx  # chat stage + market panel + empty state orchestration
-│   │   ├── dashboard-header.tsx  # workspace switcher, New Chat, Intelligence trigger toggle
+│   │   ├── dashboard-header.tsx  # workspace switcher, New Chat, Market Panel toggle
 │   │   ├── chat/                 # empty-state, dock, input, message, message-list, timeline,
 │   │   │                         #   thought-accordion, work-group, tool-result-card,
 │   │   │                         #   markdown-view + tool-results/ (10 per-tool cards)
@@ -161,7 +161,7 @@ src/
 
 ### 4.2 Market Intelligence Agent lifecycle
 
-1. User opens the **Market Intelligence** tab (from the right panel tabs or the header trigger) → [`MarketIntelligenceAgentView`](../src/components/(dashboard)/market-panel/agents/market-intelligence-agent-view.tsx) mounts.
+1. User opens the **Market Intelligence** tab (from the right panel tabs) → [`MarketIntelligenceAgentView`](../src/components/(dashboard)/market-panel/agents/market-intelligence-agent-view.tsx) mounts.
 2. TanStack React Query keyed `['market-intelligence', symbol]` resolves from the React Query cache, the synchronous in-memory `getCachedIntelligence`, or Dexie v4 `marketIntelligence` storage while fresh (<1h) — then `POST /api/agent/intelligence` on first miss.
 3. The route validates `{ symbol, apiKey?, providerOverride? }` and calls `executeMarketIntelligence` ([`src/agent/intelligence/engine.ts`](../src/agent/intelligence/engine.ts)).
 4. The engine fires **9 parallel `Promise.allSettled` fetches**: ticker price, 20-level order book, 15m klines (30), 1h klines (24), 5m VWAP, funding rate, global long/short account ratio (5m×5), top trader long/short (5m×5), and Exa news (3 results, `category: 'news'`).
