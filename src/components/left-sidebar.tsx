@@ -107,7 +107,7 @@ export function LeftSidebar() {
         initial={false}
         animate={{ width: isSidebarCollapsed ? 68 : 280 }}
         transition={hasMounted ? sidebarSpringTransition : { duration: 0 }}
-        className="h-full bg-theme-bg-surface border-r border-theme-border-subtle flex flex-col shrink-0 select-none z-30 overflow-hidden relative will-change-[width]"
+        className="hidden md:flex h-full bg-theme-bg-surface border-r border-theme-border-subtle flex-col shrink-0 select-none z-30 overflow-hidden relative will-change-[width]"
       >
         {/* 1. Top Header & Brand */}
         <SidebarHeader

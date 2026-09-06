@@ -93,7 +93,7 @@ export function MarketPanel({
         opacity: isOpen ? 1 : 0,
       }}
       transition={sidebarSpringTransition}
-      className="h-full bg-theme-bg-surface border-l border-theme-border-subtle flex flex-col shrink-0 select-none z-20 overflow-hidden relative will-change-[width,opacity]"
+      className="hidden md:flex h-full bg-theme-bg-surface border-l border-theme-border-subtle flex-col shrink-0 select-none z-20 overflow-hidden relative will-change-[width,opacity]"
       aria-label={content.title}
     >
       <div className="w-full min-w-[340px] h-full flex flex-col overflow-hidden">

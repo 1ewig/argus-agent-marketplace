@@ -298,7 +298,7 @@ export const DashboardHeader = memo(function DashboardHeader({
               ? APP_CONTENT.marketPanel.collapsePanel
               : APP_CONTENT.marketPanel.expandPanel
           }
-          className={`size-8 rounded-lg flex items-center justify-center select-none cursor-pointer transition-colors border ${isMarketPanelOpen
+          className={`size-8 rounded-lg hidden md:flex items-center justify-center select-none cursor-pointer transition-colors border ${isMarketPanelOpen
               ? 'bg-theme-bg-elevated text-theme-brand-binance border-theme-border-subtle shadow-2xs'
               : 'text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-surface border-transparent hover:border-theme-border-subtle'
             }`}
