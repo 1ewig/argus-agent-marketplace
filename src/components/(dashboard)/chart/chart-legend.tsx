@@ -1,33 +1,48 @@
 'use client';
 
 import React, { memo } from 'react';
+import { motion } from 'framer-motion';
+import { ChevronDown } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
+import { tapScalePill } from '@/constants/animation';
 import type { ChartCandleItem } from './candlestick-canvas';
 
 export interface ChartLegendProps {
   symbol: string;
-  intervalLabel: string;
   candle: ChartCandleItem | null;
   precision?: number;
+  onOpenSymbolSearch?: () => void;
 }
 
 export const ChartLegend = memo(function ChartLegend({
   symbol,
-  intervalLabel,
   candle,
   precision = 2,
+  onOpenSymbolSearch,
 }: ChartLegendProps) {
   const legendContent = APP_CONTENT.chart.legend;
 
-  if (!candle) {
-    return (
-      <div className="flex items-center gap-2 text-xs font-mono select-none pointer-events-none">
-        <span className="font-bold text-sm tracking-wide text-theme-text-primary">
+  const mobileSymbolPill = (
+    <div className="md:hidden">
+      <motion.button
+        type="button"
+        whileTap={tapScalePill}
+        onClick={onOpenSymbolSearch}
+        title={APP_CONTENT.chat.switchSymbolTooltip}
+        className="pointer-events-auto inline-flex items-center gap-1 text-theme-text-primary hover:text-theme-brand-binance transition-colors cursor-pointer select-none"
+      >
+        <span className="font-bold text-sm tracking-wide">
           {symbol}
         </span>
-        <span className="px-1.5 py-0.5 rounded bg-theme-bg-elevated border border-theme-border-subtle text-2xs text-theme-brand-binance font-bold">
-          {intervalLabel}
-        </span>
+        <ChevronDown className="size-3.5 text-theme-text-muted" />
+      </motion.button>
+    </div>
+  );
+
+  if (!candle) {
+    return (
+      <div className="flex flex-col gap-1 text-xs select-none">
+        {mobileSymbolPill}
       </div>
     );
   }
@@ -39,17 +54,12 @@ export const ChartLegend = memo(function ChartLegend({
   const sign = isPositive ? '+' : '';
 
   return (
-    <div className="flex flex-col gap-1 text-xs select-none pointer-events-none">
-      <div className="flex items-center gap-2">
-        <span className="font-bold text-sm tracking-wide text-theme-text-primary">
-          {symbol}
-        </span>
-        <span className="px-1.5 py-0.5 rounded bg-theme-bg-elevated border border-theme-border-subtle text-2xs text-theme-brand-binance font-bold">
-          {intervalLabel}
-        </span>
-      </div>
+    <div className="flex flex-col gap-1 text-xs select-none">
+      {/* Mobile-only Symbol & TF selector pill (hidden on desktop view) */}
+      {mobileSymbolPill}
 
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-2xs sm:text-xs text-theme-text-muted">
+      {/* OHLC Bar Legend (pointer-events-none so crosshairs interact seamlessly) */}
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-2xs sm:text-xs text-theme-text-muted pointer-events-none">
         <div className="flex items-center gap-1">
           <span>{legendContent.open}:</span>
           <span className="text-theme-text-primary font-medium">{open.toFixed(precision)}</span>

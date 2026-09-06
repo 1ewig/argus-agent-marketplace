@@ -91,7 +91,9 @@ export const DashboardHeader = memo(function DashboardHeader({
             whileTap={tapScalePill}
             onClick={onOpenSymbolSearch}
             title={APP_CONTENT.chat.switchSymbolTooltip}
-            className="group inline-flex items-center gap-1.5 px-2.5 py-1.5 -ml-2 rounded-lg text-theme-text-primary hover:bg-theme-bg-surface active:bg-theme-bg-elevated border border-transparent hover:border-theme-border-subtle transition-colors cursor-pointer select-none shrink-0"
+            className={`group ${
+              stageView === 'chart' ? 'hidden md:inline-flex' : 'inline-flex'
+            } items-center gap-1.5 px-2.5 py-1.5 -ml-2 rounded-lg text-theme-text-primary hover:bg-theme-bg-surface active:bg-theme-bg-elevated border border-transparent hover:border-theme-border-subtle transition-colors cursor-pointer select-none shrink-0`}
           >
             {isGlobal ? (
               <>

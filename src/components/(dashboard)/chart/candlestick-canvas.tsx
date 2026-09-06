@@ -18,7 +18,6 @@ import {
   type UTCTimestamp,
   type MouseEventParams,
   type Time,
-  type LogicalRange,
 } from 'lightweight-charts';
 
 export interface ChartCandleItem {
@@ -38,135 +37,107 @@ export interface CandlestickCanvasHandle {
 export interface CandlestickCanvasProps {
   candles: ChartCandleItem[];
   precision?: number;
-  /** Set to true for floating numbers, or false for true edge-to-edge floating candles (default: false) */
-  showAxes?: boolean;
-  /** Number of empty buffer bars allowed past the first/last candle before clamping (default: 6) */
-  boundaryBuffer?: number;
   onCrosshairMove?: (candle: ChartCandleItem | null) => void;
 }
 
+// Minimal, refined palette
 const UP_COLOR = '#0ecb81';
 const DOWN_COLOR = '#f6465d';
+const MUTED_TEXT = '#5e6673';
+const CROSSHAIR_LINE = 'rgba(255, 255, 255, 0.12)';
+const BADGE_BG = '#161a1e';
 
 export const CandlestickCanvas = forwardRef<CandlestickCanvasHandle, CandlestickCanvasProps>(
-  function CandlestickCanvas(
-    {
-      candles,
-      precision = 2,
-      showAxes = false,
-      boundaryBuffer = 6,
-      onCrosshairMove,
-    },
-    ref
-  ) {
+  function CandlestickCanvas({ candles, precision = 2, onCrosshairMove }, ref) {
     const containerRef = useRef<HTMLDivElement | null>(null);
     const chartRef = useRef<IChartApi | null>(null);
     const seriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
     const candlesRef = useRef<ChartCandleItem[]>(candles);
-    const isClampingRef = useRef<boolean>(false);
 
-    // Zoom and position to show the latest ~36 candles
     const zoomToRecent = useCallback(() => {
       if (!chartRef.current || !candlesRef.current.length) return;
       const total = candlesRef.current.length;
       const visibleBars = 36;
       chartRef.current.timeScale().setVisibleLogicalRange({
         from: Math.max(0, total - visibleBars),
-        to: total + 2,
+        to: total + 4,
       });
     }, []);
 
-    // Expose handle methods for the parent component
     useImperativeHandle(
       ref,
       () => ({
         zoomToRecent,
         updateCandle: (candle: ChartCandleItem) => {
-          if (!seriesRef.current) return;
-          seriesRef.current.update(candle as CandlestickData<UTCTimestamp>);
-
-          // Keep internal array synced so boundary limits dynamically follow live candles
-          const arr = candlesRef.current;
-          if (arr.length > 0 && arr[arr.length - 1].time === candle.time) {
-            arr[arr.length - 1] = candle;
-          } else {
-            arr.push(candle);
+          if (seriesRef.current) {
+            seriesRef.current.update(candle as CandlestickData<UTCTimestamp>);
           }
         },
       }),
       [zoomToRecent]
     );
 
-    // Initialize Lightweight Charts instance
+    // Initialize minimal Lightweight Charts canvas
     useEffect(() => {
       const container = containerRef.current;
       if (!container) return;
-
-      // Wipe any orphaned DOM nodes on Next.js Fast Refresh
-      container.replaceChildren();
 
       const chart = createChart(container, {
         layout: {
           attributionLogo: false,
           background: { color: 'transparent' },
-          textColor: '#5e6673',
+          textColor: MUTED_TEXT,
           fontSize: 10,
           fontFamily: "'JetBrains Mono', monospace",
         },
-        // Remove all grid lines
+        // Remove all grid lines for an unobstructed canvas
         grid: {
           vertLines: { visible: false },
           horzLines: { visible: false },
         },
-        // Faint, non-intrusive crosshair guides
+        // Ultra-subtle, minimal crosshairs
         crosshair: {
           mode: CrosshairMode.Normal,
           vertLine: {
-            color: 'rgba(255, 255, 255, 0.08)',
+            color: CROSSHAIR_LINE,
             width: 1,
             style: LineStyle.Dotted,
-            labelVisible: showAxes,
+            labelBackgroundColor: BADGE_BG,
           },
           horzLine: {
-            color: 'rgba(255, 255, 255, 0.08)',
+            color: CROSSHAIR_LINE,
             width: 1,
             style: LineStyle.Dotted,
-            labelVisible: showAxes,
+            labelBackgroundColor: BADGE_BG,
           },
         },
-        // Right price axis: completely removed unless showAxes is explicitly true
+        // Frameless price scale with breathing margins
         rightPriceScale: {
-          visible: showAxes,
           borderVisible: false,
-          scaleMargins: { top: 0.12, bottom: 0.12 },
+          scaleMargins: { top: 0.14, bottom: 0.14 },
           autoScale: true,
+          mode: 0,
         },
-        leftPriceScale: {
-          visible: false,
-        },
-        // Bottom time axis: completely removed unless showAxes is explicitly true
+        // Frameless time scale
         timeScale: {
-          visible: showAxes,
           borderVisible: false,
           timeVisible: true,
           secondsVisible: false,
-          barSpacing: 16,
-          minBarSpacing: 5,
-          rightOffset: 4,
+          barSpacing: 18,
+          minBarSpacing: 6,
+          rightOffset: 8,
         },
-        handleScroll: true,
-        handleScale: true,
       });
 
-      // Pure floating candlesticks
       const series = chart.addSeries(CandlestickSeries, {
         upColor: UP_COLOR,
         downColor: DOWN_COLOR,
         borderVisible: false,
         wickUpColor: UP_COLOR,
         wickDownColor: DOWN_COLOR,
+        // Hide full-canvas horizontal price projection line, keep badge on axis
         priceLineVisible: false,
-        lastValueVisible: showAxes,
+        lastValueVisible: true,
         priceFormat: {
           type: 'price',
           precision,
@@ -177,52 +148,7 @@ export const CandlestickCanvas = forwardRef<CandlestickCanvasHandle, Candlestick
       chartRef.current = chart;
       seriesRef.current = series;
 
-      // Restrict panning beyond the start and end of available candles
-      const handleLogicalRangeChange = (range: LogicalRange | null) => {
-        if (!range || isClampingRef.current || !candlesRef.current.length) return;
-
-        const totalBars = candlesRef.current.length;
-        const minAllowedFrom = -boundaryBuffer;
-        const maxAllowedTo = totalBars - 1 + boundaryBuffer;
-        const maxSpan = maxAllowedTo - minAllowedFrom;
-        const currentSpan = range.to - range.from;
-
-        let from: number = range.from;
-        let to: number = range.to;
-        let clamped = false;
-
-        // 1. Prevent zooming out past total available data
-        if (currentSpan > maxSpan) {
-          from = minAllowedFrom;
-          to = maxAllowedTo;
-          clamped = true;
-        } else {
-          // 2. Prevent dragging too far into the past (left)
-          if (from < minAllowedFrom) {
-            from = minAllowedFrom;
-            to = minAllowedFrom + currentSpan;
-            clamped = true;
-          }
-          // 3. Prevent dragging too far into the future (right)
-          if (to > maxAllowedTo) {
-            to = maxAllowedTo;
-            from = maxAllowedTo - currentSpan;
-            clamped = true;
-          }
-        }
-
-        if (clamped) {
-          isClampingRef.current = true;
-          chart.timeScale().setVisibleLogicalRange({ from, to });
-          requestAnimationFrame(() => {
-            isClampingRef.current = false;
-          });
-        }
-      };
-
-      chart.timeScale().subscribeVisibleLogicalRangeChange(handleLogicalRangeChange);
-
-      // Synchronize hover state with external HUD/legend
+      // Handle Crosshair sync
       const handleCrosshair = (param: MouseEventParams<Time>) => {
         if (!onCrosshairMove) return;
         if (!param || !param.time || !param.seriesData) {
@@ -246,10 +172,10 @@ export const CandlestickCanvas = forwardRef<CandlestickCanvasHandle, Candlestick
 
       chart.subscribeCrosshairMove(handleCrosshair);
 
-      // Auto-resize on container dimension changes
+      // Auto-resize on container resize
       const resizeObserver = new ResizeObserver((entries) => {
         const entry = entries[0];
-        if (entry?.contentRect) {
+        if (entry && entry.contentRect) {
           const { width, height } = entry.contentRect;
           if (width > 0 && height > 0) {
             chart.applyOptions({ width, height });
@@ -258,23 +184,16 @@ export const CandlestickCanvas = forwardRef<CandlestickCanvasHandle, Candlestick
       });
       resizeObserver.observe(container);
 
-      // Load initial candles if already available
-      if (candlesRef.current.length > 0) {
-        series.setData(candlesRef.current as CandlestickData<UTCTimestamp>[]);
-        zoomToRecent();
-      }
-
       return () => {
-        chart.timeScale().unsubscribeVisibleLogicalRangeChange(handleLogicalRangeChange);
         chart.unsubscribeCrosshairMove(handleCrosshair);
         resizeObserver.disconnect();
         chart.remove();
         chartRef.current = null;
         seriesRef.current = null;
       };
-    }, [precision, showAxes, boundaryBuffer, onCrosshairMove, zoomToRecent]);
+    }, [precision, onCrosshairMove]);
 
-    // Handle dataset changes (timeframe switches, new symbol, etc.)
+    // Update historical candle dataset
     useEffect(() => {
       candlesRef.current = candles;
       if (!seriesRef.current || !candles.length) return;
@@ -289,5 +208,3 @@ export const CandlestickCanvas = forwardRef<CandlestickCanvasHandle, Candlestick
     );
   }
 );
-
-CandlestickCanvas.displayName = 'CandlestickCanvas';
