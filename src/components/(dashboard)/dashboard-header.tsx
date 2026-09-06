@@ -233,7 +233,7 @@ export const DashboardHeader = memo(function DashboardHeader({
 
       {/* Right Header Section: Agent/Chart Switcher + New Chat + Market Panel Toggle */}
       <div className="flex items-center gap-2 shrink-0">
-        {/* Stage View Switcher Button (Desktop & Tablet, or icon on mobile when in agent mode) */}
+        {/* Stage View Switcher Button (Desktop & Tablet only, hidden on mobile header) */}
         <motion.button
           type="button"
           whileTap={tapScalePill}
@@ -244,19 +244,19 @@ export const DashboardHeader = memo(function DashboardHeader({
               : APP_CONTENT.chart.switchToAgent
           }
           aria-label={APP_CONTENT.chart.stageSwitchAria}
-          className={`size-8 sm:h-8 sm:w-auto sm:px-2.5 rounded-lg text-xs font-semibold inline-flex items-center justify-center gap-1.5 cursor-pointer select-none transition-colors border ${stageView === 'chart'
-              ? 'hidden md:inline-flex bg-theme-bg-elevated text-theme-brand-binance border-theme-border-subtle shadow-2xs font-bold'
+          className={`h-8 px-2.5 rounded-lg text-xs font-semibold hidden md:inline-flex items-center justify-center gap-1.5 cursor-pointer select-none transition-colors border ${stageView === 'chart'
+              ? 'bg-theme-bg-elevated text-theme-brand-binance border-theme-border-subtle shadow-2xs font-bold'
               : 'bg-theme-bg-surface text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-elevated border-theme-border-subtle/50'
             }`}
         >
           {stageView === 'agent' ? (
             <>
-              <LineChart className="size-4 sm:size-3.5 text-theme-brand-binance shrink-0" />
+              <LineChart className="size-3.5 text-theme-brand-binance shrink-0" />
               <span className="hidden sm:inline font-mono">{APP_CONTENT.sidebar.chartView}</span>
             </>
           ) : (
             <>
-              <Bot className="size-4 sm:size-3.5 text-theme-brand-binance shrink-0" />
+              <Bot className="size-3.5 text-theme-brand-binance shrink-0" />
               <span className="hidden sm:inline font-mono">{APP_CONTENT.sidebar.agentView}</span>
             </>
           )}

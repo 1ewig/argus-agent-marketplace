@@ -2,7 +2,7 @@
 
 import React, { useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bot } from 'lucide-react';
+import { Bot, LineChart } from 'lucide-react';
 import { useAgentChat, useBinanceMarketStream } from '@/hooks';
 import { isGlobalSymbol, normalizeSymbolForDisplay } from '@/lib/utils';
 import { parseSymbolAssets } from '@/lib/symbols';
@@ -189,24 +189,37 @@ export function DashboardClient({ mode = 'simulation' }: DashboardClientProps) {
         />
       </div>
 
-      {/* Mobile Floating Action Button (FAB) on Bottom Right: Quick switch from Chart to Agent */}
-      <AnimatePresence>
-        {stageView === 'chart' && (
-          <motion.button
-            type="button"
-            whileTap={tapScalePill}
-            initial={{ scale: 0, opacity: 0, y: 12 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0, opacity: 0, y: 12 }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
-            onClick={handleToggleStageView}
-            title={APP_CONTENT.chart.switchToAgent}
-            aria-label={APP_CONTENT.chart.switchToAgent}
-            className="md:hidden fixed bottom-5 right-5 z-40 size-12 rounded-full bg-theme-brand-binance text-theme-bg-overlay shadow-xl shadow-black/40 flex items-center justify-center cursor-pointer border border-theme-brand-binance/50 hover:brightness-110 active:scale-95 transition-all select-none"
-          >
+      {/* Mobile Floating Action Button (FAB) on Bottom Right: Quick toggle between Agent & Chart */}
+      <AnimatePresence mode="wait">
+        <motion.button
+          key={`mobile-stage-fab-${stageView}`}
+          type="button"
+          whileTap={tapScalePill}
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.8, opacity: 0 }}
+          transition={{ duration: 0.15, ease: 'easeOut' }}
+          onClick={handleToggleStageView}
+          title={
+            stageView === 'agent'
+              ? APP_CONTENT.chart.switchToChart
+              : APP_CONTENT.chart.switchToAgent
+          }
+          aria-label={
+            stageView === 'agent'
+              ? APP_CONTENT.chart.switchToChart
+              : APP_CONTENT.chart.switchToAgent
+          }
+          className={`md:hidden fixed z-40 size-12 rounded-full bg-theme-brand-binance text-theme-bg-overlay shadow-xl shadow-black/40 flex items-center justify-center cursor-pointer border border-theme-brand-binance/50 hover:brightness-110 active:scale-95 transition-all select-none ${
+            stageView === 'agent' && !isChatEmpty ? 'bottom-22 right-4' : 'bottom-5 right-5'
+          }`}
+        >
+          {stageView === 'agent' ? (
+            <LineChart className="size-5.5 stroke-[2.25]" />
+          ) : (
             <Bot className="size-6 stroke-[2.25]" />
-          </motion.button>
-        )}
+          )}
+        </motion.button>
       </AnimatePresence>
     </div>
   );
