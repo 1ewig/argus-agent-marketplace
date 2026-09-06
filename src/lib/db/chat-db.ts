@@ -35,7 +35,12 @@ export function normalizeMessageSteps(
 ): AgentExecutionStep[] {
   if (message.steps && message.steps.length > 0) {
     return message.steps
-      .filter((s) => s.type !== 'thinking' || Boolean(s.reasoningText?.trim()))
+      .filter(
+        (s) =>
+          s.type !== 'thinking' ||
+          Boolean(s.reasoningText?.trim()) ||
+          (isStreaming && s.status === 'active')
+      )
       .map((s) => {
         // Guard against any step stuck in 'active' from prior interruptions or errors on persisted historical messages
         if (s.status === 'active' && !isStreaming) {

@@ -33,16 +33,16 @@ export const AgentProcessTimeline = memo(function AgentProcessTimeline({
 }: AgentProcessTimelineProps) {
   const [expandedDetailsIds, setExpandedDetailsIds] = useState<Record<string, boolean>>({});
 
-  // Only display thinking steps that contain actual reasoning content
+  // Only display thinking steps that contain actual reasoning content or are actively thinking
   const visibleSteps = useMemo(() => {
     if (!steps || steps.length === 0) return [];
     return steps.filter((step) => {
       if (step.type === 'thinking') {
-        return Boolean(step.reasoningText?.trim());
+        return Boolean(step.reasoningText?.trim()) || (isStreaming && step.status === 'active');
       }
       return true;
     });
-  }, [steps]);
+  }, [steps, isStreaming]);
 
   const toggleDetails = useCallback((id: string) => {
     setExpandedDetailsIds((prev) => ({

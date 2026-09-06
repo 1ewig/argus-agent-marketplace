@@ -268,6 +268,16 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
                 />
               ))}
 
+              {/* Real-time Streaming Agent Response with Live Process Timeline */}
+              {activeStreamMessage && (
+                <ChatMessage
+                  key={activeStreamMessage.id}
+                  message={activeStreamMessage}
+                  isStreaming={true}
+                  animateEntrance={true}
+                />
+              )}
+
               {isLoading && !activeStreamMessage && (
                 <div className="flex items-center gap-spacing-sm p-spacing-md bg-theme-bg-elevated rounded-xl border border-theme-border-subtle animate-pulse">
                   <AgentLoader className="size-5 text-theme-brand-binance shrink-0" />
