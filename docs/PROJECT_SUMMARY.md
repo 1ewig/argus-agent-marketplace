@@ -64,49 +64,64 @@ src/
 │
 ├── lib/                          # external clients, persistence, shared types
 │   ├── binance-mcp/              # Binance REST client + normalized types
-│   │   ├── public-api-client.ts  # normalizeSymbol + all fetch functions
+│   │   ├── public-api-client.ts  # normalizeSymbol + fetch functions (per-endpoint revalidate)
 │   │   └── types.ts
 │   ├── binance-websocket/        # WS URL builders + message parsers (Spot + Futures)
 │   │   ├── parsers.ts
 │   │   └── types.ts
 │   ├── exa/                      # Exa search client + input/output types + Zod schema
 │   ├── db/                       # Dexie IndexedDB schema + reactive queries
-│   │   ├── chat-db.ts            # v1→v3 migrations, pruning, workspace globals
+│   │   ├── chat-db.ts            # v1→v4 migrations, pruning, intel cache, workspace globals
 │   │   └── queries.ts            # useConversations / useMessages (+prewarm cache)
+│   ├── queries/                  # TanStack queryOptions factories
+│   │   ├── market-intelligence.query.ts # 4-card scan cache (1h stale / 24h GC)
+│   │   └── symbols.query.ts      # cached USDT symbol catalog
 │   ├── agents/                   # client-side transport helpers
 │   │   ├── chat-stream-client.ts # SSE reader for /api/agent/chat
 │   │   └── chat-history.ts       # sliding 10-message context window builder
+│   ├── symbols.ts                # normalizeSymbolForDisplay / parseSymbolAssets / base-asset
 │   ├── types/                    # domain types (trades, risk certs, invoices, x402)
-│   └── utils.ts                  # cn(), id/time helpers
+│   └── utils.ts                  # cn(), GLOBAL workspace helpers, id/time helpers
 │
-├── hooks/                        # specialized reactive hooks (barrel in index.ts)
-│   ├── use-agent-chat.ts         # chat orchestration + streaming + persistence
-│   ├── use-chat-sessions.ts      # session CRUD, symbol workspace grouping
-│   ├── use-chat-scroll.ts        # RAF-throttled scroll orchestration
-│   ├── use-binance-market-stream.ts # live spot WS ticker/depth (tab-visibility sleep)
-│   ├── use-binance-futures-funding.ts # futures mark-price/funding stream + REST availability
-│   ├── use-symbol-search.ts      # symbol catalog, fuzzy + keyboard nav, ⌘K
-│   ├── use-url-symbol-sync.ts    # deep-link ?symbol=&chat= sync + back/forward
-│   ├── use-theme.ts / use-sidebar.ts / use-active-timer.ts / use-execution-mode.ts
-│   └── index.ts                  # barrel exports (note: futures-funding is imported directly)
+├── hooks/                        # specialized reactive hooks (barrel aggregates 3 domains)
+│   ├── chat/                     # chat orchestration, sessions & scroll
+│   │   ├── use-agent-chat.ts     # SSE streaming + Dexie persistence orchestration
+│   │   ├── use-chat-sessions.ts  # session CRUD, symbol workspace grouping, Global pinning
+│   │   └── use-chat-scroll.ts    # RAF-throttled scroll orchestration
+│   ├── market/                   # live market data + intelligence
+│   │   ├── use-binance-market-stream.ts # live spot WS ticker/depth (tab-visibility sleep)
+│   │   ├── use-binance-futures-funding.ts # futures mark-price/funding stream + REST availability + countdown
+│   │   ├── use-market-intelligence.ts / use-scan-market-intelligence.ts # TanStack+Dexie cached agent
+│   │   ├── use-symbol-search.ts  # symbol catalog, fuzzy + keyboard nav, ⌘K
+│   │   └── use-sparkline-data.ts / use-sparkline-geometry.ts # micro price sparkline math
+│   ├── ui/                       # generic UX hooks
+│   │   ├── use-theme.ts / use-sidebar.ts / use-active-timer.ts / use-execution-mode.ts
+│   │   ├── use-tab-visibility.ts # useSyncExternalStore visibility tracker (stream sleep)
+│   │   ├── use-url-symbol-sync.ts # deep-link ?symbol=&chat= sync + back/forward
+│   │   └── use-accordion-open-state.ts
+│   └── index.ts                  # aggregate barrel → export * from chat/ market/ ui/
 │
 ├── components/                   # pure presentation (decoupled from transports)
 │   ├── (dashboard)/
 │   │   ├── dashboard-client.tsx  # chat stage + market panel + empty state orchestration
 │   │   ├── dashboard-header.tsx  # workspace switcher, New Chat, Intelligence trigger toggle
 │   │   ├── chat/                 # empty-state, dock, input, message, message-list, timeline,
-│   │   │                         #   thought-accordion, work-group, tool-result-card, tool-results/
-│   │   ├── market-panel/         # telemetry/ (price ticker, sparkline, order book depth,
-│   │   │                         #   futures funding) + agents/ (market-intelligence-agent-view)
+│   │   │                         #   thought-accordion, work-group, tool-result-card,
+│   │   │                         #   markdown-view + tool-results/ (10 per-tool cards)
+│   │   ├── market-panel/         # collapsible right deck (Live Telemetry / Market Intelligence)
+│   │   │   ├── telemetry/        # price-ticker (+sparkline), futures-funding, order-book-depth
+│   │   │   └── agents/           # market-intelligence-agent-view + cards/ (4 executive cards)
 │   │   └── market-chart-view.tsx # placeholder trading-chart stage
-│   ├── sidebar/                  # nav views, workspaces, session list, theme toggle
+│   ├── sidebar/                  # workspace groups, session list, nav views, theme toggle
 │   ├── common/                   # agent-loader, argus-icon, confirm-dialog
 │   ├── modals/                   # symbol search modal
 │   ├── providers/                # QueryProvider (TanStack React Query)
 │   └── left-sidebar.tsx
 │
 ├── stores/
-│   └── app-store.ts              # Zustand persisted global UI state (symbol, sessions, panel, tabs)
+│   └── app-store.ts              # Zustand persisted UI state (symbol, panel, tabs, streams,
+│                                 #  sidebar) via persist → localStorage; 7-tab rightPanelTab
+│                                 #  enum reserved for future sidecar agents (UI renders 2)
 │
 ├── constants/
 │   └── content/                  # ALL user-facing copy, modularized (AGENTS.md Rule 1)
@@ -131,7 +146,7 @@ src/
 
 ### 4.1 Chat request lifecycle (SSE streaming)
 
-1. User submits a message in `ChatInput` → `useAgentChat.handleSend` ([`src/hooks/use-agent-chat.ts`](../src/hooks/use-agent-chat.ts)).
+1. User submits a message in `ChatInput` → `useAgentChat.handleSend` ([`src/hooks/chat/use-agent-chat.ts`](../src/hooks/chat/use-agent-chat.ts)).
 2. The user message is optimistically persisted to Dexie + memory cache; an `AbortController` is created for cancellation (`handleStop`).
 3. `streamAgentChat` ([`src/lib/agents/chat-stream-client.ts`](../src/lib/agents/chat-stream-client.ts)) `POST`s to `/api/agent/chat` with `{ message, mode, symbol, history, isFirstTurn }`.
 4. The route validates the body against `AgentChatRequestSchema`, then calls `executeAgentStream` ([`src/agent/chat/stream-engine.ts`](../src/agent/chat/stream-engine.ts)).
@@ -143,17 +158,17 @@ src/
 ### 4.2 Market Intelligence Agent lifecycle
 
 1. User opens the **Market Intelligence** tab (from the right panel tabs or the header trigger) → [`MarketIntelligenceAgentView`](../src/components/(dashboard)/market-panel/agents/market-intelligence-agent-view.tsx) mounts.
-2. TanStack React Query keyed `['market-intelligence', symbol]` resolves from React Query cache or `localStorage` (`argus_intel_<SYMBOL>`) if fresh (<1h), then `POST /api/agent/intelligence` on first miss.
+2. TanStack React Query keyed `['market-intelligence', symbol]` resolves from the React Query cache, the synchronous `getCachedIntelligence` (in-memory + `localStorage` `argus_intel_<SYMBOL>`), or Dexie v4 `marketIntelligence` storage while fresh (<1h) — then `POST /api/agent/intelligence` on first miss.
 3. The route validates `{ symbol, apiKey?, providerOverride? }` and calls `executeMarketIntelligence` ([`src/agent/intelligence/engine.ts`](../src/agent/intelligence/engine.ts)).
 4. The engine fires **9 parallel `Promise.allSettled` fetches**: ticker price, 20-level order book, 15m klines (30), 1h klines (24), 5m VWAP, funding rate, global long/short account ratio (5m×5), top trader long/short (5m×5), and Exa news (3 results, `category: 'news'`).
 5. Quantitative anchors are derived deterministically (best bid/ask, bid/ask volume imbalance, 15m/1h range low/high) and injected — alongside live news snippets — into a grounded prompt.
 6. `generateObject` (primary model, then backup on failure) fills the strict `MarketIntelligencePayloadSchema`. If both models fail, a **deterministic fallback synthesizer** computes the 4-card payload from the same raw exchange math (never hallucinated prices).
-7. The response is returned via JSON, cached in React Query (`staleTime: 1h`, `gcTime: 24h`) and `localStorage`, and rendered as 4 executive cards. The panel header's **Scan Market** button (`invalidateQueries`) forces a fresh scan.
+7. The response is returned via JSON, persisted to Dexie v4 (`marketIntelligence` table) + `localStorage` (`argus_intel_<SYMBOL>`), hydrated into React Query (`staleTime: 1h`, `gcTime: 24h`), and rendered as 4 executive cards. The panel header's **Scan Market** button (`handleScan` → `fetchMarketIntelligence({ force: true })`) forces a fresh scan.
 
 ### 4.3 Live market telemetry (WebSocket)
 
-- [`use-binance-market-stream`](../src/hooks/use-binance-market-stream.ts) opens a combined Binance Spot stream: `<symbol>@ticker` (1000ms) + `<symbol>@depth10@100ms`.
-- [`use-binance-futures-funding`](../src/hooks/use-binance-futures-funding.ts) performs an initial REST `premiumIndex` fetch (instant display + availability check), then a Futures `<symbol>@markPrice@1s` stream; drives a per-second settlement countdown.
+- [`use-binance-market-stream`](../src/hooks/market/use-binance-market-stream.ts) opens a combined Binance Spot stream: `<symbol>@ticker` (1000ms) + `<symbol>@depth10@100ms`.
+- [`use-binance-futures-funding`](../src/hooks/market/use-binance-futures-funding.ts) performs an initial REST `premiumIndex` fetch (instant display + availability check), then a Futures `<symbol>@markPrice@1s` stream; drives a per-second settlement countdown.
 - Parsers in [`src/lib/binance-websocket/parsers.ts`](../src/lib/binance-websocket/parsers.ts) normalize raw frames into UI-ready models (spread, depth imbalance, annualized APR, flash direction, precision, basis).
 - Both streams **auto-sleep when the browser tab is hidden** (`visibilitychange` + `useSyncExternalStore`) and auto-reconnect with exponential backoff (Spot: `min(1000·1.5^retries, 10s)`; Futures: fixed 3s).
 
@@ -180,7 +195,7 @@ Each turn maintains an ordered list of `AgentExecutionStep` with types `thinking
 - Dangling `active` steps are finalized (completed/error) on completion, error, or abort; failed primary attempts before failover mark leftover steps as `error` with "Switched to backup model".
 
 ### Output post-processing
-- `SessionTitleStreamFilter` intercepts `<session_title>` so raw XML never leaks to the client (buffers across chunk boundaries); `extractSessionTitle` falls back to a keyword-driven `generateFallbackSessionTitle`.
+- `<session_title>` is captured **in-stream**: `executeAgentStream` regex-matches the accumulated text and emits a `session_title` SSE event the moment a complete tag appears; `extractSessionTitle` (`transforms/title-stream-filter.ts`) strips the tag from the final payload and falls back to a keyword-driven `generateFallbackSessionTitle` on turn 1, while `sanitizeAgentText` removes any lingering or in-flight XML so raw markup never reaches the UI.
 - `extractFollowUpQuestions` parses the trailing `<follow_up_questions>` block into `followUpQuestions[]` and pads to exactly 3 with symbol-aware fallbacks.
 
 ### System prompt guards ([`src/agent/prompts/`](../src/agent/prompts/))
@@ -230,12 +245,15 @@ Dexie `ArgusDatabase` with **versioned migrations**:
 - **v1:** flat `messages` (`id, symbol, timestamp, role`).
 - **v2:** multi-conversation threads — adds `conversations` table, indexes `conversationId`/`status`, backfills legacy rows to a default conversation.
 - **v3:** symbol workspaces — adds `symbol` index on conversations, backfills to `BTCUSDT`.
+- **v4:** symbol-specific Market Intelligence — adds `marketIntelligence` table keyed by `symbol` (`symbol, timestamp`), enabling 1-hour durable snapshot caching.
 
 Key behaviors:
 - `ConversationRecord` (id, title, symbol, createdAt, updatedAt) and `ChatMessageRecord` (id, conversationId, role, content, symbol?, status, followUpQuestions?, toolCalls?, steps?, stepCount?, workedDurationMs?, timestamp).
 - **Special conversations:** `DEFAULT_CONVERSATION_ID = 'default'`, `DEFAULT_GLOBAL_CONVERSATION_ID = 'default_global'`, `GLOBAL_WORKSPACE_SYMBOL = 'GLOBAL'`; `ensureDefaultGlobalConversation()` always keeps a permanent Global workspace chat.
 - **Retention pruning:** `MAX_MESSAGES_PER_CONVERSATION = 100` (oldest trimmed after every save).
 - **Message cache** (`prewarmMessagesCache`/`updateCachedMessage`/`useMessages` in [`queries.ts`](../src/lib/db/queries.ts)) eliminates flash-of-empty when switching conversations (0ms switching).
+- **Intelligence cache** — three-tier read path: synchronous in-memory map + `localStorage` (`argus_intel_<SYMBOL>`) for 0ms refresh restore (`getCachedIntelligence`), backed by the Dexie `marketIntelligence` table (`getStoredIntelligence`/`saveStoredIntelligence`), all respecting `ONE_HOUR_MS` freshness; `prewarmIntelligenceCache()` rehydrates memory + `localStorage` on boot.
+- `normalizeMessageSteps` backfills legacy `toolCalls`-only message records into the new `steps` timeline for rendering.
 - `prepareConversationHistory` ([`src/lib/agents/chat-history.ts`](../src/lib/agents/chat-history.ts)) builds a sliding 10-message context window, filtering `error` states.
 - `useChatSessions` groups conversations into symbol workspaces (`symbolGroups`) via `parseSymbolAssets`, keeps Global pinned at top, and syncs the persisted `selectedSymbol` workspace across refresh/session-switching.
 
