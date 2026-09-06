@@ -3,87 +3,117 @@
 > A grounded, real-time crypto assistant pairing live Binance exchange streams with Exa AI neural search to bring focus and clarity to fast-moving markets.  
 > Built for the **Binance Agent OS Mini Hackathon (Track A)**.
 
+![Argus Live Telemetry Deck](public/images/argus-live-telemetry.webp)
+
 ---
 
 ## The Story Behind Argus
 
-If you've ever traded crypto during high volatility, you know the feeling of "tab overload." 
+If you've ever traded crypto during high volatility, you know the feeling of "tab overload."
 
-You have Binance Spot open in one window, Futures funding rates in another, order book depth on a third, and Twitter/Telegram feeds open on your phone trying to figure out why a token just spiked 8% in five minutes. By the time you piece everything together, the move has already played out.
+You have Binance Spot open in one window, Futures funding rates in another, order book depth on a third, and Twitter or Telegram open on your phone trying to figure out why a token just spiked 8% in five minutes. By the time you piece everything together, the move has already played out.
 
-We built **Argus** to solve this. 
+We built **Argus** to solve this.
 
 Think of Argus as that calm, analytical teammate sitting next to you at the desk. Instead of guessing, giving vague opinions, or summarizing stale numbers, Argus reaches directly into live Binance exchange endpoints and Exa neural search in parallel. It pulls the exact numbers that matter — spread, order book imbalance, funding APR, whale positioning, and breaking news catalysts — and breaks them down in plain, actionable English.
 
 ---
 
-## Why Argus Feels Different
+## Guided Visual Tour of the Workstation
 
-### 🎯 Zero Guesswork, 100% Authentic Exchange Data
-Argus never estimates prices or invents metrics. When you ask about Bitcoin, Solana, BNB, or any USDT pair, the agent pulls directly from live Binance Spot and Futures public endpoints. If a pair isn't listed or data isn't available, Argus tells you upfront rather than making something up.
+### 1. Real-Time Telemetry Deck (`Spot + Futures WebSocket`)
 
-### ⚡ Parallel Checks in Seconds
-Markets move too quickly for sequential tool calling. When you ask:  
-*"Why is SOL rallying, how does the order book look, and what are perpetual funding rates doing?"*  
-Argus dispatches requests for price, 24h stats, 20-level order book depth, futures funding, and live crypto journalism simultaneously in a single round-trip.
-
-### 📊 Real-Time Market Telemetry Deck
 Beside your conversation sits a live telemetry panel connected directly to Binance WebSockets:
-* **Live Ticker:** Sub-second price ticks with direction flash and a smoothed micro-sparkline.
-* **Order Book Depth:** 20-level bid/ask visualizer showing real-time wall depth, spread percentage, and buyer vs. seller imbalance.
-* **Futures Funding Sentinel:** Live mark price, annualized APR, basis, and an active countdown timer to the next 8-hour settlement.
 
-### 🧠 Market Intelligence Sidecar Agent
-Switch the right panel to **Market Intelligence** and watch a background sidecar agent scan 9 exchange feeds in parallel (klines, order book, 5m VWAP, funding, whale vs. retail long/short ratios, and news catalysts). It synthesizes them into **four executive cards**:
-1. **CONTROL:** Who owns the current auction (buyers vs. sellers, bid wall support).
-2. **KEY LEVELS:** Range lows/highs, VWAP anchor, and immediate liquidity targets.
-3. **POSITIONING:** Whale sentiment, retail account skew, and perpetual funding pressure.
-4. **TACTICAL PLAYBOOK:** Actionable scenarios with defined invalidation levels.
+![Argus Live Telemetry Deck](public/images/argus-live-telemetry.webp)
 
-*Even if LLM rate limits are reached, a deterministic mathematical fallback computes the cards directly from raw exchange math — no broken views, ever.*
+* **Live Ticker:** Real-time price ticks with directional flash, 24h high/low bar, and a smoothed 30-minute micro-trend sparkline.
+* **Perpetual Futures Sentinel:** Live mark price, index price, spot-futures basis, annualized APR, and an active settlement countdown timer ticking toward the next funding cycle.
+* **Order Book Depth Imbalance:** 20-level visualizer showing real-time bid vs. ask distribution, spread percentage, and buyer vs. seller volume defense shelves.
 
-### 🌐 Global Macro Deck (`GLOBAL` Workspace)
-Need a birds-eye view before diving into a specific coin? Switch to the `GLOBAL` workspace to view:
-* **Market Pulse:** Overall market bias across major assets.
-* **Top Movers:** Leading gainers and losers across Binance USDT pairs.
-* **Funding Heatmap:** Systemic leverage and annualized APR across core perpetual contracts.
-* **Macro Positioning:** Whale vs. retail directional bias for BTC and ETH.
+---
 
-### 📈 Interactive Trading Chart Stage
-Toggle seamlessly between the conversational agent stage and a full-screen candlestick chart powered by Lightweight Charts, complete with Binance timeframe selection (`15m`, `1h`, `4h`, `1D`, `7D`, `30D`) and live tick updates.
+### 2. Market Intelligence Sidecar Agent (`Autonomous 4-Card Synthesis`)
 
-### 🔒 Private by Default & Stored Locally
-Your conversations, workspace notes, and session history never leave your machine. Everything is persisted locally in your browser via Dexie IndexedDB. No accounts, no cookies, no tracking.
+Switch the right panel tab to **Market Intelligence** to activate an autonomous background sidecar agent. It scans 9 live exchange feeds simultaneously (klines, order book, 5m VWAP, funding rates, whale vs. retail positioning, and Exa news catalysts) and outputs **four executive cards**:
+
+![Argus Market Intelligence Agent](public/images/argus-market-intelligence.webp)
+
+1. **CONTROL:** Who owns the current auction — live bid/ask volume imbalance ratio (e.g. `3.31x bid defense`) and institutional order book walls.
+2. **KEY LEVELS:** Clear quantitative support and resistance anchors, 5m VWAP pivots, and 15m range targets.
+3. **POSITIONING:** Whale sentiment vs. retail account long/short skew, annualized funding rate pressure, and systemic bias.
+4. **TACTICAL PLAYBOOK:** Concrete trade setups with target levels, invalidation thresholds, and risk conditions.
+
+> **Reliability Guarantee:** The intelligence snapshot is cached locally for 1 hour with an active countdown timer. Even if LLM rate limits occur, a deterministic mathematical synthesizer derives the exact 4-card payload from raw exchange math — never synthetic or broken views.
+
+---
+
+### 3. Global Macro Deck (`GLOBAL` Workspace)
+
+When you need a top-down view of market conditions before zooming into individual tokens, jump into the `GLOBAL` workspace:
+
+![Argus Global Market Macro Deck](public/images/argus-global-macro-deck.webp)
+
+* **Market Pulse:** Real-time directional bias and 24h performance across major core assets (BTC, ETH, SOL, BNB).
+* **Top Movers:** Leading gainers and losers across the active Binance USDT universe.
+* **Funding Heatmap:** Systemic leverage, funding rates, and annualized APR across perpetual contracts to spot crowded trades.
+* **Macro Positioning:** Retail vs. whale directional positioning for BTC and ETH.
+* **Instant Cache Refresh:** Dedicated cache-busting button to pull fresh snapshots on demand.
+
+---
+
+### 4. Interactive Candlestick Trading Chart
+
+Argus lets you toggle smoothly between the conversational AI stage and a full-screen candlestick chart powered by Lightweight Charts, keeping your telemetry deck right beside you:
+
+![Argus Candlestick Trading Chart](public/images/argus-candlestick-chart.webp)
+
+* **Direct Exchange Feeds:** Binance historical klines combined with a live WebSocket kline and ticker stream.
+* **Multi-Timeframe Switcher:** Seamlessly switch intervals (`15m`, `1h`, `4h`, `1D`, `7D`, `30D`).
+* **Floating Dynamic Legend:** Real-time Open, High, Low, Close, and Volume precision tracking on hover.
+* **Controls:** One-click zoom reset and full-screen trading mode.
+
+---
+
+### 5. Multi-Symbol Workspaces & Local-First Privacy
+
+Organize your trading workflows by currency pairs with dedicated workspace groupings and session history:
+
+![Argus Sidebar Workspaces](public/images/argus-sidebar-workspaces.webp)
+
+* **Symbol Grouping:** Group conversations automatically under `BTC`, `ETH`, `SOL`, `BNB`, `DOGE`, `AVAX`, `SUI`, or `GLOBAL`.
+* **Zero-Flash Switching:** Prewarmed message caching allows instant 0ms switching between symbol threads.
+* **100% Private & Local:** All conversations, session records, and intelligence snapshots are persisted in your browser via Dexie IndexedDB. No external database accounts or tracking scripts required.
 
 ---
 
 ## How It Works in Practice
 
 1. **Pick a Workspace or Search Any Coin:**  
-   Hit `Ctrl + K` (or `Cmd + K` on Mac) to search any active Binance USDT pair, or jump straight into `BTCUSDT`, `ETHUSDT`, `SOLUSDT`, or `GLOBAL`.
+   Hit `Ctrl + K` (or `Cmd + K` on Mac) to search any active Binance USDT pair, or click any symbol group in the sidebar.
 2. **Ask Natural Questions:**  
    * *"What's the 24h momentum on ETH and are buyers or sellers dominating the order book?"*
    * *"What is the funding rate on BTC perpetuals right now and what does the retail long/short ratio look like?"*
    * *"Why is BNB moving today? Search for any major news or governance announcements."*
    * *"Give me a complete tactical breakdown of SOL with key support and resistance levels."*
 3. **Inspect the Process:**  
-   Watch the agent's thought process unfold in an interactive, collapsible timeline. See the exact Binance endpoints called, parameters passed, and raw values returned before the agent synthesizes its final take.
+   Watch the agent's reasoning process unfold in a clean, collapsible timeline. Inspect tool arguments, live exchange results, and token metrics before reading the final takeaway.
 
 ---
 
 ## Architecture & Engineering Standards
 
-Argus was engineered with strict separation of concerns, high-performance streaming, and robust failover:
+Argus was built from the ground up with strict separation of concerns, high-performance streaming, and robust failover:
 
-* **Bun Runtime (`bun@1.4.0+`):** Built and operated strictly with Bun for blazingly fast installs, tests, and execution.
-* **TypeScript 7 Strict & Oxlint:** Zero `any` escapes, fully typed data schemas (Zod v4), and 0 warnings / 0 errors across 170 files.
-* **Smooth Word Streaming:** Multi-step SSE streaming via Vercel AI SDK (`ai@7`) with smooth text batching at ~60Hz display refresh to prevent UI stutter and frame drops.
-* **Multi-Cluster Failover Pool:** Queries rotate through Binance's global API clusters (`api.binance.com`, `data-api.binance.vision`, `api1/2/3.binance.com`, `api-gcp.binance.com`) with automated retry logic on timeouts or rate limits.
-* **Frankfurt Edge Routing (`fra1`):** API routes pin the Frankfurt serverless region to avoid Binance HTTP 451 geo-restrictions on US serverless IP ranges.
-* **Zero Hardcoded Themes / Text:** Pure design token system and 100% centralized copy in accordance with our repository guidelines.
+* **Bun Runtime (`bun@1.4.0+`):** Built and tested strictly with Bun for blazingly fast installs, typechecks, and execution.
+* **TypeScript 7 Strict & Oxlint:** Zero `any` escapes, typed Zod schemas, and 0 warnings / 0 errors across 170 files.
+* **Smooth 60Hz Streaming & Render Isolation:** Multi-step SSE streaming via Vercel AI SDK (`ai@7`) with requestAnimationFrame batching and a dedicated `ChatClient` orchestrator to prevent UI freezes or frame drops.
+* **Multi-Cluster Failover Pool:** Binance REST queries rotate through a multi-cluster pool (`api.binance.com`, `data-api.binance.vision`, `api1/2/3.binance.com`, `api-gcp.binance.com`) with automated retry logic on timeouts or rate limits.
+* **Frankfurt Edge Routing (`fra1`):** Serverless API functions pin the Frankfurt region (`fra1`) to prevent Binance HTTP 451 geo-restrictions on US serverless IP ranges.
+* **Zero Hardcoded Design Tokens / Copy:** Semantic design tokens in `src/app/globals.css` and 100% centralized copy in `src/constants/content/`.
 
-For a full module-by-module technical deep dive, explore our documentation:  
-👉 **[Read the Technical Project Summary (`docs/PROJECT_SUMMARY.md`)](docs/PROJECT_SUMMARY.md)**
+For an exhaustive technical deep dive, explore our documentation:  
+👉 **[Read the Full Technical Project Summary (`docs/PROJECT_SUMMARY.md`)](docs/PROJECT_SUMMARY.md)**
 
 ---
 
@@ -111,7 +141,7 @@ cp .env.example .env.local
 
 Add your keys to `.env.local`:
 ```env
-# Inference Provider ('groq' or 'fireworks')
+# Primary inference provider ('groq' or 'fireworks')
 INFERENCE_PROVIDER=groq
 GROQ_API_KEY=gsk_your_groq_key_here
 
@@ -138,7 +168,7 @@ bun run lint
 
 ## Built for Binance Agent OS
 
-Argus demonstrates what a practical, production-grade autonomous agent on Binance should feel like: grounded in authentic market data, respectful of the user's attention, blazingly fast, and built with modern web engineering rigor.
+Argus demonstrates what a practical, production-grade autonomous agent on Binance should feel like: grounded in authentic exchange feeds, respectful of trader cognitive load, visually stunning, and engineered with uncompromising performance.
 
 Thank you to the Binance team and judges for reviewing our project!
 
