@@ -107,10 +107,32 @@ export function ChartClient({ symbol: propSymbol }: ChartClientProps) {
 
   // 2. Real-time Binance WebSocket Stream (Kline + Ticker)
   useEffect(() => {
+    let isDisposed = false;
     let ws: WebSocket | null = null;
     let isPaused = false;
+    let reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
+    let retryCount = 0;
+
+    const cleanupWs = () => {
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
+        reconnectTimeout = null;
+      }
+      if (ws) {
+        ws.onopen = null;
+        ws.onmessage = null;
+        ws.onerror = null;
+        ws.onclose = null;
+        if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
+          ws.close(1000, 'Normal closure');
+        }
+        ws = null;
+        wsRef.current = null;
+      }
+    };
 
     const connectWs = () => {
+      if (isDisposed) return;
       if (document.hidden) {
         isPaused = true;
         return;
@@ -128,10 +150,20 @@ export function ChartClient({ symbol: propSymbol }: ChartClientProps) {
         wsRef.current = ws;
 
         ws.onopen = () => {
+          if (isDisposed) {
+            cleanupWs();
+            return;
+          }
+          retryCount = 0;
           setWsStatus('connected');
         };
 
         ws.onmessage = (event) => {
+          if (isDisposed) return;
+
+          // Always synchronize status to connected if actively receiving incoming stream frames
+          setWsStatus((prev) => (prev !== 'connected' ? 'connected' : prev));
+
           try {
             const payload = JSON.parse(event.data);
             if (!payload || !payload.stream) return;
@@ -161,17 +193,35 @@ export function ChartClient({ symbol: propSymbol }: ChartClientProps) {
         };
 
         ws.onerror = () => {
-          setWsStatus('error');
+          if (isDisposed) return;
+          if (!ws || (ws.readyState !== WebSocket.OPEN && ws.readyState !== WebSocket.CONNECTING)) {
+            setWsStatus('error');
+          }
         };
 
-        ws.onclose = () => {
+        ws.onclose = (event: CloseEvent) => {
+          if (isDisposed) return;
+          if (event.code === 1000) {
+            return;
+          }
           if (!isPaused) {
+            setWsStatus('connecting');
+            const delay = Math.min(1000 * 1.5 ** retryCount, 8000);
+            retryCount += 1;
+            reconnectTimeout = setTimeout(() => {
+              if (!isDisposed && !isPaused) {
+                connectWs();
+              }
+            }, delay);
+          } else {
             setWsStatus('disconnected');
           }
         };
       } catch (err) {
-        console.error('[ChartClient] WS Init error:', err);
-        setWsStatus('error');
+        if (!isDisposed) {
+          console.error('[ChartClient] WS Init error:', err);
+          setWsStatus('error');
+        }
       }
     };
 
@@ -181,7 +231,7 @@ export function ChartClient({ symbol: propSymbol }: ChartClientProps) {
     const handleVisibilityChange = () => {
       if (document.hidden) {
         isPaused = true;
-        if (ws) ws.close();
+        cleanupWs();
       } else {
         isPaused = false;
         connectWs();
@@ -191,12 +241,9 @@ export function ChartClient({ symbol: propSymbol }: ChartClientProps) {
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
+      isDisposed = true;
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      if (ws) {
-        ws.onclose = null;
-        ws.close();
-        wsRef.current = null;
-      }
+      cleanupWs();
     };
   }, [cleanSymbol, activeTimeframe.binanceInterval]);
 
@@ -259,25 +306,23 @@ export function ChartClient({ symbol: propSymbol }: ChartClientProps) {
 
         {/* Floating Top-Right Action Controls (WS Status, Reset Zoom, Fullscreen) */}
         <div className="absolute top-3 right-4 z-10 flex items-center gap-2">
-          {/* Live WS Status Indicator */}
-          <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-md bg-theme-bg-elevated/90 backdrop-blur-xs border border-theme-border-subtle text-2xs font-mono text-theme-text-muted select-none">
-            <span
-              className={`size-1.5 rounded-full ${
-                wsStatus === 'connected'
-                  ? 'bg-theme-positive-base animate-pulse'
-                  : wsStatus === 'connecting'
-                  ? 'bg-theme-brand-binance animate-ping'
-                  : 'bg-theme-negative-base'
-              }`}
-            />
-            <span>
-              {wsStatus === 'connected'
-                ? APP_CONTENT.chart.liveStreamBadge
-                : wsStatus === 'connecting'
-                ? APP_CONTENT.chart.connectingBadge
-                : APP_CONTENT.chart.offlineBadge}
-            </span>
-          </div>
+          {/* Live WS Status Indicator (hidden once connected) */}
+          {wsStatus !== 'connected' && (
+            <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-md bg-theme-bg-elevated/90 backdrop-blur-xs border border-theme-border-subtle text-2xs font-mono text-theme-text-muted select-none">
+              <span
+                className={`size-1.5 rounded-full ${
+                  wsStatus === 'connecting'
+                    ? 'bg-theme-brand-binance animate-ping'
+                    : 'bg-theme-negative-base'
+                }`}
+              />
+              <span>
+                {wsStatus === 'connecting'
+                  ? APP_CONTENT.chart.connectingBadge
+                  : APP_CONTENT.chart.offlineBadge}
+              </span>
+            </div>
+          )}
 
           {/* Reset Zoom Button */}
           <motion.button

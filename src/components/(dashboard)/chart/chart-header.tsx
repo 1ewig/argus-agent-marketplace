@@ -107,25 +107,23 @@ export const ChartHeader = memo(function ChartHeader({
 
       {/* Right: Connection Status & Actions */}
       <div className="flex items-center gap-2 shrink-0">
-        {/* Live WS Status Indicator */}
-        <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-md bg-theme-bg-elevated border border-theme-border-subtle text-2xs font-mono text-theme-text-muted select-none">
-          <span
-            className={`size-1.5 rounded-full ${
-              wsStatus === 'connected'
-                ? 'bg-theme-positive-base animate-pulse'
-                : wsStatus === 'connecting'
-                ? 'bg-theme-brand-binance animate-ping'
-                : 'bg-theme-negative-base'
-            }`}
-          />
-          <span>
-            {wsStatus === 'connected'
-              ? chartContent.liveStreamBadge
-              : wsStatus === 'connecting'
-              ? chartContent.connectingBadge
-              : chartContent.offlineBadge}
-          </span>
-        </div>
+        {/* Live WS Status Indicator (hidden once connected) */}
+        {wsStatus !== 'connected' && (
+          <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-md bg-theme-bg-elevated border border-theme-border-subtle text-2xs font-mono text-theme-text-muted select-none">
+            <span
+              className={`size-1.5 rounded-full ${
+                wsStatus === 'connecting'
+                  ? 'bg-theme-brand-binance animate-ping'
+                  : 'bg-theme-negative-base'
+              }`}
+            />
+            <span>
+              {wsStatus === 'connecting'
+                ? chartContent.connectingBadge
+                : chartContent.offlineBadge}
+            </span>
+          </div>
+        )}
 
         {/* Reset Zoom Button */}
         <motion.button

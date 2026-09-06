@@ -78,7 +78,18 @@ export const SidebarWorkspaceGroup = memo(function SidebarWorkspaceGroup({
         onSelectSession(targetId);
       }
     } else {
-      onToggleExpand();
+      if (!isCurrentActiveGroup) {
+        const activeInGroup = group.conversations.find((c) => c.id === activeConversationId);
+        const targetId = activeInGroup?.id || group.conversations[0]?.id;
+        if (targetId) {
+          onSelectSession(targetId);
+        }
+        if (!isExpanded) {
+          onToggleExpand();
+        }
+      } else {
+        onToggleExpand();
+      }
     }
   };
 
