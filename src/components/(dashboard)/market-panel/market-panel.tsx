@@ -2,13 +2,15 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Radio, Globe, Loader2 } from 'lucide-react';
+import { Radio, Globe, Loader2, Bot, Activity } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
-import { sidebarSpringTransition } from '@/constants/animation';
+import { sidebarSpringTransition, tapScalePill } from '@/constants/animation';
 import { useBinanceMarketStream } from '@/hooks/use-binance-market-stream';
+import { useAppStore } from '@/stores/app-store';
 import { PriceTickerCard } from './price-ticker-card';
 import { FuturesFundingCard } from './futures-funding-card';
 import { OrderBookDepthCard } from './order-book-depth-card';
+import { MarketDataAgentView } from './agents/market-data-agent-view';
 
 interface MarketPanelProps {
   isOpen: boolean;
@@ -18,6 +20,8 @@ interface MarketPanelProps {
 
 export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
   const content = APP_CONTENT.marketPanel;
+  const rightPanelTab = useAppStore((state) => state.rightPanelTab);
+  const setRightPanelTab = useAppStore((state) => state.setRightPanelTab);
 
   // Real-time client-direct Binance WebSocket connection
   const { ticker, orderBook, status } = useBinanceMarketStream(symbol, {
@@ -37,43 +41,82 @@ export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
       aria-label={content.title}
     >
       <div className="w-full min-w-[340px] h-full flex flex-col overflow-hidden">
-        {/* Panel Header */}
-        <div className="h-14 px-4 flex items-center justify-between border-b border-theme-border-subtle shrink-0">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-theme-text-primary">
-              {content.title}
-            </span>
+        {/* Panel Header with Multi-Tab Switcher */}
+        <div className="h-14 px-3 sm:px-4 flex items-center justify-between border-b border-theme-border-subtle shrink-0 gap-2">
+          {/* Tabs Segmented Control */}
+          <div className="flex items-center gap-1 p-0.5 rounded-lg bg-theme-bg-elevated/70 border border-theme-border-subtle/80">
+            {/* Tab 1: Live Overview */}
+            <motion.button
+              type="button"
+              whileTap={tapScalePill}
+              onClick={() => setRightPanelTab('overview')}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold transition-colors cursor-pointer ${
+                rightPanelTab === 'overview'
+                  ? 'bg-theme-bg-surface text-theme-text-primary shadow-2xs'
+                  : 'text-theme-text-secondary hover:text-theme-text-primary'
+              }`}
+            >
+              <Activity className="size-3 text-theme-brand-binance" />
+              <span>{content.tabs.overview}</span>
+            </motion.button>
 
-            {/* Connection Status Badge */}
-            {!isGlobal && (
-              <div
-                className={`flex items-center gap-1 px-2 py-0.5 rounded-full border transition-colors ${
-                  status === 'connected'
-                    ? 'bg-theme-status-success/10 border-theme-status-success/30 text-theme-status-success'
-                    : status === 'connecting' || status === 'reconnecting'
-                    ? 'bg-theme-brand-binance/10 border-theme-brand-binance/30 text-theme-brand-binance'
-                    : 'bg-theme-status-danger/10 border-theme-status-danger/30 text-theme-status-danger'
-                }`}
-              >
-                {status === 'connected' ? (
-                  <Radio className="size-2.5 animate-pulse" />
-                ) : status === 'connecting' || status === 'reconnecting' ? (
-                  <Loader2 className="size-2.5 animate-spin" />
-                ) : (
-                  <span className="size-1.5 rounded-full bg-theme-status-danger" />
-                )}
-                <span className="text-[10px] font-mono font-bold tracking-tight">
-                  {status === 'connected'
-                    ? content.statusConnected
-                    : status === 'connecting'
-                    ? content.statusConnecting
-                    : status === 'reconnecting'
-                    ? content.statusReconnecting
-                    : content.statusError}
-                </span>
-              </div>
-            )}
+            {/* Tab 2: Market Data Agent (#1) */}
+            <motion.button
+              type="button"
+              whileTap={tapScalePill}
+              onClick={() => setRightPanelTab('market-data')}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold transition-colors cursor-pointer ${
+                rightPanelTab === 'market-data'
+                  ? 'bg-theme-bg-surface text-theme-text-primary shadow-2xs'
+                  : 'text-theme-text-secondary hover:text-theme-text-primary'
+              }`}
+            >
+              <Bot className="size-3 text-theme-brand-binance" />
+              <span>{content.tabs.marketData}</span>
+              <span className="px-1 rounded-xs bg-theme-brand-binance/20 text-theme-brand-binance text-[9px] font-mono font-bold">
+                {APP_CONTENT.subAgents.agentBadgeNum}
+              </span>
+            </motion.button>
           </div>
+
+          {/* Connection Status Badge (when in overview) or Agent indicator */}
+          {!isGlobal && rightPanelTab === 'overview' && (
+            <div
+              className={`flex items-center gap-1 px-2 py-0.5 rounded-full border transition-colors shrink-0 ${
+                status === 'connected'
+                  ? 'bg-theme-status-success/10 border-theme-status-success/30 text-theme-status-success'
+                  : status === 'connecting' || status === 'reconnecting'
+                  ? 'bg-theme-brand-binance/10 border-theme-brand-binance/30 text-theme-brand-binance'
+                  : 'bg-theme-status-danger/10 border-theme-status-danger/30 text-theme-status-danger'
+              }`}
+            >
+              {status === 'connected' ? (
+                <Radio className="size-2.5 animate-pulse" />
+              ) : status === 'connecting' || status === 'reconnecting' ? (
+                <Loader2 className="size-2.5 animate-spin" />
+              ) : (
+                <span className="size-1.5 rounded-full bg-theme-status-danger" />
+              )}
+              <span className="text-[10px] font-mono font-bold tracking-tight">
+                {status === 'connected'
+                  ? content.statusConnected
+                  : status === 'connecting'
+                  ? content.statusConnecting
+                  : status === 'reconnecting'
+                  ? content.statusReconnecting
+                  : content.statusError}
+              </span>
+            </div>
+          )}
+
+          {!isGlobal && rightPanelTab === 'market-data' && (
+            <div className="flex items-center gap-1 px-2 py-0.5 rounded-full border bg-theme-brand-binance/10 border-theme-brand-binance/30 text-theme-brand-binance shrink-0">
+              <span className="size-1.5 rounded-full bg-theme-brand-binance animate-pulse" />
+              <span className="text-[10px] font-mono font-bold tracking-tight">
+                {APP_CONTENT.subAgents.agentActiveBadge}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Scrollable Panel Body */}
@@ -90,6 +133,8 @@ export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
                 {content.globalEmptyNotice}
               </p>
             </div>
+          ) : rightPanelTab === 'market-data' ? (
+            <MarketDataAgentView symbol={symbol} />
           ) : (
             <>
               {/* Module 1: Price & 24h Ticker Pulse with Micro Sparkline */}

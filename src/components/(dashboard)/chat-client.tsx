@@ -2,7 +2,7 @@
 
 import React, { useRef, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowUpRight, ChevronDown, Plus, Globe, PanelRightClose, PanelRightOpen } from 'lucide-react';
+import { ArrowUpRight, ChevronDown, Plus, Globe, PanelRightClose, PanelRightOpen, Bot } from 'lucide-react';
 import { AgentLoader, ArgusIcon } from '@/components/common';
 import { APP_CONTENT } from '@/constants/content';
 import {
@@ -27,7 +27,10 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
   const selectedSymbol = useAppStore((state) => state.selectedSymbol);
   const setIsSymbolSearchOpen = useAppStore((state) => state.setIsSymbolSearchOpen);
   const isMarketPanelOpen = useAppStore((state) => state.isMarketPanelOpen);
+  const setIsMarketPanelOpen = useAppStore((state) => state.setIsMarketPanelOpen);
   const toggleMarketPanel = useAppStore((state) => state.toggleMarketPanel);
+  const rightPanelTab = useAppStore((state) => state.rightPanelTab);
+  const setRightPanelTab = useAppStore((state) => state.setRightPanelTab);
   const { handleNewSession, isNewChatDisabled } = useChatSessions();
 
   const isGlobalWorkspace = (selectedSymbol || '').toUpperCase() === 'GLOBAL';
@@ -122,6 +125,35 @@ export function ChatClient({ mode = 'simulation' }: ChatClientProps) {
           >
             <Plus className="size-3.5 stroke-[2.75]" />
             <span className="font-bold">{APP_CONTENT.chat.newChatButton}</span>
+          </motion.button>
+
+          {/* Dedicated Sub-Agents Trigger Button */}
+          <motion.button
+            type="button"
+            whileTap={tapScalePill}
+            onClick={() => {
+              if (!isMarketPanelOpen) {
+                setIsMarketPanelOpen(true);
+                setRightPanelTab('market-data');
+              } else if (rightPanelTab === 'market-data') {
+                setRightPanelTab('overview');
+              } else {
+                setRightPanelTab('market-data');
+              }
+            }}
+            title={APP_CONTENT.subAgents.headerButtonTooltip}
+            aria-label={APP_CONTENT.subAgents.headerButtonLabel}
+            className={`h-8 px-2.5 rounded-lg text-xs font-bold inline-flex items-center gap-1.5 select-none transition-colors border cursor-pointer ${
+              isMarketPanelOpen && rightPanelTab === 'market-data'
+                ? 'bg-theme-bg-elevated text-theme-brand-binance border-theme-brand-binance/40 shadow-2xs'
+                : 'bg-theme-bg-surface text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-elevated border-theme-border-subtle'
+            }`}
+          >
+            <Bot className="size-3.5 text-theme-brand-binance" />
+            <span className="font-semibold">{APP_CONTENT.subAgents.headerButtonLabel}</span>
+            <span className="px-1 py-0.2 rounded-xs bg-theme-brand-binance/15 text-theme-brand-binance text-[9px] font-mono font-bold">
+              {APP_CONTENT.subAgents.agentBadgeNum}
+            </span>
           </motion.button>
 
           {/* Collapsible Market Panel Toggle Button */}

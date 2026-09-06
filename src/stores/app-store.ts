@@ -56,6 +56,12 @@ export interface AppState {
   setIsMarketPanelOpen: (open: boolean) => void;
   toggleMarketPanel: () => void;
 
+  // Right Panel Active Tab
+  rightPanelTab: 'overview' | 'market-data' | 'technical-analysis' | 'risk-volatility' | 'sentiment-context' | 'decision';
+  setRightPanelTab: (
+    tab: 'overview' | 'market-data' | 'technical-analysis' | 'risk-volatility' | 'sentiment-context' | 'decision'
+  ) => void;
+
   // Hydration state tracking
   _hasHydrated: boolean;
   setHasHydrated: (hasHydrated: boolean) => void;
@@ -141,6 +147,10 @@ export const useAppStore = create<AppState>()(
       toggleMarketPanel: () =>
         set((state) => ({ isMarketPanelOpen: !state.isMarketPanelOpen })),
 
+      // Right Panel Active Tab (defaults to overview)
+      rightPanelTab: 'overview',
+      setRightPanelTab: (rightPanelTab) => set({ rightPanelTab }),
+
       // Hydration state
       _hasHydrated: false,
       setHasHydrated: (_hasHydrated) => set({ _hasHydrated }),
@@ -155,6 +165,7 @@ export const useAppStore = create<AppState>()(
         stageView: state.stageView,
         isSidebarCollapsed: state.isSidebarCollapsed,
         isMarketPanelOpen: state.isMarketPanelOpen,
+        rightPanelTab: state.rightPanelTab,
         selectedSymbol: state.selectedSymbol,
         lastActiveSymbol: state.lastActiveSymbol,
         collapsedWorkspaceGroups: state.collapsedWorkspaceGroups,
