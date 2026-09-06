@@ -16,6 +16,7 @@ import {
 export interface GlobalMarketViewProps {
   data?: GlobalMarketOverviewData;
   isLoading: boolean;
+  isFetching?: boolean;
   isError: boolean;
   onRetry: () => void;
 }
@@ -23,10 +24,12 @@ export interface GlobalMarketViewProps {
 export function GlobalMarketView({
   data,
   isLoading,
+  isFetching = false,
   isError,
   onRetry,
 }: GlobalMarketViewProps) {
   const content = APP_CONTENT.globalMarket;
+  const isActionLoading = isLoading || isFetching;
 
   // 1. Loading State Skeleton
   if (isLoading && !data) {
@@ -81,12 +84,13 @@ export function GlobalMarketView({
         </p>
         <motion.button
           type="button"
-          whileTap={tapScalePill}
+          whileTap={isActionLoading ? undefined : tapScalePill}
           onClick={onRetry}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-theme-bg-elevated hover:bg-theme-bg-surface border border-theme-border-subtle text-theme-text-primary transition-colors cursor-pointer shadow-2xs"
+          disabled={isActionLoading}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-theme-bg-elevated hover:bg-theme-bg-surface border border-theme-border-subtle text-theme-text-primary transition-colors cursor-pointer disabled:opacity-50 shadow-2xs"
         >
-          <RefreshCw className="size-3 text-theme-brand-binance" />
-          <span>{content.retryButton}</span>
+          <RefreshCw className={`size-3 text-theme-brand-binance ${isActionLoading ? 'animate-spin' : ''}`} />
+          <span>{isActionLoading ? content.refreshing : content.retryButton}</span>
         </motion.button>
       </div>
     );
@@ -110,8 +114,14 @@ export function GlobalMarketView({
       <GlobalPositioningCard positioning={data.positioning} />
 
       {/* Verified Live Feed Footer */}
-      <div className="text-[10px] font-mono text-center text-theme-text-muted/70 py-1 select-none">
-        {APP_CONTENT.marketPanel.mockupNotice}
+      <div className="flex items-center justify-center gap-1.5 text-[10px] font-mono text-center text-theme-text-muted/70 py-1 select-none">
+        <span>{APP_CONTENT.marketPanel.mockupNotice}</span>
+        {Boolean(data.timestamp) && (
+          <>
+            <span>•</span>
+            <span>{content.lastUpdated(new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }))}</span>
+          </>
+        )}
       </div>
     </div>
   );

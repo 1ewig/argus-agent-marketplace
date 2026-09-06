@@ -3,13 +3,24 @@ import type { GlobalMarketOverviewData, GlobalMarketOverviewResponse } from '@/l
 
 export const THIRTY_SECONDS_MS = 30 * 1000;
 
+export interface FetchGlobalMarketOverviewOptions {
+  force?: boolean;
+}
+
 /**
  * Pure network fetcher for live Global Market Overview.
  */
-export async function fetchGlobalMarketOverview(): Promise<GlobalMarketOverviewData> {
-  const res = await fetch('/api/binance/global-overview', {
+export async function fetchGlobalMarketOverview(
+  options: FetchGlobalMarketOverviewOptions = {}
+): Promise<GlobalMarketOverviewData> {
+  const url = options.force
+    ? `/api/binance/global-overview?t=${Date.now()}`
+    : '/api/binance/global-overview';
+
+  const res = await fetch(url, {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' },
+    cache: options.force ? 'no-store' : 'default',
   });
 
   if (!res.ok) {
@@ -32,7 +43,7 @@ export const globalMarketQuery = {
   options: (enabled: boolean = true) => {
     return queryOptions({
       queryKey: globalMarketQuery.all,
-      queryFn: fetchGlobalMarketOverview,
+      queryFn: () => fetchGlobalMarketOverview(),
       staleTime: THIRTY_SECONDS_MS,
       gcTime: 5 * 60 * 1000,
       refetchInterval: 30 * 1000, // Background poll every 30s

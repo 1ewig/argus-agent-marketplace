@@ -1,7 +1,8 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
-import { globalMarketQuery } from '@/lib/queries';
+import { useState, useCallback } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { globalMarketQuery, fetchGlobalMarketOverview } from '@/lib/queries';
 import type { GlobalMarketOverviewData } from '@/lib/types';
 
 export interface UseGlobalMarketOverviewOptions {
@@ -12,9 +13,11 @@ export interface UseGlobalMarketOverviewResult {
   data: GlobalMarketOverviewData | undefined;
   isLoading: boolean;
   isFetching: boolean;
+  isRefreshing: boolean;
   isError: boolean;
   error: Error | null;
-  refetch: () => void;
+  refetch: () => Promise<void>;
+  handleRefresh: () => Promise<void>;
 }
 
 /**
@@ -24,6 +27,8 @@ export function useGlobalMarketOverview(
   options: UseGlobalMarketOverviewOptions = {}
 ): UseGlobalMarketOverviewResult {
   const { enabled = true } = options;
+  const queryClient = useQueryClient();
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const {
     data,
@@ -31,15 +36,38 @@ export function useGlobalMarketOverview(
     isFetching,
     isError,
     error,
-    refetch,
+    refetch: queryRefetch,
   } = useQuery(globalMarketQuery.options(enabled));
+
+  const handleRefresh = useCallback(async () => {
+    if (isRefreshing) return;
+    setIsRefreshing(true);
+    const minDelay = new Promise((resolve) => setTimeout(resolve, 600));
+
+    try {
+      const freshData = await fetchGlobalMarketOverview({ force: true });
+      queryClient.setQueryData(globalMarketQuery.all, freshData);
+      await minDelay;
+    } catch {
+      // If force fetch failed, fall back to standard refetch
+      await Promise.allSettled([queryRefetch(), minDelay]);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [isRefreshing, queryClient, queryRefetch]);
+
+  const refetch = useCallback(async () => {
+    await handleRefresh();
+  }, [handleRefresh]);
 
   return {
     data,
     isLoading,
-    isFetching,
+    isFetching: isFetching || isRefreshing,
+    isRefreshing,
     isError,
     error,
-    refetch: () => void refetch(),
+    refetch,
+    handleRefresh,
   };
 }

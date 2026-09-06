@@ -38,8 +38,9 @@ export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
     data: globalData,
     isLoading: isGlobalLoading,
     isFetching: isGlobalFetching,
+    isRefreshing: isGlobalRefreshing,
     isError: isGlobalError,
-    refetch: refetchGlobal,
+    handleRefresh: handleRefreshGlobal,
   } = useGlobalMarketOverview({
     enabled: isOpen && isGlobal,
   });
@@ -106,13 +107,14 @@ export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
 
               <motion.button
                 type="button"
-                whileTap={tapScalePill}
-                onClick={() => refetchGlobal()}
-                disabled={isGlobalFetching}
+                whileTap={isGlobalFetching || isGlobalRefreshing ? undefined : tapScalePill}
+                onClick={() => handleRefreshGlobal()}
+                disabled={isGlobalFetching || isGlobalRefreshing}
+                aria-label={isGlobalFetching || isGlobalRefreshing ? globalContent.refreshing : globalContent.refreshButton}
                 className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-theme-bg-elevated hover:bg-theme-bg-elevated/80 active:bg-theme-bg-surface border border-theme-border-subtle text-theme-text-primary transition-colors cursor-pointer disabled:opacity-50 shadow-2xs shrink-0"
               >
-                <RefreshCw className={`size-3 text-theme-brand-binance ${isGlobalFetching ? 'animate-spin' : ''}`} />
-                <span>{isGlobalFetching ? globalContent.refreshing : globalContent.refreshButton}</span>
+                <RefreshCw className={`size-3 text-theme-brand-binance ${isGlobalFetching || isGlobalRefreshing ? 'animate-spin' : ''}`} />
+                <span>{isGlobalFetching || isGlobalRefreshing ? globalContent.refreshing : globalContent.refreshButton}</span>
               </motion.button>
             </>
           ) : (
@@ -219,8 +221,9 @@ export function MarketPanel({ isOpen, symbol, isGlobal }: MarketPanelProps) {
             <GlobalMarketView
               data={globalData}
               isLoading={isGlobalLoading}
+              isFetching={isGlobalFetching || isGlobalRefreshing}
               isError={isGlobalError}
-              onRetry={refetchGlobal}
+              onRetry={handleRefreshGlobal}
             />
           ) : isIntelligenceTabActive(rightPanelTab) ? (
             /* Symbol Market Intelligence Agent View */
