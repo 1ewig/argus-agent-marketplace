@@ -68,7 +68,9 @@ export async function fetchBinancePublic<T, R>(
   options: FetchBinanceOptions = {}
 ): Promise<R> {
   const formatted = normalizeSymbol(symbol);
-  const baseUrl = options.isFutures ? 'https://fapi.binance.com' : 'https://api.binance.com';
+  const spotBase = process.env.BINANCE_SPOT_API_URL || 'https://api.binance.com';
+  const futuresBase = process.env.BINANCE_FUTURES_API_URL || 'https://fapi.binance.com';
+  const baseUrl = options.isFutures ? futuresBase : spotBase;
   const url = `${baseUrl}${path}`;
 
   const res = await fetch(url, {
@@ -80,6 +82,11 @@ export async function fetchBinancePublic<T, R>(
       const errData = (await res.json().catch(() => null)) as { msg?: string; code?: number } | null;
       throw new Error(
         errData?.msg ? `Binance API error: ${errData.msg} (${formatted})` : `Invalid symbol: ${formatted}`
+      );
+    }
+    if (res.status === 451) {
+      throw new Error(
+        `Binance API geo-restricted (HTTP 451). Vercel Serverless Functions must run in a non-US region (e.g. fra1 Frankfurt).`
       );
     }
     throw new Error(`Binance API error: ${res.status}`);

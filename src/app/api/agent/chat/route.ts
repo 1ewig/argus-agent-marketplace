@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { executeAgentStream, AgentChatRequestSchema } from '@/agent';
 
 export const dynamic = 'force-dynamic';
+export const preferredRegion = ['fra1', 'sin1', 'lhr1'];
 
 export async function POST(req: Request) {
   try {

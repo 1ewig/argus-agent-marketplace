@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { executeMarketIntelligence } from '@/agent';
 
 export const dynamic = 'force-dynamic';
+export const preferredRegion = ['fra1', 'sin1', 'lhr1'];
 
 const RequestSchema = z.object({
   symbol: z.string().min(2, 'Symbol cannot be empty'),
