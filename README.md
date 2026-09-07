@@ -1,7 +1,21 @@
 # Argus — Your Intelligent Trading Desk Companion
 
+<p align="left">
+  <a href="https://argus-ai-agent-hackathon.vercel.app" target="_blank">
+    <img src="https://img.shields.io/badge/⚡%20Live%20Demo-Launch%20Terminal-F0B90B?style=for-the-badge&logo=vercel&logoColor=000000" alt="Live Demo" />
+  </a>
+  <a href="https://argus-ai-agent-hackathon.vercel.app" target="_blank">
+    <img src="https://img.shields.io/badge/Binance%20Agent%20OS-Track%20A%20Submission-181A20?style=for-the-badge&logo=binance&logoColor=F0B90B" alt="Binance Hackathon" />
+  </a>
+  <img src="https://img.shields.io/badge/Runtime-Bun%201.4%2B-FBF0DF?style=for-the-badge&logo=bun&logoColor=000000" alt="Bun" />
+  <img src="https://img.shields.io/badge/TypeScript-Strict%207-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Next.js-16.3%20App%20Router-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" alt="Next.js" />
+</p>
+
 > **Built for the Binance Agent OS Mini Hackathon (Track A)**  
 > An autonomous, grounded crypto intelligence terminal pairing live Binance Spot & Futures feeds with Exa AI neural search.
+>
+> 🌐 **Live Web Terminal:** [https://argus-ai-agent-hackathon.vercel.app](https://argus-ai-agent-hackathon.vercel.app)
 
 <video src="public/videos/Argus-Binance-Agent-Os.mp4" poster="public/images/argus-welcome-stage.webp" controls width="100%" playsinline>
   Your browser does not support the video tag.

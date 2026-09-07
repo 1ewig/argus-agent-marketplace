@@ -2,6 +2,8 @@
 
 > A deep technical walkthrough of **Argus**, the intelligent trading-desk companion built for the **Binance Agent OS Mini Hackathon (Track A)**.
 >
+> 🌐 **Live Web Terminal:** [https://argus-ai-agent-hackathon.vercel.app](https://argus-ai-agent-hackathon.vercel.app)
+>
 > This document complements the marketing-style [`README.md`](../README.md) with a module-by-module deep dive: architecture, data flow, the agent engine, the Market Intelligence Agent, tooling conventions, and the persistence layer. It is written for engineers working in this repository.
 
 ---
