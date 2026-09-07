@@ -186,8 +186,6 @@ src/
 6. `generateObject` fills the strict `MarketIntelligencePayloadSchema` using a model **hardcoded to Groq** (primary `DEFAULT_GROQ_MODEL`, backup `DEFAULT_GROQ_BACKUP_MODEL` — see [§5](#5-agent-engine-details-srcagent)); the route's `providerOverride` is currently not consulted by the engine. If both models fail, a **deterministic fallback synthesizer** computes the 4-card payload from the same raw exchange math (never hallucinated prices).
 7. The response is returned via JSON, persisted directly to Dexie v4 (`marketIntelligence` table), hydrated into React Query (`staleTime: 1h`, `gcTime: 24h`), and rendered as 4 executive cards. The panel header's **Scan Market** button (`handleScan` → `fetchMarketIntelligence({ force: true })`) forces a fresh scan; while the snapshot is fresh (< 1h) the button is replaced by a **Next Run** countdown chip (`useScanMarketIntelligence` ticks every second) plus a `1H SNAPSHOT` cached badge.
 
-> **Dev tooling:** LLM latency benchmarks live in [`scratch/`](../scratch/) (`benchmark.ts`, `test-groq-benchmark.ts`, `test-fireworks-benchmark.ts`).
-
 ### 4.3 Live market telemetry (WebSocket)
 
 - [`use-binance-market-stream`](../src/hooks/market/use-binance-market-stream.ts) opens a combined Binance Spot stream: `<symbol>@ticker` (1000ms) + `<symbol>@depth10@100ms`.

@@ -3,7 +3,9 @@
 > **Built for the Binance Agent OS Mini Hackathon (Track A)**  
 > An autonomous, grounded crypto intelligence terminal pairing live Binance Spot & Futures feeds with Exa AI neural search.
 
-![Argus Welcome Stage](public/images/argus-welcome-stage.webp)
+<video src="public/videos/Argus-Binance-Agent-Os.mp4" poster="public/images/argus-welcome-stage.webp" controls width="100%" playsinline>
+  Your browser does not support the video tag.
+</video>
 
 ---
 
