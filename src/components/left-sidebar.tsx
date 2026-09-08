@@ -9,9 +9,11 @@ import { useTheme, useSidebar, useChatSessions } from '@/hooks';
 import { useAppStore } from '@/stores/app-store';
 import {
   SidebarHeader,
+  SidebarNavViews,
   SidebarSessionList,
   SidebarThemeToggle,
 } from './sidebar';
+
 
 const noopSubscribe = () => () => {};
 
@@ -140,6 +142,12 @@ export function LeftSidebar() {
           onToggle={toggleSidebar}
         />
 
+        {/* Workspace Views Navigation */}
+        <SidebarNavViews
+          isCollapsed={isSidebarCollapsed}
+          isActive={true}
+        />
+
         {/* Conversation Symbol Workspaces List */}
         <SidebarSessionList
           groups={symbolGroups}
@@ -198,6 +206,13 @@ export function LeftSidebar() {
               <SidebarHeader
                 isCollapsed={false}
                 onToggle={closeMobileSidebar}
+              />
+
+              {/* Workspace Views Navigation */}
+              <SidebarNavViews
+                isCollapsed={false}
+                isActive={true}
+                onClick={closeMobileSidebar}
               />
 
               {/* Conversation Symbol Workspaces List */}
