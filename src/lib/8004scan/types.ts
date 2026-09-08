@@ -39,10 +39,14 @@ export interface ScanAgentListResponse {
 }
 
 export type DiscoveryCategory =
-  | 'monitoring'
+  | 'yield_optimisation'
   | 'grid_trading'
+  | 'rebalancing'
   | 'health_factor'
-  | 'yield_optimisation';
+  | 'monitoring'
+  | 'security'
+  | 'payments'
+  | 'cross_agent';
 
 export interface CategoryQueryResult {
   key: DiscoveryCategory;

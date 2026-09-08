@@ -9,8 +9,12 @@ export type MarketplaceTab =
   | 'all'
   | 'yield_optimisation'
   | 'grid_trading'
+  | 'rebalancing'
   | 'health_factor'
   | 'monitoring'
+  | 'security'
+  | 'payments'
+  | 'cross_agent'
   | 'leaderboard'
   | 'trending'
   | 'featured'
@@ -86,8 +90,12 @@ export function useAgentMarketplace(): UseAgentMarketplaceReturn {
     if (
       selectedTab === 'yield_optimisation' ||
       selectedTab === 'grid_trading' ||
+      selectedTab === 'rebalancing' ||
       selectedTab === 'health_factor' ||
-      selectedTab === 'monitoring'
+      selectedTab === 'monitoring' ||
+      selectedTab === 'security' ||
+      selectedTab === 'payments' ||
+      selectedTab === 'cross_agent'
     ) {
       return {
         feed: 'category',

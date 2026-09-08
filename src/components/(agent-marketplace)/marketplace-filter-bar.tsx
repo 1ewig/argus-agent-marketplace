@@ -12,6 +12,10 @@ import {
   Flame,
   Sparkles,
   Clock,
+  RefreshCw,
+  ShieldCheck,
+  Zap,
+  Bot,
 } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
 import type { MarketplaceTab } from '@/hooks/agents/use-agent-marketplace';
@@ -46,6 +50,11 @@ const CATEGORIES: CategoryOption[] = [
     icon: Grid,
   },
   {
+    id: 'rebalancing',
+    label: APP_CONTENT.marketplace.tabs.rebalancing,
+    icon: RefreshCw,
+  },
+  {
     id: 'health_factor',
     label: APP_CONTENT.marketplace.tabs.health_factor,
     icon: Activity,
@@ -54,6 +63,21 @@ const CATEGORIES: CategoryOption[] = [
     id: 'monitoring',
     label: APP_CONTENT.marketplace.tabs.monitoring,
     icon: Radio,
+  },
+  {
+    id: 'security',
+    label: APP_CONTENT.marketplace.tabs.security,
+    icon: ShieldCheck,
+  },
+  {
+    id: 'payments',
+    label: APP_CONTENT.marketplace.tabs.payments,
+    icon: Zap,
+  },
+  {
+    id: 'cross_agent',
+    label: APP_CONTENT.marketplace.tabs.cross_agent,
+    icon: Bot,
   },
 ];
 
