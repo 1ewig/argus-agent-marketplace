@@ -3,7 +3,8 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { agentsQuery } from '@/lib/queries/agents.query';
-import type { MarketplaceTab, ScanAgentItem, DiscoveryCategory } from '@/lib/8004scan/types';
+import { isDiscoveryCategory } from '@/lib/8004scan/categories';
+import type { MarketplaceTab, ScanAgentItem } from '@/lib/8004scan/types';
 
 export interface UseAgentMarketplaceReturn {
   // Filters & State
@@ -72,19 +73,10 @@ export function useAgentMarketplace(): UseAgentMarketplaceReturn {
       };
     }
 
-    if (
-      selectedTab === 'yield_optimisation' ||
-      selectedTab === 'grid_trading' ||
-      selectedTab === 'rebalancing' ||
-      selectedTab === 'health_factor' ||
-      selectedTab === 'monitoring' ||
-      selectedTab === 'security' ||
-      selectedTab === 'payments' ||
-      selectedTab === 'cross_agent'
-    ) {
+    if (isDiscoveryCategory(selectedTab)) {
       return {
         feed: 'category',
-        category: selectedTab as DiscoveryCategory,
+        category: selectedTab,
         limit: PAGE_SIZE,
         offset: page * PAGE_SIZE,
       };

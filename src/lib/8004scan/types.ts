@@ -39,14 +39,47 @@ export interface ScanAgentListResponse {
 }
 
 export type DiscoveryCategory =
-  | 'yield_optimisation'
-  | 'grid_trading'
-  | 'rebalancing'
-  | 'health_factor'
+  | 'yield'
+  | 'grid'
+  | 'health'
   | 'monitoring'
-  | 'security'
+  | 'trading'
+  | 'rebalancing'
+  | 'derivatives'
+  | 'liquid_staking'
+  | 'research'
+  | 'analytics'
+  | 'risk'
   | 'payments'
-  | 'cross_agent';
+  | 'cross_agent'
+  | 'cross_chain'
+  | 'depin_storage'
+  | 'meme_social'
+  | 'governance';
+
+export type CategoryKey = DiscoveryCategory | 'all';
+
+export type SemanticThemeVariant =
+  | 'brand'
+  | 'success'
+  | 'info'
+  | 'warning'
+  | 'danger'
+  | 'neutral';
+
+export interface CategoryConfig {
+  key: CategoryKey;
+  label: string;
+  shortLabel: string;
+  description: string;
+  searchTerms: string[];
+  icon: string;
+  variant: SemanticThemeVariant;
+  priority: number;
+  isMandatory: boolean;
+  defaultSort: 'score' | 'newest' | 'trending';
+  featured?: boolean;
+}
 
 export interface CategoryQueryResult {
   key: DiscoveryCategory;
@@ -58,14 +91,7 @@ export interface CategoryQueryResult {
 
 export type MarketplaceTab =
   | 'all'
-  | 'yield_optimisation'
-  | 'grid_trading'
-  | 'rebalancing'
-  | 'health_factor'
-  | 'monitoring'
-  | 'security'
-  | 'payments'
-  | 'cross_agent'
+  | DiscoveryCategory
   | 'leaderboard'
   | 'trending'
   | 'featured'

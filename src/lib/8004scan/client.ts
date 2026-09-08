@@ -38,6 +38,9 @@ export async function getAgentsByCategory(
   const offset = options.offset ?? 0;
   const revalidate = options.revalidate ?? DEFAULT_REVALIDATE_SECONDS;
   const config = CATEGORY_DISCOVERY_CONFIG[category];
+  if (!config) {
+    throw new Error(`Unknown discovery category: ${category}`);
+  }
 
   const params = new URLSearchParams({
     search: config.query,
@@ -49,6 +52,9 @@ export async function getAgentsByCategory(
   if (options.sortBy) {
     params.set('sort_by', options.sortBy);
     params.set('sort_order', options.sortOrder ?? 'desc');
+  } else if (config.defaultSort === 'score') {
+    params.set('sort_by', 'total_score');
+    params.set('sort_order', 'desc');
   }
 
   const res = await fetch(`${BASE_URL}/agents?${params.toString()}`, {
