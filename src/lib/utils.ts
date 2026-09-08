@@ -75,3 +75,17 @@ export function formatPrice(value?: number | null, precision: number = 2): strin
     maximumFractionDigits: precision,
   });
 }
+
+/**
+ * Truncates an Ethereum/BSC hex address into readable format (e.g. 0x1234...5678)
+ */
+export function truncateAddress(
+  address?: string | null,
+  startChars: number = 6,
+  endChars: number = 4,
+): string {
+  if (!address) return '';
+  if (address.length <= startChars + endChars) return address;
+  return `${address.slice(0, startChars)}...${address.slice(-endChars)}`;
+}
+

@@ -11,6 +11,7 @@ export const sidebarContent = {
     newChatDisabled: 'Current chat is already new',
     viewsTitle: 'Workspace Views',
     agentView: 'Agent Chat',
+    marketplaceView: 'Agent Marketplace',
     globalView: 'Global Workspace',
     globalViewTooltip: 'Open workspace not tied to any symbol',
     historyTitle: 'Saved Conversations',
