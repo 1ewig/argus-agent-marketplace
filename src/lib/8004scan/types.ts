@@ -38,18 +38,22 @@ export interface ScanAgentListResponse {
   offset: number;
 }
 
-export type DiscoveryCategory =
+export type PrimaryPillarKey =
   | 'yield'
+  | 'trading'
+  | 'risk'
+  | 'monitoring'
+  | 'research'
+  | 'infrastructure';
+
+export type DiscoveryCategory =
+  | PrimaryPillarKey
   | 'grid'
   | 'health'
-  | 'monitoring'
-  | 'trading'
   | 'rebalancing'
   | 'derivatives'
   | 'liquid_staking'
-  | 'research'
   | 'analytics'
-  | 'risk'
   | 'payments'
   | 'cross_agent'
   | 'cross_chain'
@@ -58,6 +62,23 @@ export type DiscoveryCategory =
   | 'governance';
 
 export type CategoryKey = DiscoveryCategory | 'all';
+
+export type SecondaryTagKey =
+  | 'x402'
+  | 'mcp'
+  | 'a2a'
+  | 'verified'
+  | 'venus'
+  | 'pancakeswap'
+  | 'reputation';
+
+export interface SecondaryTagConfig {
+  key: SecondaryTagKey;
+  label: string;
+  icon: string;
+  description: string;
+  variant: SemanticThemeVariant;
+}
 
 export type SemanticThemeVariant =
   | 'brand'

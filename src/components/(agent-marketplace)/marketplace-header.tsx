@@ -1,6 +1,6 @@
 'use client';
 
-import React, { memo } from 'react';
+import React, { memo, useState, useCallback } from 'react';
 import { RotateCw, Menu } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { APP_CONTENT } from '@/constants/content';
@@ -19,6 +19,23 @@ export const MarketplaceHeader = memo(function MarketplaceHeader({
   totalCount,
   isFetching,
 }: MarketplaceHeaderProps) {
+  const [isPending, setIsPending] = useState(false);
+
+  const handleRefresh = useCallback(async () => {
+    if (isFetching || isPending) return;
+    setIsPending(true);
+    try {
+      await onRefresh();
+    } finally {
+      // Ensure tactile loading feedback is visible for at least 500ms
+      setTimeout(() => {
+        setIsPending(false);
+      }, 500);
+    }
+  }, [isFetching, isPending, onRefresh]);
+
+  const isLoadingState = isFetching || isPending;
+
   return (
     <header className="w-full bg-theme-bg-surface/90 backdrop-blur-md border-b border-theme-border-subtle shrink-0 z-20 px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
       {/* 1. Left: Brand Title & Minimal Live Count */}
@@ -48,19 +65,30 @@ export const MarketplaceHeader = memo(function MarketplaceHeader({
         </div>
       </div>
 
-      {/* 2. Right: Refresh Action */}
+      {/* 2. Right: Refresh Action with Label and Loading State */}
       <div className="flex items-center gap-2 shrink-0">
         <motion.button
           type="button"
-          whileTap={tapScalePill}
-          onClick={onRefresh}
+          whileTap={isLoadingState ? undefined : tapScalePill}
+          onClick={handleRefresh}
           title={APP_CONTENT.marketplace.header.refreshTooltip}
-          disabled={isFetching}
-          className="size-8 rounded-lg flex items-center justify-center bg-theme-bg-elevated/60 border border-theme-border-subtle hover:border-theme-border-strong text-theme-text-secondary hover:text-theme-text-primary cursor-pointer transition-all shrink-0 disabled:opacity-40"
+          disabled={isLoadingState}
+          className={`h-8 px-3 rounded-lg flex items-center gap-1.5 text-xs font-semibold border transition-all select-none ${
+            isLoadingState
+              ? 'bg-theme-bg-elevated/40 border-theme-border-subtle text-theme-text-muted cursor-not-allowed'
+              : 'bg-theme-bg-elevated/60 border-theme-border-subtle hover:border-theme-brand-binance/50 hover:bg-theme-bg-elevated text-theme-text-secondary hover:text-theme-text-primary cursor-pointer shadow-2xs'
+          }`}
         >
           <RotateCw
-            className={`size-3.5 ${isFetching ? 'animate-spin text-theme-brand-binance' : ''}`}
+            className={`size-3.5 ${
+              isLoadingState ? 'animate-spin text-theme-brand-binance' : 'text-theme-text-muted'
+            }`}
           />
+          <span>
+            {isLoadingState
+              ? APP_CONTENT.marketplace.header.refreshingAction
+              : APP_CONTENT.marketplace.header.refreshAction}
+          </span>
         </motion.button>
       </div>
     </header>

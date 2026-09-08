@@ -21,6 +21,9 @@ export function AgentMarketplaceClient() {
     searchQuery,
     setSearchQuery,
     clearSearch,
+    selectedTags,
+    toggleTag,
+    clearTags,
     selectedAgent,
     setSelectedAgent,
     page,
@@ -61,8 +64,9 @@ export function AgentMarketplaceClient() {
 
   const handleResetFilters = useCallback(() => {
     clearSearch();
+    clearTags();
     setSelectedTab('all');
-  }, [clearSearch, setSelectedTab]);
+  }, [clearSearch, clearTags, setSelectedTab]);
 
   return (
     <div className="relative flex flex-col h-full w-full bg-theme-bg-base overflow-hidden">
@@ -83,6 +87,9 @@ export function AgentMarketplaceClient() {
           onClearSearch={clearSearch}
           selectedTab={selectedTab}
           onSelectTab={setSelectedTab}
+          selectedTags={selectedTags}
+          onToggleTag={toggleTag}
+          onClearTags={clearTags}
         />
 
         {/* Agents Grid & Pagination */}

@@ -40,7 +40,7 @@ Argus doesn't guess, extrapolate, or recite textbook definitions. When you ask a
 
 ---
 
-## Visual Tour of the Workstation
+## Visual Tour
 
 ### 1. The Welcome Stage — Clean, Instant, Focused
 
@@ -49,8 +49,7 @@ When you boot Argus, you're greeted with a focused workspace designed to reduce 
 ![Argus Welcome Stage](public/images/argus-welcome-stage.webp)
 
 * **Zero-Friction Prompt Starters:** One-click launchpads to dissect 24h momentum, audit perpetual funding rates, or inspect order book depth.
-* **Workspace Context:** Automatically adapts to whichever coin you're analyzing (`BTCUSDT`, `ETHUSDT`, `SOLUSDT`, etc.) or switches into macro mode for the entire market.
-* **Instant Command Palette (`Ctrl + K` / `Cmd + K`):** Jump between any active USDT trading pair on Binance in milliseconds.
+* **Persistent Sessions:** Conversations are saved locally in your browser and restored on return — pick up right where you left off.
 
 ---
 
@@ -66,55 +65,37 @@ Ask open-ended, complex market questions and watch Argus orchestrate live tools 
 
 ---
 
-### 3. Real-Time Telemetry Deck (`Spot + Futures WebSocket`)
-
-Sitting directly beside your chat is a dedicated telemetry panel streaming live data straight from Binance WebSockets:
-
-![Argus Live Telemetry Deck](public/images/argus-live-telemetry.webp)
-
-* **Live Spot Ticker:** Sub-second price ticks with directional green/red flashes, 24h high/low progress bar, and a smoothed 30-minute micro-sparkline.
-* **Perpetual Futures Sentinel:** Tracks mark price, index price, spot-futures basis spread, annualized funding APR, and an active countdown timer ticking down to the next settlement.
-* **20-Level Depth Imbalance:** Visualizes live buyer vs. seller bid/ask distribution, spread percentage, and liquidity defense walls so you know who controls the order book right now.
-* **Smart Sleep Mode:** Streams automatically hibernate when the browser tab loses focus to conserve CPU and network resources, waking up instantly with exponential backoff reconnects.
-
----
-
-### 4. Global Macro Deck (`GLOBAL` Workspace)
-
-Need a high-altitude view of the entire crypto landscape before drilling into specific pairs? Switch to the **GLOBAL** workspace:
-
-![Argus Global Market Macro Deck](public/images/argus-global-macro-deck.webp)
-
-* **Market Pulse:** Overall directional market bias and average 24h performance across major benchmark assets (BTC, ETH, SOL, BNB).
-* **Top Movers:** Instant ranking of the top gainers and losers across the active Binance USDT universe.
-* **Funding Heatmap:** Systemic leverage and annualized APR across perpetual contracts to pinpoint crowded trades before liquidations hit.
-* **Macro Positioning:** Compares retail sentiment against whale positioning for BTC and ETH.
-* **Fast Cache Refresh:** Dedicated cache-busting button to pull fresh snapshots on demand with minimal latency.
-
----
-
-### 5. Interactive Candlestick Trading Stage
+### 3. Interactive Candlestick Trading Stage
 
 Tired of toggling to external charting sites? Switch the center stage from **Agent** to **Chart** with one click:
 
 ![Argus Candlestick Trading Chart](public/images/argus-candlestick-chart.webp)
 
-* **Lightweight Charts Canvas:** High-performance, GPU-accelerated candlestick rendering that keeps your telemetry deck visible on the right.
+* **Lightweight Charts Canvas:** High-performance, GPU-accelerated candlestick rendering.
 * **Direct Binance Feeds:** Historical klines paired with live WebSocket candle updates for seamless price action tracking.
 * **Multi-Timeframe Controls:** Toggle between `15m`, `1h`, `4h`, `1D`, `7D`, and `30D`.
 * **Dynamic Crosshair & Legend:** Real-time Open, High, Low, Close, and Volume readouts on hover, with one-click recent zoom and fullscreen mode.
 
 ---
 
-### 6. Multi-Symbol Workspaces & Local-First Privacy
+### 4. Agent Marketplace — ERC-8004 Registry
 
-Organize your trading sessions cleanly by asset without mixing up thoughts or indicators:
+Browse and inspect autonomous on-chain AI agents registered under the ERC-8004 specification on BNB Chain:
 
-![Argus Sidebar Workspaces](public/images/argus-sidebar-workspaces.webp)
+![Argus Agent Marketplace](public/images/argus-welcome-stage.webp)
 
-* **Automatic Symbol Grouping:** Conversations are automatically organized by asset (`BTC`, `ETH`, `SOL`, `BNB`, `DOGE`, `AVAX`, `SUI`, or `GLOBAL`).
-* **Zero-Flash Switching:** In-memory prewarmed message caching allows you to switch between symbol workspaces with 0ms delay.
-* **100% Local-First Privacy:** All conversation histories, session metadata, and intelligence snapshots are stored directly in your browser using Dexie IndexedDB. No external user database, no telemetry tracking, no data leakage.
+* **Live Registry Feed:** Paginated grid of 300K+ agents sourced from the 8004scan API, with in-memory caching and graceful offline fallback.
+* **Category Filters:** Browse by Yield, Grid Trading, Rebalancing, Health Factor, Monitoring, Security, x402 Payments, and Multi-Agent/MCP.
+* **Curated Feeds:** Top Ranked (leaderboard), Trending, Featured, and Recently Added agent streams.
+* **Spotlight Agents:** Highlighted Hevo & 4LPHA agents pinned at the top of the default feed.
+* **Agent Detail Modal:** Full profile view with contract address, deployer info, health score, total score, supported protocols, and links to BscScan and 8004scan.
+* **Analyze in Chat:** One-click transfer any agent's profile into the trading desk chat for deep analysis by Argus.
+
+---
+
+### 5. Local-First Privacy
+
+All conversation histories, session metadata, and intelligence snapshots are stored directly in your browser using Dexie IndexedDB. No external user database, no telemetry tracking, no data leakage.
 
 ---
 
@@ -186,8 +167,9 @@ bun run lint
 Argus is not a wrapper around an LLM chat prompt. It is a **production-minded trading workstation** built specifically for the Binance ecosystem:
 
 1. **Grounded in Truth:** It never hallucinates market data. Every single price, imbalance ratio, and funding metric is verified against live Binance endpoints.
-2. **Built for Real Traders:** It replaces the chaotic 10-tab workflow with an intelligent companion and a live telemetry deck.
-3. **Resilient by Design:** Multi-cluster API failover, WebSocket auto-sleep/reconnect, and mathematical deterministic fallbacks keep the workstation operational even when external providers stumble.
+2. **Built for Real Traders:** An intelligent chat companion backed by 11 parallel Binance tools replaces the chaotic multi-tab workflow.
+3. **Resilient by Design:** Multi-cluster API failover, WebSocket auto-sleep/reconnect, and deterministic fallbacks keep the workstation operational even when external providers stumble.
+4. **Agent Discovery:** The integrated ERC-8004 Agent Marketplace lets traders discover, inspect, and analyze autonomous on-chain agents — all from within the same desk.
 
 Thank you to the Binance team and hackathon judges for reviewing Argus!
 

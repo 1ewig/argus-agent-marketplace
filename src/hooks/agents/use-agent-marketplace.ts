@@ -3,8 +3,8 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { agentsQuery } from '@/lib/queries/agents.query';
-import { isDiscoveryCategory } from '@/lib/8004scan/categories';
-import type { MarketplaceTab, ScanAgentItem } from '@/lib/8004scan/types';
+import { isDiscoveryCategory, matchAgentSecondaryTags } from '@/lib/8004scan/categories';
+import type { MarketplaceTab, ScanAgentItem, SecondaryTagKey } from '@/lib/8004scan/types';
 
 export interface UseAgentMarketplaceReturn {
   // Filters & State
@@ -13,6 +13,9 @@ export interface UseAgentMarketplaceReturn {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   clearSearch: () => void;
+  selectedTags: SecondaryTagKey[];
+  toggleTag: (tag: SecondaryTagKey) => void;
+  clearTags: () => void;
   selectedAgent: ScanAgentItem | null;
   setSelectedAgent: (agent: ScanAgentItem | null) => void;
 
@@ -40,6 +43,7 @@ export function useAgentMarketplace(): UseAgentMarketplaceReturn {
   const [selectedTab, setSelectedTabState] = useState<MarketplaceTab>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [selectedTags, setSelectedTags] = useState<SecondaryTagKey[]>([]);
   const [selectedAgent, setSelectedAgent] = useState<ScanAgentItem | null>(null);
   const [page, setPage] = useState(0);
 
@@ -60,6 +64,18 @@ export function useAgentMarketplace(): UseAgentMarketplaceReturn {
   const clearSearch = useCallback(() => {
     setSearchQuery('');
     setDebouncedSearch('');
+    setPage(0);
+  }, []);
+
+  const toggleTag = useCallback((tag: SecondaryTagKey) => {
+    setSelectedTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
+    );
+    setPage(0);
+  }, []);
+
+  const clearTags = useCallback(() => {
+    setSelectedTags([]);
     setPage(0);
   }, []);
 
@@ -115,8 +131,21 @@ export function useAgentMarketplace(): UseAgentMarketplaceReturn {
   // Spotlight agents query (Hevo & 4LPHA)
   const { data: spotlightData } = useQuery(agentsQuery.spotlight());
 
-  const agents = useMemo(() => listData?.items ?? [], [listData?.items]);
-  const totalCount = listData?.total ?? agents.length;
+  const rawAgents: ScanAgentItem[] = useMemo(
+    () => listData?.items ?? [],
+    [listData?.items],
+  );
+
+  // Apply secondary capability tags filter
+  const agents = useMemo(() => {
+    if (selectedTags.length === 0) return rawAgents;
+    return rawAgents.filter((agent: ScanAgentItem) =>
+      matchAgentSecondaryTags(agent, selectedTags),
+    );
+  }, [rawAgents, selectedTags]);
+
+  const totalCount =
+    selectedTags.length > 0 ? agents.length : (listData?.total ?? rawAgents.length);
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
   const spotlightHevo = useMemo(
@@ -134,6 +163,9 @@ export function useAgentMarketplace(): UseAgentMarketplaceReturn {
     searchQuery,
     setSearchQuery,
     clearSearch,
+    selectedTags,
+    toggleTag,
+    clearTags,
     selectedAgent,
     setSelectedAgent,
     page,

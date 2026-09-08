@@ -2,19 +2,22 @@ import type {
   CategoryConfig,
   CategoryKey,
   DiscoveryCategory,
+  ScanAgentItem,
+  SecondaryTagConfig,
+  SecondaryTagKey,
 } from './types';
 
-export const CATEGORIES: CategoryConfig[] = [
-  // ──────────────────────────────────────────────
-  // 1. Mandatory Hackathon Tracks (BNB Agent OS)
-  // ──────────────────────────────────────────────
+// ──────────────────────────────────────────────
+// 1. Primary Pillars (Top-Level Marketplace Domains)
+// ──────────────────────────────────────────────
+export const PRIMARY_PILLARS: CategoryConfig[] = [
   {
     key: 'yield',
-    label: 'Yield Optimisation',
+    label: 'Yield & Staking',
     shortLabel: 'Yield',
     description:
-      'Autonomous vaults and agents finding and allocating capital to the best risk-adjusted yield opportunities on BNB Chain.',
-    searchTerms: ['yield', 'apy', 'venus', 'lending', 'vault'],
+      'Autonomous yield routers, Venus lending optimizers, and Lista DAO liquid staking allocators.',
+    searchTerms: ['yield', 'apy', 'venus', 'lending', 'vault', 'staking', 'slisbnb'],
     icon: 'TrendingUp',
     variant: 'brand',
     priority: 1,
@@ -23,13 +26,13 @@ export const CATEGORIES: CategoryConfig[] = [
     featured: true,
   },
   {
-    key: 'grid',
-    label: 'Grid Trading',
-    shortLabel: 'Grid',
+    key: 'trading',
+    label: 'Trading & Market Making',
+    shortLabel: 'Trading',
     description:
-      'Automated grid strategies and algorithmic market-making bots executing within defined price bands.',
-    searchTerms: ['grid', 'grid trading', 'market maker', 'orderbook'],
-    icon: 'Grid3x3',
+      'Grid trading strategies, automated DEX execution, DCA accumulators, and derivatives hedging.',
+    searchTerms: ['trading', 'grid', 'dca', 'swap', 'dex', 'perps', 'arbitrage'],
+    icon: 'CandlestickChart',
     variant: 'info',
     priority: 2,
     isMandatory: true,
@@ -37,13 +40,13 @@ export const CATEGORIES: CategoryConfig[] = [
     featured: true,
   },
   {
-    key: 'health',
-    label: 'Health Factor Monitoring',
-    shortLabel: 'Health',
+    key: 'risk',
+    label: 'Risk & Health Factor',
+    shortLabel: 'Risk & Health',
     description:
-      'Protective agents tracking loan collateral health, liquidation buffers, and debt ratios across BNB Chain protocols.',
-    searchTerms: ['health', 'health factor', 'liquidation', 'collateral', 'safety'],
-    icon: 'HeartPulse',
+      'Lending position sentinels, liquidation protection, smart contract auditing, and rug detection.',
+    searchTerms: ['health', 'liquidation', 'risk', 'security', 'audit', 'collateral'],
+    icon: 'ShieldAlert',
     variant: 'danger',
     priority: 3,
     isMandatory: true,
@@ -55,8 +58,8 @@ export const CATEGORIES: CategoryConfig[] = [
     label: 'Monitoring & Alerts',
     shortLabel: 'Monitoring',
     description:
-      'Watchdog agents tracking whale movements, contract anomalies, TVL shifts, and protocol gas spikes.',
-    searchTerms: ['monitoring', 'monitor', 'alert', 'tracker', 'watch'],
+      'Real-time whale trackers, TVL shifts, contract anomaly detectors, and protocol telemetry.',
+    searchTerms: ['monitoring', 'monitor', 'alert', 'tracker', 'analytics', 'whale'],
     icon: 'Eye',
     variant: 'info',
     priority: 4,
@@ -64,193 +67,34 @@ export const CATEGORIES: CategoryConfig[] = [
     defaultSort: 'score',
     featured: true,
   },
-
-  // ──────────────────────────────────────────────
-  // 2. Protocols & ERC-8004 Native Capabilities
-  // ──────────────────────────────────────────────
   {
-    key: 'payments',
-    label: 'x402 Micropayments',
-    shortLabel: 'x402',
+    key: 'research',
+    label: 'Research & Intelligence',
+    shortLabel: 'Research',
     description:
-      'Autonomous agents providing pay-per-inference or on-chain services settled over the HTTP 402 payment standard.',
-    searchTerms: ['x402', 'payment', 'micropayment', 'service', 'pay'],
-    icon: 'Zap',
-    variant: 'brand',
+      'On-chain analytics, tokenomics research, narrative tracking, and community sentiment.',
+    searchTerms: ['research', 'analysis', 'alpha', 'fundamental', 'sentiment', 'news'],
+    icon: 'Search',
+    variant: 'info',
     priority: 5,
     isMandatory: false,
     defaultSort: 'score',
     featured: true,
   },
   {
-    key: 'cross_agent',
-    label: 'Multi-Agent & MCP',
-    shortLabel: 'MCP / A2A',
+    key: 'infrastructure',
+    label: 'Infrastructure & Tools',
+    shortLabel: 'Infra',
     description:
-      'Agents implementing Model Context Protocol and Agent-to-Agent communication for collaborative multi-agent execution.',
-    searchTerms: ['mcp', 'a2a', 'swarm', 'multi-agent', 'orchestrator'],
-    icon: 'Bot',
-    variant: 'success',
+      'Multi-agent orchestrators, MCP providers, x402 payment rails, and Greenfield storage.',
+    searchTerms: ['infrastructure', 'mcp', 'x402', 'tool', 'discovery', 'greenfield', 'oracle'],
+    icon: 'Wrench',
+    variant: 'neutral',
     priority: 6,
     isMandatory: false,
     defaultSort: 'score',
     featured: true,
   },
-
-  // ──────────────────────────────────────────────
-  // 3. BNB Chain DeFi & Strategy Agents
-  // ──────────────────────────────────────────────
-  {
-    key: 'trading',
-    label: 'DEX Trading & DCA',
-    shortLabel: 'Trading',
-    description:
-      'Smart routing, limit orders, dollar-cost averaging (DCA), and MEV-protected swaps on PancakeSwap and Thena.',
-    searchTerms: ['trading', 'trade', 'dca', 'swap', 'dex'],
-    icon: 'CandlestickChart',
-    variant: 'warning',
-    priority: 7,
-    isMandatory: false,
-    defaultSort: 'score',
-  },
-  {
-    key: 'derivatives',
-    label: 'Perpetuals & Hedging',
-    shortLabel: 'Perps',
-    description:
-      'Delta-neutral funding rate harvesting and automated risk hedging across KiloEx and APX.',
-    searchTerms: ['perps', 'futures', 'derivatives', 'hedge', 'funding'],
-    icon: 'Activity',
-    variant: 'danger',
-    priority: 8,
-    isMandatory: false,
-    defaultSort: 'score',
-  },
-  {
-    key: 'rebalancing',
-    label: 'Portfolio & LP Rebalancing',
-    shortLabel: 'Rebalance',
-    description:
-      'Active liquidity managers maintaining optimal concentrated tick ranges and portfolio asset allocations.',
-    searchTerms: ['rebalance', 'rebalancing', 'lp', 'range', 'liquidity'],
-    icon: 'RefreshCcw',
-    variant: 'info',
-    priority: 9,
-    isMandatory: false,
-    defaultSort: 'score',
-  },
-  {
-    key: 'liquid_staking',
-    label: 'Liquid Staking & Restaking',
-    shortLabel: 'LST/LRT',
-    description:
-      'Strategies optimizing yield on slisBNB, BNSol, and liquid staking positions on BNB Chain.',
-    searchTerms: ['lista', 'slisbnb', 'staking', 'restaking', 'lst'],
-    icon: 'Coins',
-    variant: 'brand',
-    priority: 10,
-    isMandatory: false,
-    defaultSort: 'score',
-  },
-
-  // ──────────────────────────────────────────────
-  // 4. Intelligence, Security & Ecosystem
-  // ──────────────────────────────────────────────
-  {
-    key: 'research',
-    label: 'Market & Alpha Research',
-    shortLabel: 'Research',
-    description:
-      'AI analysts summarizing on-chain news, narrative trends, tokenomics, and whitepapers.',
-    searchTerms: ['research', 'analysis', 'alpha', 'fundamental', 'narrative'],
-    icon: 'Search',
-    variant: 'info',
-    priority: 11,
-    isMandatory: false,
-    defaultSort: 'score',
-  },
-  {
-    key: 'analytics',
-    label: 'On-Chain Analytics',
-    shortLabel: 'Analytics',
-    description:
-      'Smart money profiling, token distribution graphs, and wallet cohort transaction forensics.',
-    searchTerms: ['analytics', 'wallet', 'smart money', 'flow', 'holders'],
-    icon: 'BarChart3',
-    variant: 'neutral',
-    priority: 12,
-    isMandatory: false,
-    defaultSort: 'score',
-  },
-  {
-    key: 'risk',
-    label: 'Risk, Audit & Security',
-    shortLabel: 'Security',
-    description:
-      'Honeypot detection, rug checks, bytecode inspection, and liquidity lock verifiers.',
-    searchTerms: ['risk', 'security', 'audit', 'rug', 'honeypot'],
-    icon: 'ShieldAlert',
-    variant: 'danger',
-    priority: 13,
-    isMandatory: false,
-    defaultSort: 'score',
-  },
-  {
-    key: 'meme_social',
-    label: 'Meme & Fair-Launch',
-    shortLabel: 'Meme',
-    description:
-      'High-speed sentiment detection and bonding curve watchers for Four.meme and community tokens.',
-    searchTerms: ['meme', 'four.meme', 'gra.fun', 'fairlaunch', 'viral'],
-    icon: 'Flame',
-    variant: 'warning',
-    priority: 14,
-    isMandatory: false,
-    defaultSort: 'trending',
-  },
-  {
-    key: 'cross_chain',
-    label: 'Cross-Chain & Bridges',
-    shortLabel: 'Bridges',
-    description:
-      'Interoperability agents executing cross-chain arbitrage and LayerZero/Stargate messaging.',
-    searchTerms: ['bridge', 'cross-chain', 'layerzero', 'multichain'],
-    icon: 'ArrowLeftRight',
-    variant: 'info',
-    priority: 15,
-    isMandatory: false,
-    defaultSort: 'score',
-  },
-  {
-    key: 'depin_storage',
-    label: 'DePIN & Greenfield AI',
-    shortLabel: 'Greenfield',
-    description:
-      'Decentralized data persistence on BNB Greenfield and distributed compute resource brokers.',
-    searchTerms: ['greenfield', 'storage', 'depin', 'compute'],
-    icon: 'HardDrive',
-    variant: 'neutral',
-    priority: 16,
-    isMandatory: false,
-    defaultSort: 'newest',
-  },
-  {
-    key: 'governance',
-    label: 'DAO Governance',
-    shortLabel: 'Governance',
-    description:
-      'Automated voting agents, quorum trackers, and proposal impact simulators for BNB DAOs.',
-    searchTerms: ['governance', 'dao', 'proposal', 'voting'],
-    icon: 'Landmark',
-    variant: 'neutral',
-    priority: 17,
-    isMandatory: false,
-    defaultSort: 'score',
-  },
-
-  // ──────────────────────────────────────────────
-  // 5. Global Catch-all
-  // ──────────────────────────────────────────────
   {
     key: 'all',
     label: 'All Agents',
@@ -260,6 +104,211 @@ export const CATEGORIES: CategoryConfig[] = [
     icon: 'Layers',
     variant: 'neutral',
     priority: 99,
+    isMandatory: false,
+    defaultSort: 'score',
+  },
+];
+
+// ──────────────────────────────────────────────
+// 2. Secondary Capability & Ecosystem Tags
+// ──────────────────────────────────────────────
+export const SECONDARY_TAGS: SecondaryTagConfig[] = [
+  {
+    key: 'x402',
+    label: 'x402 Pay',
+    icon: 'Zap',
+    description: 'Pay-per-request & micropayment support',
+    variant: 'brand',
+  },
+  {
+    key: 'mcp',
+    label: 'MCP Protocol',
+    icon: 'Bot',
+    description: 'Model Context Protocol multi-agent support',
+    variant: 'success',
+  },
+  {
+    key: 'a2a',
+    label: 'A2A Protocol',
+    icon: 'Bot',
+    description: 'Agent-to-Agent protocol support',
+    variant: 'info',
+  },
+  {
+    key: 'verified',
+    label: 'Verified',
+    icon: 'CheckCircle2',
+    description: 'On-chain verified contracts',
+    variant: 'success',
+  },
+  {
+    key: 'venus',
+    label: 'Venus',
+    icon: 'Coins',
+    description: 'Venus Protocol liquidity & lending',
+    variant: 'warning',
+  },
+  {
+    key: 'pancakeswap',
+    label: 'PancakeSwap',
+    icon: 'RefreshCcw',
+    description: 'PancakeSwap liquidity & swap routing',
+    variant: 'brand',
+  },
+  {
+    key: 'reputation',
+    label: 'High Reputation',
+    icon: 'Star',
+    description: 'Top-ranked agents with high feedback and scores',
+    variant: 'brand',
+  },
+];
+
+// Full categories list for comprehensive lookups
+export const CATEGORIES: CategoryConfig[] = [
+  ...PRIMARY_PILLARS,
+  // Sub-categories preserved for backward compatibility
+  {
+    key: 'grid',
+    label: 'Grid Trading',
+    shortLabel: 'Grid',
+    description: 'Automated grid trading and market making.',
+    searchTerms: ['grid', 'grid trading', 'market maker'],
+    icon: 'Grid3x3',
+    variant: 'info',
+    priority: 10,
+    isMandatory: false,
+    defaultSort: 'score',
+  },
+  {
+    key: 'health',
+    label: 'Health Factor Monitoring',
+    shortLabel: 'Health',
+    description: 'Lending liquidation and health factor monitors.',
+    searchTerms: ['health', 'health factor', 'liquidation'],
+    icon: 'HeartPulse',
+    variant: 'danger',
+    priority: 11,
+    isMandatory: false,
+    defaultSort: 'score',
+  },
+  {
+    key: 'rebalancing',
+    label: 'Portfolio Rebalancing',
+    shortLabel: 'Rebalance',
+    description: 'Concentrated liquidity and portfolio rebalancers.',
+    searchTerms: ['rebalance', 'rebalancing', 'lp'],
+    icon: 'RefreshCcw',
+    variant: 'info',
+    priority: 12,
+    isMandatory: false,
+    defaultSort: 'score',
+  },
+  {
+    key: 'derivatives',
+    label: 'Perpetuals & Hedging',
+    shortLabel: 'Perps',
+    description: 'Funding rate arb and perpetuals execution.',
+    searchTerms: ['perps', 'futures', 'derivatives'],
+    icon: 'Activity',
+    variant: 'danger',
+    priority: 13,
+    isMandatory: false,
+    defaultSort: 'score',
+  },
+  {
+    key: 'liquid_staking',
+    label: 'Liquid Staking',
+    shortLabel: 'LST/LRT',
+    description: 'slisBNB and liquid staking yields.',
+    searchTerms: ['lista', 'slisbnb', 'staking'],
+    icon: 'Coins',
+    variant: 'brand',
+    priority: 14,
+    isMandatory: false,
+    defaultSort: 'score',
+  },
+  {
+    key: 'analytics',
+    label: 'On-Chain Analytics',
+    shortLabel: 'Analytics',
+    description: 'Whale tracking and smart money analytics.',
+    searchTerms: ['analytics', 'wallet', 'smart money'],
+    icon: 'BarChart3',
+    variant: 'neutral',
+    priority: 15,
+    isMandatory: false,
+    defaultSort: 'score',
+  },
+  {
+    key: 'payments',
+    label: 'x402 Micropayments',
+    shortLabel: 'x402',
+    description: 'HTTP 402 pay-per-request agents.',
+    searchTerms: ['x402', 'payment'],
+    icon: 'Zap',
+    variant: 'brand',
+    priority: 16,
+    isMandatory: false,
+    defaultSort: 'score',
+  },
+  {
+    key: 'cross_agent',
+    label: 'Multi-Agent & MCP',
+    shortLabel: 'MCP / A2A',
+    description: 'MCP & A2A collaborative agents.',
+    searchTerms: ['mcp', 'a2a', 'swarm'],
+    icon: 'Bot',
+    variant: 'success',
+    priority: 17,
+    isMandatory: false,
+    defaultSort: 'score',
+  },
+  {
+    key: 'cross_chain',
+    label: 'Cross-Chain & Bridges',
+    shortLabel: 'Bridges',
+    description: 'LayerZero and cross-chain execution.',
+    searchTerms: ['bridge', 'cross-chain', 'layerzero'],
+    icon: 'ArrowLeftRight',
+    variant: 'info',
+    priority: 18,
+    isMandatory: false,
+    defaultSort: 'score',
+  },
+  {
+    key: 'depin_storage',
+    label: 'DePIN & Greenfield',
+    shortLabel: 'Greenfield',
+    description: 'Greenfield data and compute brokers.',
+    searchTerms: ['greenfield', 'storage', 'depin'],
+    icon: 'HardDrive',
+    variant: 'neutral',
+    priority: 19,
+    isMandatory: false,
+    defaultSort: 'newest',
+  },
+  {
+    key: 'meme_social',
+    label: 'Meme & Fair-Launch',
+    shortLabel: 'Meme',
+    description: 'Four.meme and bonding curve bots.',
+    searchTerms: ['meme', 'four.meme', 'gra.fun'],
+    icon: 'Flame',
+    variant: 'warning',
+    priority: 20,
+    isMandatory: false,
+    defaultSort: 'trending',
+  },
+  {
+    key: 'governance',
+    label: 'DAO Governance',
+    shortLabel: 'Governance',
+    description: 'DAO proposal evaluation and voting.',
+    searchTerms: ['governance', 'dao', 'proposal'],
+    icon: 'Landmark',
+    variant: 'neutral',
+    priority: 21,
     isMandatory: false,
     defaultSort: 'score',
   },
@@ -300,8 +349,8 @@ export const CATEGORY_DISCOVERY_CONFIG: Record<
 // Helpers
 // ──────────────────────────────────────────────
 
-export const MANDATORY_CATEGORIES = CATEGORIES.filter((c) => c.isMandatory);
-export const FEATURED_CATEGORIES = CATEGORIES.filter((c) => c.featured);
+export const MANDATORY_CATEGORIES = PRIMARY_PILLARS.filter((c) => c.isMandatory);
+export const FEATURED_CATEGORIES = PRIMARY_PILLARS.filter((c) => c.featured);
 
 const DISCOVERY_CATEGORY_KEYS = new Set<string>(
   CATEGORIES.filter((c) => c.key !== 'all').map((c) => c.key),
@@ -312,12 +361,54 @@ export function isDiscoveryCategory(key: string): key is DiscoveryCategory {
 }
 
 export function getCategory(key: CategoryKey): CategoryConfig {
-  return CATEGORIES.find((c) => c.key === key) ?? CATEGORIES[CATEGORIES.length - 1];
+  return CATEGORIES.find((c) => c.key === key) ?? PRIMARY_PILLARS[PRIMARY_PILLARS.length - 1];
 }
 
 export function getSearchQuery(categoryKey: CategoryKey): string {
   const category = getCategory(categoryKey);
   return category.searchTerms[0] || '';
+}
+
+/**
+ * Filter agents against multi-select secondary capability tags
+ */
+export function matchAgentSecondaryTags(
+  agent: ScanAgentItem,
+  tags: SecondaryTagKey[],
+): boolean {
+  if (!tags || tags.length === 0) return true;
+  return tags.every((tag) => {
+    switch (tag) {
+      case 'x402':
+        return agent.x402_supported === true;
+      case 'mcp':
+        return Boolean(
+          agent.supported_protocols?.some((p) => p.toUpperCase().includes('MCP')),
+        );
+      case 'a2a':
+        return Boolean(
+          agent.supported_protocols?.some((p) => p.toUpperCase().includes('A2A')),
+        );
+      case 'verified':
+        return agent.is_verified === true;
+      case 'venus': {
+        const text = `${agent.name || ''} ${agent.description || ''}`.toLowerCase();
+        return text.includes('venus');
+      }
+      case 'pancakeswap': {
+        const text = `${agent.name || ''} ${agent.description || ''}`.toLowerCase();
+        return text.includes('pancake');
+      }
+      case 'reputation': {
+        const score = agent.total_score ?? 0;
+        const rank = agent.rank ?? 0;
+        const avgScore = agent.average_score ?? 0;
+        return score >= 75 || (rank > 0 && rank <= 50) || avgScore >= 4.0;
+      }
+      default:
+        return true;
+    }
+  });
 }
 
 /**
