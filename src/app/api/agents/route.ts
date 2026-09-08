@@ -6,6 +6,7 @@ import {
   getLeaderboard,
   getSpotlightAgents,
   getTrendingAgents,
+  listAgents,
   searchAgents,
 } from '@/lib/8004scan/client';
 import type { DiscoveryCategory, ScanAgentItem } from '@/lib/8004scan/types';
@@ -160,7 +161,7 @@ export async function GET(request: Request) {
 
     // 5. Curated feed filters
     if (feed === 'leaderboard') {
-      const result = await getLeaderboard(limit);
+      const result = await getLeaderboard(limit, 56, { offset });
       const payload = {
         success: true,
         feed: 'leaderboard',
@@ -172,7 +173,7 @@ export async function GET(request: Request) {
     }
 
     if (feed === 'trending') {
-      const result = await getTrendingAgents(limit);
+      const result = await getTrendingAgents(limit, 56, { offset });
       const payload = {
         success: true,
         feed: 'trending',
@@ -184,7 +185,7 @@ export async function GET(request: Request) {
     }
 
     if (feed === 'featured') {
-      const result = await getFeaturedAgents(limit);
+      const result = await getFeaturedAgents(limit, 56, { offset });
       const payload = {
         success: true,
         feed: 'featured',
@@ -207,13 +208,13 @@ export async function GET(request: Request) {
       return respondWithCache(payload, false);
     }
 
-    // 6. Default: Featured
-    const result = await getFeaturedAgents(limit);
+    // 6. Default: Paginated main registry sorted by total_score desc
+    const result = await listAgents(limit, offset, 56, 'total_score', 'desc');
     const payload = {
       success: true,
       feed: 'all',
       items: result.items ?? [],
-      total: result.total ?? (result.items ?? []).length,
+      total: result.total ?? 310000,
     };
     setCached(cacheKey, payload);
     return respondWithCache(payload, false);

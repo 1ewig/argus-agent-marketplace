@@ -26,6 +26,7 @@ export function AgentMarketplaceClient() {
     setSelectedAgent,
     page,
     setPage,
+    pageSize,
     totalPages,
     agents,
     totalCount,
@@ -97,12 +98,14 @@ export function AgentMarketplaceClient() {
         {/* Agents Grid & Pagination */}
         <AgentGrid
           agents={agents}
+          totalCount={totalCount}
           isLoading={isLoading}
           isError={isError}
           onSelectAgent={handleSelectAgent}
           onRetry={refetch}
           onResetFilters={handleResetFilters}
           page={page}
+          pageSize={pageSize}
           totalPages={totalPages}
           onPageChange={setPage}
         />

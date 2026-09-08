@@ -77,17 +77,57 @@ export async function getAgentsByCategory(
 }
 
 /**
- * Fetch top-ranked agents from the pre-computed leaderboard endpoint (~0.2s latency).
+ * Fetch paginated agents from the primary /agents endpoint.
+ * Supports limit, offset, chain_id, sort_by, and sort_order.
  */
-export async function getLeaderboard(
-  limit = 20,
+export async function listAgents(
+  limit = 24,
+  offset = 0,
   chainId = BSC_CHAIN_ID,
+  sortBy?: string,
+  sortOrder?: string,
   options: DiscoveryOptions = {},
 ): Promise<ScanAgentListResponse> {
   const params = new URLSearchParams({
     limit: String(limit),
+    offset: String(offset),
     chain_id: String(chainId),
   });
+
+  if (sortBy) {
+    params.set('sort_by', sortBy);
+    params.set('sort_order', sortOrder ?? 'desc');
+  }
+
+  const res = await fetch(`${BASE_URL}/agents?${params.toString()}`, {
+    headers: getHeaders(),
+    next: { revalidate: options.revalidate ?? DEFAULT_REVALIDATE_SECONDS },
+  });
+
+  if (!res.ok) {
+    throw new Error(`8004scan listAgents error (${res.status}): ${res.statusText}`);
+  }
+
+  return res.json() as Promise<ScanAgentListResponse>;
+}
+
+/**
+ * Fetch top-ranked agents from the pre-computed leaderboard endpoint (~0.2s latency).
+ */
+export async function getLeaderboard(
+  limit = 24,
+  chainId = BSC_CHAIN_ID,
+  options: DiscoveryOptions = {},
+): Promise<ScanAgentListResponse> {
+  const offset = options.offset ?? 0;
+  const params = new URLSearchParams({
+    limit: String(Math.max(limit, offset + limit)),
+    chain_id: String(chainId),
+  });
+
+  if (options.offset) {
+    params.set('offset', String(options.offset));
+  }
 
   const res = await fetch(`${BASE_URL}/agents/leaderboard?${params.toString()}`, {
     headers: getHeaders(),
@@ -98,21 +138,36 @@ export async function getLeaderboard(
     throw new Error(`8004scan leaderboard error (${res.status}): ${res.statusText}`);
   }
 
-  return res.json() as Promise<ScanAgentListResponse>;
+  const data = (await res.json()) as ScanAgentListResponse;
+  const items = data.items ?? [];
+  const sliced = items.length > limit ? items.slice(offset, offset + limit) : items;
+
+  return {
+    ...data,
+    items: sliced,
+    total: data.total ?? items.length,
+    limit,
+    offset,
+  };
 }
 
 /**
  * Fetch fastest-trending agents (~0.34s latency).
  */
 export async function getTrendingAgents(
-  limit = 20,
+  limit = 24,
   chainId = BSC_CHAIN_ID,
   options: DiscoveryOptions = {},
 ): Promise<ScanAgentListResponse> {
+  const offset = options.offset ?? 0;
   const params = new URLSearchParams({
-    limit: String(limit),
+    limit: String(Math.max(limit, offset + limit)),
     chain_id: String(chainId),
   });
+
+  if (options.offset) {
+    params.set('offset', String(options.offset));
+  }
 
   const res = await fetch(`${BASE_URL}/agents/trending?${params.toString()}`, {
     headers: getHeaders(),
@@ -123,21 +178,36 @@ export async function getTrendingAgents(
     throw new Error(`8004scan trending error (${res.status}): ${res.statusText}`);
   }
 
-  return res.json() as Promise<ScanAgentListResponse>;
+  const data = (await res.json()) as ScanAgentListResponse;
+  const items = data.items ?? [];
+  const sliced = items.length > limit ? items.slice(offset, offset + limit) : items;
+
+  return {
+    ...data,
+    items: sliced,
+    total: data.total ?? items.length,
+    limit,
+    offset,
+  };
 }
 
 /**
  * Fetch curated / featured agents (~0.44s latency).
  */
 export async function getFeaturedAgents(
-  limit = 20,
+  limit = 24,
   chainId = BSC_CHAIN_ID,
   options: DiscoveryOptions = {},
 ): Promise<ScanAgentListResponse> {
+  const offset = options.offset ?? 0;
   const params = new URLSearchParams({
-    limit: String(limit),
+    limit: String(Math.max(limit, offset + limit)),
     chain_id: String(chainId),
   });
+
+  if (options.offset) {
+    params.set('offset', String(options.offset));
+  }
 
   const res = await fetch(`${BASE_URL}/agents/featured?${params.toString()}`, {
     headers: getHeaders(),
@@ -148,7 +218,17 @@ export async function getFeaturedAgents(
     throw new Error(`8004scan featured error (${res.status}): ${res.statusText}`);
   }
 
-  return res.json() as Promise<ScanAgentListResponse>;
+  const data = (await res.json()) as ScanAgentListResponse;
+  const items = data.items ?? [];
+  const sliced = items.length > limit ? items.slice(offset, offset + limit) : items;
+
+  return {
+    ...data,
+    items: sliced,
+    total: data.total ?? items.length,
+    limit,
+    offset,
+  };
 }
 
 /**

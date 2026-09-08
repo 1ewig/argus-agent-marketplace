@@ -4,11 +4,12 @@ import React, { memo } from 'react';
 import { motion } from 'framer-motion';
 import {
   CheckCircle2,
-  Award,
-  Activity,
   Star,
   ArrowUpRight,
   Zap,
+  Cpu,
+  Bot,
+  Activity,
 } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
 import { truncateAddress } from '@/lib/utils';
@@ -19,6 +20,19 @@ export interface AgentCardProps {
   onSelect: (agent: ScanAgentItem) => void;
 }
 
+// Deterministic pastel gradient for agents without an avatar image
+function getAvatarGradient(seed: string): string {
+  const charCode = seed.charCodeAt(0) || 0;
+  const gradients = [
+    'from-amber-500/20 to-yellow-600/20 text-theme-brand-binance border-theme-brand-binance/30',
+    'from-emerald-500/20 to-teal-600/20 text-theme-status-success border-theme-status-success/30',
+    'from-sky-500/20 to-blue-600/20 text-theme-status-info border-theme-status-info/30',
+    'from-violet-500/20 to-purple-600/20 text-purple-400 border-purple-500/30',
+    'from-rose-500/20 to-pink-600/20 text-rose-400 border-rose-500/30',
+  ];
+  return gradients[charCode % gradients.length];
+}
+
 export const AgentCard = memo(function AgentCard({
   agent,
   onSelect,
@@ -27,19 +41,26 @@ export const AgentCard = memo(function AgentCard({
   const displayDescription =
     agent.description?.trim() || APP_CONTENT.marketplace.card.defaultDescription;
   const ownerDisplay = agent.owner_ens || truncateAddress(agent.owner_address);
+  const avatarStyle = getAvatarGradient(agent.token_id);
+
+  // Check protocols
+  const isMCP = agent.supported_protocols?.some((p) => p.toUpperCase().includes('MCP'));
+  const isA2A = agent.supported_protocols?.some((p) => p.toUpperCase().includes('A2A'));
 
   return (
     <motion.div
       whileHover={{ y: -3 }}
-      transition={{ duration: 0.2 }}
+      transition={{ duration: 0.18 }}
       onClick={() => onSelect(agent)}
-      className="bg-theme-bg-surface border border-theme-border-subtle hover:border-theme-brand-binance/40 rounded-xl p-4 flex flex-col justify-between gap-3 cursor-pointer group transition-all shadow-2xs hover:shadow-xs relative select-none"
+      className="bg-gradient-to-b from-theme-bg-surface via-theme-bg-surface to-theme-bg-elevated/25 border border-theme-border-subtle hover:border-theme-brand-binance/50 rounded-2xl p-4 flex flex-col justify-between gap-3 cursor-pointer group transition-all shadow-2xs hover:shadow-md hover:shadow-theme-brand-binance/5 relative select-none"
     >
-      {/* 1. Header: Avatar, Name & Verification Badge */}
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-2.5 min-w-0">
+      {/* 1. Header: Avatar, Name & Quick Action */}
+      <div className="flex items-start justify-between gap-2.5">
+        <div className="flex items-center gap-3 min-w-0">
           {/* Avatar Icon */}
-          <div className="size-10 rounded-xl bg-theme-bg-elevated border border-theme-border-subtle flex items-center justify-center font-bold text-xs text-theme-brand-binance shrink-0 group-hover:border-theme-brand-binance/40 transition-colors overflow-hidden">
+          <div
+            className={`size-11 rounded-xl bg-gradient-to-br border flex items-center justify-center font-extrabold text-xs shrink-0 overflow-hidden group-hover:border-theme-brand-binance/50 transition-colors ${avatarStyle}`}
+          >
             {agent.image_url ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -47,13 +68,17 @@ export const AgentCard = memo(function AgentCard({
                 alt={displayName}
                 className="size-full object-cover"
                 loading="lazy"
+                onError={(e) => {
+                  // Fallback to text initials on image 404
+                  (e.target as HTMLElement).style.display = 'none';
+                }}
               />
             ) : (
               <span>{displayName.slice(0, 2).toUpperCase()}</span>
             )}
           </div>
 
-          {/* Name & Token ID */}
+          {/* Name, Token ID & Owner */}
           <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-1.5 min-w-0">
               <h3 className="text-xs font-bold text-theme-text-primary group-hover:text-theme-brand-binance transition-colors truncate">
@@ -66,72 +91,82 @@ export const AgentCard = memo(function AgentCard({
               )}
             </div>
 
-            <div className="flex items-center gap-1.5 text-2xs text-theme-text-muted">
-              <span>#{agent.token_id}</span>
+            <div className="flex items-center gap-1.5 text-2xs text-theme-text-muted mt-0.5">
+              <span className="font-mono text-theme-brand-binance font-semibold">
+                #{agent.token_id}
+              </span>
               <span>•</span>
               <span className="truncate">{ownerDisplay}</span>
             </div>
           </div>
         </div>
 
-        {/* Inspect Action Arrow */}
-        <div className="size-7 rounded-lg bg-theme-bg-elevated/70 group-hover:bg-theme-brand-binance group-hover:text-theme-bg-overlay flex items-center justify-center text-theme-text-muted transition-colors shrink-0">
-          <ArrowUpRight className="size-3.5" />
+        {/* Hover Inspect Arrow */}
+        <div className="size-7 rounded-lg bg-theme-bg-elevated/70 group-hover:bg-theme-brand-binance group-hover:text-theme-bg-overlay flex items-center justify-center text-theme-text-muted transition-all shrink-0">
+          <ArrowUpRight className="size-3.5 group-hover:translate-x-0.2 group-hover:-translate-y-0.2 transition-transform" />
         </div>
       </div>
 
-      {/* 2. Body: Description snippet */}
-      <p className="text-2xs text-theme-text-secondary line-clamp-2 leading-relaxed h-8">
+      {/* 2. Description snippet with clean 2-line height */}
+      <p className="text-2xs text-theme-text-secondary line-clamp-2 leading-relaxed min-h-[34px]">
         {displayDescription}
       </p>
 
       {/* 3. Capability Badges */}
-      <div className="flex flex-wrap items-center gap-1.5 pt-1">
+      <div className="flex flex-wrap items-center gap-1.5 min-h-[22px]">
         {agent.x402_supported && (
-          <span className="text-2xs font-semibold px-2 py-0.5 rounded-md bg-theme-brand-binance/10 text-theme-brand-binance border border-theme-brand-binance/20 flex items-center gap-1">
+          <span className="text-3xs font-bold px-2 py-0.5 rounded-full bg-theme-brand-binance/10 text-theme-brand-binance border border-theme-brand-binance/25 flex items-center gap-1 shrink-0">
             <Zap className="size-2.5" />
             {APP_CONTENT.marketplace.card.x402Badge}
           </span>
         )}
 
-        {agent.supported_protocols && agent.supported_protocols.length > 0 && (
-          <span className="text-2xs font-medium px-2 py-0.5 rounded-md bg-theme-bg-elevated text-theme-text-secondary border border-theme-border-subtle truncate max-w-[130px]">
-            {agent.supported_protocols[0]}
+        {isMCP && (
+          <span className="text-3xs font-semibold px-2 py-0.5 rounded-full bg-theme-status-info/10 text-theme-status-info border border-theme-status-info/25 flex items-center gap-1 shrink-0">
+            <Cpu className="size-2.5" />
+            {APP_CONTENT.marketplace.card.mcpBadge}
+          </span>
+        )}
+
+        {isA2A && (
+          <span className="text-3xs font-semibold px-2 py-0.5 rounded-full bg-theme-status-success/10 text-theme-status-success border border-theme-status-success/25 flex items-center gap-1 shrink-0">
+            <Bot className="size-2.5" />
+            {APP_CONTENT.marketplace.card.a2aBadge}
           </span>
         )}
 
         {agent.rank && agent.rank <= 100 && (
-          <span className="text-2xs font-semibold px-1.5 py-0.5 rounded-md bg-theme-status-info/10 text-theme-status-info border border-theme-status-info/20">
+          <span className="text-3xs font-mono font-semibold px-1.5 py-0.5 rounded-full bg-theme-bg-elevated text-theme-text-muted border border-theme-border-subtle shrink-0">
             {APP_CONTENT.marketplace.card.rankPrefix}
             {agent.rank}
           </span>
         )}
       </div>
 
-      {/* 4. Footer: Metrics Bar */}
-      <div className="flex items-center justify-between pt-2.5 border-t border-theme-border-subtle text-2xs text-theme-text-muted">
-        {/* Total Score */}
-        <div className="flex items-center gap-1">
-          <Award className="size-3 text-theme-status-warning" />
-          <span>
-            {APP_CONTENT.marketplace.card.scoreLabel}:{' '}
-            <strong className="text-theme-text-primary">
-              {agent.total_score ? agent.total_score.toFixed(1) : '0.0'}
-            </strong>
-          </span>
+      {/* 4. Footer: Scores & Metrics */}
+      <div className="flex items-center justify-between pt-2.5 border-t border-theme-border-subtle/70 text-2xs">
+        {/* Total Score Badge */}
+        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-theme-bg-elevated/70 border border-theme-border-subtle/80">
+          <Star className="size-3 text-theme-brand-binance fill-theme-brand-binance/30" />
+          <span className="text-theme-text-muted">{APP_CONTENT.marketplace.card.scoreLabel}:</span>
+          <strong className="text-theme-text-primary font-mono">
+            {agent.total_score && agent.total_score > 0
+              ? agent.total_score.toFixed(1)
+              : 'N/A'}
+          </strong>
         </div>
 
-        {/* Health Factor / Star Count */}
-        <div className="flex items-center gap-2">
-          {agent.health_score != null ? (
-            <div className="flex items-center gap-1">
-              <Activity className="size-3 text-theme-status-success" />
+        {/* Health Factor Badge */}
+        <div className="flex items-center gap-1.5 text-theme-text-muted">
+          {agent.health_score != null && agent.health_score > 0 ? (
+            <div className="flex items-center gap-1 text-theme-status-success font-semibold">
+              <Activity className="size-3" />
               <span>{agent.health_score.toFixed(0)}%</span>
             </div>
           ) : (
-            <div className="flex items-center gap-1">
-              <Star className="size-3 text-theme-status-warning fill-theme-status-warning/20" />
-              <span>{agent.star_count ?? 0}</span>
+            <div className="flex items-center gap-1 text-theme-status-success font-medium">
+              <span className="size-1.5 rounded-full bg-theme-status-success" />
+              <span>{APP_CONTENT.marketplace.card.activeStatus}</span>
             </div>
           )}
         </div>
