@@ -18,6 +18,7 @@ interface PriceTickerCardProps {
 export const PriceTickerCard = React.memo(function PriceTickerCard({
   symbol,
   ticker,
+  status = 'idle',
 }: PriceTickerCardProps) {
   const content = APP_CONTENT.marketPanel;
   const clean = symbol.toUpperCase();
@@ -28,15 +29,44 @@ export const PriceTickerCard = React.memo(function PriceTickerCard({
 
   return (
     <div className="flex flex-col gap-3 p-3.5 sm:p-4 rounded-xl bg-theme-bg-surface border border-theme-border-subtle shadow-2xs">
-      {/* Top Header: Pair (Left) & 24h Change Pill (Far Right) */}
+      {/* Top Header: Pair (Left), Live WS status (Middle) & 24h Change Pill (Far Right) */}
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5">
-          <span className="text-xs sm:text-sm font-extrabold tracking-wider text-theme-text-primary">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className="text-xs sm:text-sm font-extrabold tracking-wider text-theme-text-primary truncate">
             {quoteAsset ? `${baseAsset} / ${quoteAsset}` : baseAsset}
           </span>
-          <span className="text-2xs font-mono font-bold text-theme-brand-binance bg-theme-brand-binance/10 border border-theme-brand-binance/25 px-1.5 py-0.5 rounded">
+          <span className="text-2xs font-mono font-bold text-theme-brand-binance bg-theme-brand-binance/10 border border-theme-brand-binance/25 px-1.5 py-0.5 rounded shrink-0">
             SPOT
           </span>
+
+          {/* Live Telemetry WS Indicator (Color Coded, No Text) */}
+          {status === 'connected' ? (
+            <span
+              title={content.statusConnected}
+              aria-label={content.statusConnected}
+              className="relative flex size-2 shrink-0"
+            >
+              <span className="absolute inline-flex h-full w-full rounded-full bg-theme-status-success/75 animate-ping" />
+              <span className="relative inline-flex size-2 rounded-full bg-theme-status-success" />
+            </span>
+          ) : status === 'connecting' || status === 'reconnecting' ? (
+            <span
+              title={status === 'connecting' ? content.statusConnecting : content.statusReconnecting}
+              aria-label={status === 'connecting' ? content.statusConnecting : content.statusReconnecting}
+              className="relative flex size-2 shrink-0"
+            >
+              <span className="absolute inline-flex h-full w-full rounded-full bg-theme-brand-binance/75 animate-ping" />
+              <span className="relative inline-flex size-2 rounded-full bg-theme-brand-binance" />
+            </span>
+          ) : (
+            <span
+              title={content.statusError}
+              aria-label={content.statusError}
+              className="relative flex size-2 shrink-0"
+            >
+              <span className="relative inline-flex size-2 rounded-full bg-theme-status-danger" />
+            </span>
+          )}
         </div>
 
         {ticker && (

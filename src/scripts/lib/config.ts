@@ -31,13 +31,13 @@ export const CATEGORY_SEARCHES: Record<HackathonCategory, string[]> = {
     "concentrated liquidity",
   ],
   grid_trading: ["grid trading", "grid bot", "TWAP", "DCA bot"],
-  yield: ["yield", "APY", "staking", "vault", "auto compound"],
+  yield: ["yield", "APY", "staking", "auto compound"],
   health_factor: ["health factor", "liquidation", "lending", "borrow"],
   security: ["security audit", "honeypot", "vulnerability"],
   payments: ["x402", "payment", "micropayment"],
   cross_agent: ["agent-to-agent", "orchestrator", "MCP"],
-  research: ["research", "market analysis", "sentiment"],
+  research: ["research", "market analysis"],
 };
 
-export const CRAWL_OFFSETS = [0, 50, 100, 150, 200, 250, 300, 400];
+export const CRAWL_OFFSETS = [0, 50, 150, 200];
 

@@ -62,30 +62,31 @@ function partitionCategories(compact: AgentCompact[]): CategoryBuckets {
 async function main(): Promise<void> {
   console.log("=== 8004scan BSC Agent Pipeline (Modular Orchestrator) ===\n");
 
-  // 1. Global stats
-  await logGlobalStats();
-
-  // 2. Targeted category crawl (parallelized across categories)
+  // 1. Concurrent global stats, category crawl, and curated feeds
   const crawled = new Map<string, AgentSummary>();
-  const categoryBatches = await Promise.all(
-    Object.entries(CATEGORY_SEARCHES).map(([category, keywords]) =>
-      crawlCategory(category, keywords),
+  const [, categoryBatches, curated] = await Promise.all([
+    logGlobalStats(),
+    Promise.all(
+      Object.entries(CATEGORY_SEARCHES).map(([category, keywords]) =>
+        crawlCategory(category, keywords),
+      ),
     ),
-  );
+    fetchCurated(),
+  ]);
+
   for (const batch of categoryBatches) {
     for (const agent of batch) {
       if (!crawled.has(agent.agent_id)) crawled.set(agent.agent_id, agent);
     }
   }
 
-  // 3. Curated feeds + long-tail crawl
-  const curated = await fetchCurated();
   const seen = new Set<string>([
     ...crawled.keys(),
     ...curated.map((a) => a.agent_id),
   ]);
   for (const a of curated) if (isInteresting(a)) crawled.set(a.agent_id, a);
 
+  // 2. Parallel long-tail crawl
   const longTail = await fetchLongTail(seen);
   for (const a of longTail) crawled.set(a.agent_id, a);
 

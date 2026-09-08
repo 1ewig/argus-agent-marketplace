@@ -10,7 +10,6 @@ import type {
   StreamConnectionStatus,
 } from '@/lib/binance-websocket';
 import { useMarketPanelData } from '@/hooks';
-import { MarketPanelHeader } from './market-panel-header';
 import { MarketPanelBody } from './market-panel-body';
 
 export interface MarketPanelProps {
@@ -24,7 +23,7 @@ export interface MarketPanelProps {
 
 /**
  * Main orchestrator for the MarketPanel workspace deck.
- * Delegates data fetching to `useMarketPanelData` and presentation to `MarketPanelHeader` and `MarketPanelBody`.
+ * Delegates data fetching to `useMarketPanelData` and presentation to `MarketPanelBody`.
  */
 export function MarketPanel({
   isOpen,
@@ -37,22 +36,9 @@ export function MarketPanel({
   const content = APP_CONTENT.marketPanel;
 
   const {
-    rightPanelTab,
-    setRightPanelTab,
-    toggleMarketPanel,
     global,
     futures,
   } = useMarketPanelData({ symbol, isGlobal, isOpen });
-
-  const sharedHeaderProps = {
-    isGlobal,
-    rightPanelTab,
-    spotStatus,
-    onTabSelect: setRightPanelTab,
-    onTogglePanel: toggleMarketPanel,
-    isGlobalFetching: global.isFetching || global.isRefreshing,
-    onRefreshGlobal: global.handleRefresh,
-  };
 
   const sharedBodyProps = {
     isGlobal,
@@ -84,7 +70,6 @@ export function MarketPanel({
         aria-label={content.title}
       >
         <div className="w-full min-w-[340px] h-full flex flex-col overflow-hidden">
-          <MarketPanelHeader {...sharedHeaderProps} isMobile={false} />
           <div className="flex-1 overflow-y-auto custom-scrollbar p-4 flex flex-col gap-4">
             <MarketPanelBody {...sharedBodyProps} />
           </div>
@@ -105,7 +90,6 @@ export function MarketPanel({
             transition={{ duration: 0.18, ease: 'easeOut' }}
             className="fixed inset-0 z-50 md:hidden w-full h-dvh bg-theme-bg-base flex flex-col select-none overflow-hidden"
           >
-            <MarketPanelHeader {...sharedHeaderProps} isMobile={true} />
             <div className="flex-1 overflow-y-auto custom-scrollbar p-3.5 flex flex-col gap-3.5 pb-[calc(env(safe-area-inset-bottom,0px)+1rem)]">
               <MarketPanelBody {...sharedBodyProps} />
             </div>

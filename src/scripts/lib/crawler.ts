@@ -67,43 +67,43 @@ export async function crawlCategory(
   const collected: AgentSummary[] = [];
   const seen = new Set<string>();
 
-  for (const keyword of keywords) {
-    let total = Infinity;
-    let pagesFetched = 0;
-    for (
-      let page = 0;
-      page < MAX_PAGES_PER_SEARCH && page * PAGE_SIZE < total;
-      page++
-    ) {
-      pagesFetched = page + 1;
-      const offset = page * PAGE_SIZE;
-      let res;
-      try {
-        res = await searchAgents(keyword, PAGE_SIZE, offset, BSC_CHAIN_ID);
-      } catch (e) {
-        console.log(
-          `  search "${keyword}" offset ${offset} failed: ${(e as Error).message}`,
-        );
-        total = 0;
-        pagesFetched = page;
-        break;
-      }
-      total = res.total ?? 0;
-
-      for (const agent of filterBsc(res.items ?? [])) {
-        if (isInteresting(agent)) {
-          recordProvenance(agent.agent_id, category, keyword);
-          recordSource(agent.agent_id, "search");
+  await Promise.all(
+    keywords.map(async (keyword) => {
+      let total = Infinity;
+      let pagesFetched = 0;
+      for (
+        let page = 0;
+        page < MAX_PAGES_PER_SEARCH && page * PAGE_SIZE < total;
+        page++
+      ) {
+        pagesFetched = page + 1;
+        const offset = page * PAGE_SIZE;
+        let res;
+        try {
+          res = await searchAgents(keyword, PAGE_SIZE, offset, BSC_CHAIN_ID);
+        } catch (e) {
+          console.log(
+            `  search "${keyword}" offset ${offset} failed: ${(e as Error).message}`,
+          );
+          break;
         }
-        if (seen.has(agent.agent_id)) continue;
-        seen.add(agent.agent_id);
-        if (isInteresting(agent)) collected.push(agent);
+        total = res.total ?? 0;
+
+        for (const agent of filterBsc(res.items ?? [])) {
+          if (isInteresting(agent)) {
+            recordProvenance(agent.agent_id, category, keyword);
+            recordSource(agent.agent_id, "search");
+          }
+          if (seen.has(agent.agent_id)) continue;
+          seen.add(agent.agent_id);
+          if (isInteresting(agent)) collected.push(agent);
+        }
       }
-    }
-    console.log(
-      `  "${keyword}": ${total} matches (${pagesFetched} page(s) fetched)`,
-    );
-  }
+      console.log(
+        `  "${keyword}": ${total === Infinity ? 0 : total} matches (${pagesFetched} page(s) fetched)`,
+      );
+    }),
+  );
 
   console.log(`  → ${collected.length} interesting agents in "${category}"`);
   return collected;
@@ -141,37 +141,38 @@ export async function fetchCurated(): Promise<AgentSummary[]> {
  */
 export async function fetchLongTail(seen: Set<string>): Promise<AgentSummary[]> {
   console.log(
-    `\nCrawling latest-agents long tail (${CRAWL_OFFSETS.length} pages)...`,
+    `\nCrawling latest-agents long tail (${CRAWL_OFFSETS.length} pages in parallel)...`,
   );
   const collected: AgentSummary[] = [];
 
-  for (const [i, offset] of CRAWL_OFFSETS.entries()) {
-    process.stdout.write(
-      `  offset ${offset} (${i + 1}/${CRAWL_OFFSETS.length})... `,
-    );
-    let items: AgentSummary[];
-    try {
-      items =
+  const results = await Promise.allSettled(
+    CRAWL_OFFSETS.map(async (offset, i) => {
+      const items =
         (await getLatestAgents(PAGE_SIZE, offset, BSC_CHAIN_ID)).items ?? [];
-    } catch (e) {
-      console.log(`failed: ${(e as Error).message}`);
-      continue;
-    }
+      const bsc = filterBsc(items);
+      return { offset, i, items, bsc };
+    }),
+  );
 
-    const bsc = filterBsc(items);
-    let added = 0;
-    for (const agent of bsc) {
-      if (seen.has(agent.agent_id)) continue;
-      seen.add(agent.agent_id);
-      if (isInteresting(agent)) {
-        recordSource(agent.agent_id, "crawl");
-        collected.push(agent);
-        added++;
+  for (const res of results) {
+    if (res.status === "fulfilled") {
+      const { offset, i, items, bsc } = res.value;
+      let added = 0;
+      for (const agent of bsc) {
+        if (seen.has(agent.agent_id)) continue;
+        seen.add(agent.agent_id);
+        if (isInteresting(agent)) {
+          recordSource(agent.agent_id, "crawl");
+          collected.push(agent);
+          added++;
+        }
       }
+      console.log(
+        `  offset ${offset} (${i + 1}/${CRAWL_OFFSETS.length}): ${items.length} total, ${bsc.length} BSC, +${added} new interesting`,
+      );
+    } else {
+      console.log(`  offset failed: ${res.reason?.message ?? res.reason}`);
     }
-    console.log(
-      `${items.length} total, ${bsc.length} BSC, +${added} new interesting (running: ${collected.length})`,
-    );
   }
   return collected;
 }

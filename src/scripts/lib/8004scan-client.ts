@@ -1,9 +1,9 @@
-const BASE_URL = "https://api.8004scan.io/api/v1";
+const BASE_URL = "https://8004scan.io/api/v1";
 
-const RATE_LIMIT_MS = 150;
-const REQUEST_TIMEOUT_MS = 10_000;
-const MAX_ATTEMPTS = 3;
-const RETRY_BASE_DELAY_MS = 300;
+const RATE_LIMIT_MS = 60;
+const DEFAULT_REQUEST_TIMEOUT_MS = 4_500;
+const DEFAULT_MAX_ATTEMPTS = 2;
+const RETRY_BASE_DELAY_MS = 150;
 
 const API_KEY = process.env["8004SCAN_API_KEY"] ?? "";
 
@@ -17,9 +17,13 @@ function throttle(): Promise<void> {
   return current;
 }
 
-
 function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
+}
+
+export interface RequestOptions {
+  timeoutMs?: number;
+  maxAttempts?: number;
 }
 
 export class RequestFailureLog {
@@ -48,6 +52,7 @@ export const requestLog = new RequestFailureLog();
 async function request<T>(
   path: string,
   params?: Record<string, string | number | boolean | undefined | null>,
+  options?: RequestOptions,
 ): Promise<T> {
   const url = new URL(`${BASE_URL}${path}`);
   if (params) {
@@ -58,9 +63,12 @@ async function request<T>(
     }
   }
 
+  const maxAttempts = options?.maxAttempts ?? DEFAULT_MAX_ATTEMPTS;
+  const timeoutMs = options?.timeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS;
+
   let lastError: Error | null = null;
 
-  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     await throttle();
     try {
       const headers: Record<string, string> = {
@@ -71,7 +79,7 @@ async function request<T>(
 
       const res = await fetch(url.toString(), {
         headers,
-        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+        signal: AbortSignal.timeout(timeoutMs),
       });
 
       if (!res.ok) {
@@ -87,14 +95,16 @@ async function request<T>(
       return (await res.json()) as T;
     } catch (e) {
       lastError = e as Error;
-      const transient = e instanceof TransientError || (e as Error).name === "TimeoutError" ||
+      const transient =
+        e instanceof TransientError ||
+        (e as Error).name === "TimeoutError" ||
         /fetch|network/i.test((e as Error).message);
-      if (!transient || attempt === MAX_ATTEMPTS) break;
-      await sleep(RETRY_BASE_DELAY_MS * 2 ** (attempt - 1) + Math.random() * 250);
+      if (!transient || attempt === maxAttempts) break;
+      await sleep(RETRY_BASE_DELAY_MS * 2 ** (attempt - 1) + Math.random() * 150);
     }
   }
 
-  const message = `${lastError?.message ?? "unknown error"} (after ${MAX_ATTEMPTS} attempts)`;
+  const message = `${lastError?.message ?? "unknown error"} (after ${maxAttempts} attempts)`;
   requestLog.recordFailure(path, message);
   throw new Error(message);
 }
@@ -172,8 +182,13 @@ export async function listAgents(
   limit = 100,
   offset = 0,
   chainId?: number,
+  options?: RequestOptions,
 ): Promise<AgentSummaryListResponse> {
-  return request<AgentSummaryListResponse>("/agents", { limit, offset, chain_id: chainId });
+  return request<AgentSummaryListResponse>(
+    "/agents",
+    { limit, offset, chain_id: chainId },
+    options,
+  );
 }
 
 export async function searchAgents(
@@ -181,28 +196,56 @@ export async function searchAgents(
   limit = 50,
   offset = 0,
   chainId?: number,
+  options?: RequestOptions,
 ): Promise<AgentSummaryListResponse> {
-  return request<AgentSummaryListResponse>("/agents", { search, limit, offset, chain_id: chainId });
+  return request<AgentSummaryListResponse>(
+    "/agents",
+    { search, limit, offset, chain_id: chainId },
+    options,
+  );
 }
 
 export async function getLatestAgents(
   limit = 100,
   offset = 0,
   chainId?: number,
+  options?: RequestOptions,
 ): Promise<AgentSummaryListResponse> {
-  return request<AgentSummaryListResponse>("/agents/latest", { limit, offset, chain_id: chainId });
+  return request<AgentSummaryListResponse>(
+    "/agents/latest",
+    { limit, offset, chain_id: chainId },
+    options,
+  );
 }
 
-export async function getLeaderboard(): Promise<AgentSummaryListResponse> {
-  return request<AgentSummaryListResponse>("/agents/leaderboard");
+export async function getLeaderboard(
+  options?: RequestOptions,
+): Promise<AgentSummaryListResponse> {
+  return request<AgentSummaryListResponse>(
+    "/agents/leaderboard",
+    undefined,
+    options ?? { timeoutMs: 3_000, maxAttempts: 1 },
+  );
 }
 
-export async function getFeaturedAgents(): Promise<AgentSummaryListResponse> {
-  return request<AgentSummaryListResponse>("/agents/featured");
+export async function getFeaturedAgents(
+  options?: RequestOptions,
+): Promise<AgentSummaryListResponse> {
+  return request<AgentSummaryListResponse>(
+    "/agents/featured",
+    undefined,
+    options ?? { timeoutMs: 2_500, maxAttempts: 1 },
+  );
 }
 
-export async function getTrendingAgents(): Promise<AgentSummaryListResponse> {
-  return request<AgentSummaryListResponse>("/agents/trending");
+export async function getTrendingAgents(
+  options?: RequestOptions,
+): Promise<AgentSummaryListResponse> {
+  return request<AgentSummaryListResponse>(
+    "/agents/trending",
+    undefined,
+    options ?? { timeoutMs: 3_000, maxAttempts: 1 },
+  );
 }
 
 export async function getAgent(chainId: number, tokenId: string): Promise<AgentSummary> {
