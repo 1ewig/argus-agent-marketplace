@@ -1,16 +1,17 @@
 'use client';
 
-import React, { memo } from 'react';
+import React, { memo, useState, useRef, useEffect } from 'react';
 import {
+  ChevronDown,
   Layers,
-  TrendingUp,
-  Trophy,
-  Flame,
-  Clock,
   Coins,
   Grid,
   Activity,
   Radio,
+  Trophy,
+  Flame,
+  Sparkles,
+  Clock,
 } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
 import type { MarketplaceTab } from '@/hooks/agents/use-agent-marketplace';
@@ -20,13 +21,19 @@ export interface MarketplaceFilterBarProps {
   onSelectTab: (tab: MarketplaceTab) => void;
 }
 
-interface FilterTabOption {
+interface CategoryOption {
   id: MarketplaceTab;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
 }
 
-const CATEGORY_TABS: FilterTabOption[] = [
+interface SortOption {
+  id: MarketplaceTab;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+const CATEGORIES: CategoryOption[] = [
   { id: 'all', label: APP_CONTENT.marketplace.tabs.all, icon: Layers },
   {
     id: 'yield_optimisation',
@@ -50,100 +57,110 @@ const CATEGORY_TABS: FilterTabOption[] = [
   },
 ];
 
-const CURATED_TABS: FilterTabOption[] = [
-  {
-    id: 'leaderboard',
-    label: APP_CONTENT.marketplace.tabs.leaderboard,
-    icon: Trophy,
-  },
-  {
-    id: 'trending',
-    label: APP_CONTENT.marketplace.tabs.trending,
-    icon: Flame,
-  },
-  {
-    id: 'featured',
-    label: APP_CONTENT.marketplace.tabs.featured,
-    icon: TrendingUp,
-  },
-  {
-    id: 'latest',
-    label: APP_CONTENT.marketplace.tabs.latest,
-    icon: Clock,
-  },
+const SORT_OPTIONS: SortOption[] = [
+  { id: 'leaderboard', label: APP_CONTENT.marketplace.tabs.leaderboard, icon: Trophy },
+  { id: 'trending', label: APP_CONTENT.marketplace.tabs.trending, icon: Flame },
+  { id: 'featured', label: APP_CONTENT.marketplace.tabs.featured, icon: Sparkles },
+  { id: 'latest', label: APP_CONTENT.marketplace.tabs.latest, icon: Clock },
 ];
 
 export const MarketplaceFilterBar = memo(function MarketplaceFilterBar({
   selectedTab,
   onSelectTab,
 }: MarketplaceFilterBarProps) {
+  const [isSortOpen, setIsSortOpen] = useState(false);
+  const sortRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (sortRef.current && !sortRef.current.contains(e.target as Node)) {
+        setIsSortOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Determine active sort label if a curated sort option is selected
+  const activeSort = SORT_OPTIONS.find((s) => s.id === selectedTab);
+  const sortLabel = activeSort?.label ?? APP_CONTENT.marketplace.tabs.leaderboard;
+
   return (
-    <div className="w-full bg-theme-bg-surface/80 border-b border-theme-border-subtle px-4 sm:px-6 py-2 flex flex-col gap-2">
-      {/* 1. Primary Track & Categories Bar */}
-      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
-        <span className="text-2xs font-bold uppercase tracking-wider text-theme-text-muted shrink-0 mr-1 hidden sm:inline">
-          {APP_CONTENT.marketplace.tabs.categoriesTitle}:
-        </span>
-
-        <div className="flex items-center gap-1.5 shrink-0">
-          {CATEGORY_TABS.map((tab) => {
-            const Icon = tab.icon;
-            const isActive = selectedTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => onSelectTab(tab.id)}
-                className={`h-8 px-3 rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer whitespace-nowrap transition-all select-none shrink-0 ${
-                  isActive
-                    ? 'bg-theme-bg-elevated text-theme-brand-binance border border-theme-brand-binance/40 shadow-2xs font-bold'
-                    : 'text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-elevated/40 border border-theme-border-subtle/50'
+    <div className="w-full bg-theme-bg-surface/50 border-b border-theme-border-subtle/80 px-4 sm:px-6 h-11 flex items-center justify-between gap-3">
+      {/* 1. Track Categories Segmented Pills */}
+      <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-1">
+        {CATEGORIES.map((cat) => {
+          const Icon = cat.icon;
+          const isActive = selectedTab === cat.id;
+          return (
+            <button
+              key={cat.id}
+              type="button"
+              onClick={() => onSelectTab(cat.id)}
+              className={`h-7.5 px-3 rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer whitespace-nowrap transition-all select-none ${
+                isActive
+                  ? 'bg-theme-bg-elevated text-theme-brand-binance border border-theme-brand-binance/35 shadow-2xs font-bold'
+                  : 'text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-elevated/40 border border-transparent'
+              }`}
+            >
+              <Icon
+                className={`size-3 shrink-0 ${
+                  isActive ? 'text-theme-brand-binance' : 'text-theme-text-muted'
                 }`}
-              >
-                <Icon
-                  className={`size-3.5 shrink-0 ${
-                    isActive ? 'text-theme-brand-binance' : 'text-theme-text-muted'
+              />
+              <span>{cat.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* 2. Sleek Sort Dropdown */}
+      <div className="relative shrink-0" ref={sortRef}>
+        <button
+          type="button"
+          onClick={() => setIsSortOpen((prev) => !prev)}
+          className={`h-7.5 px-2.5 rounded-lg text-xs font-medium flex items-center gap-1.5 cursor-pointer transition-all border ${
+            activeSort
+              ? 'bg-theme-bg-elevated text-theme-brand-binance border-theme-brand-binance/35 font-semibold'
+              : 'bg-theme-bg-elevated/40 text-theme-text-secondary hover:text-theme-text-primary border-theme-border-subtle'
+          }`}
+        >
+          <span className="text-theme-text-muted">{APP_CONTENT.marketplace.tabs.sortBy}:</span>
+          <span>{sortLabel}</span>
+          <ChevronDown className="size-3 text-theme-text-muted ml-0.5" />
+        </button>
+
+        {isSortOpen && (
+          <div className="absolute right-0 top-full mt-1.5 w-40 bg-theme-bg-surface border border-theme-border-subtle rounded-xl shadow-xl p-1 z-30 flex flex-col gap-0.5">
+            {SORT_OPTIONS.map((opt) => {
+              const Icon = opt.icon;
+              const isCurrent = selectedTab === opt.id;
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => {
+                    onSelectTab(opt.id);
+                    setIsSortOpen(false);
+                  }}
+                  className={`h-8 w-full px-2.5 rounded-lg text-xs flex items-center gap-2 cursor-pointer transition-colors text-left ${
+                    isCurrent
+                      ? 'bg-theme-bg-elevated text-theme-brand-binance font-bold'
+                      : 'text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-elevated/50'
                   }`}
-                />
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Divider */}
-        <div className="h-5 w-px bg-theme-border-subtle shrink-0 mx-1" />
-
-        {/* 2. Curated Feeds & Discovery Modes */}
-        <span className="text-2xs font-bold uppercase tracking-wider text-theme-text-muted shrink-0 mr-1 hidden lg:inline">
-          {APP_CONTENT.marketplace.tabs.feedsTitle}:
-        </span>
-
-        <div className="flex items-center gap-1.5 shrink-0">
-          {CURATED_TABS.map((tab) => {
-            const Icon = tab.icon;
-            const isActive = selectedTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => onSelectTab(tab.id)}
-                className={`h-8 px-3 rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer whitespace-nowrap transition-all select-none shrink-0 ${
-                  isActive
-                    ? 'bg-theme-bg-elevated text-theme-brand-binance border border-theme-brand-binance/40 shadow-2xs font-bold'
-                    : 'text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-elevated/40 border border-theme-border-subtle/50'
-                }`}
-              >
-                <Icon
-                  className={`size-3.5 shrink-0 ${
-                    isActive ? 'text-theme-brand-binance' : 'text-theme-text-muted'
-                  }`}
-                />
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
-        </div>
+                >
+                  <Icon
+                    className={`size-3.5 ${
+                      isCurrent ? 'text-theme-brand-binance' : 'text-theme-text-muted'
+                    }`}
+                  />
+                  <span>{opt.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

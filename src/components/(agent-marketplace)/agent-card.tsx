@@ -18,6 +18,7 @@ import type { ScanAgentItem } from '@/lib/8004scan/types';
 export interface AgentCardProps {
   agent: ScanAgentItem;
   onSelect: (agent: ScanAgentItem) => void;
+  isSpotlight?: boolean;
 }
 
 // Deterministic pastel gradient for agents without an avatar image
@@ -36,6 +37,7 @@ function getAvatarGradient(seed: string): string {
 export const AgentCard = memo(function AgentCard({
   agent,
   onSelect,
+  isSpotlight,
 }: AgentCardProps) {
   const displayName = agent.name?.trim() || `Agent #${agent.token_id}`;
   const displayDescription =
@@ -52,7 +54,11 @@ export const AgentCard = memo(function AgentCard({
       whileHover={{ y: -3 }}
       transition={{ duration: 0.18 }}
       onClick={() => onSelect(agent)}
-      className="bg-gradient-to-b from-theme-bg-surface via-theme-bg-surface to-theme-bg-elevated/25 border border-theme-border-subtle hover:border-theme-brand-binance/50 rounded-2xl p-4 flex flex-col justify-between gap-3 cursor-pointer group transition-all shadow-2xs hover:shadow-md hover:shadow-theme-brand-binance/5 relative select-none"
+      className={`bg-gradient-to-b from-theme-bg-surface via-theme-bg-surface to-theme-bg-elevated/25 border rounded-2xl p-4 flex flex-col justify-between gap-3 cursor-pointer group transition-all shadow-2xs hover:shadow-md hover:shadow-theme-brand-binance/5 relative select-none ${
+        isSpotlight
+          ? 'border-theme-brand-binance/40 hover:border-theme-brand-binance ring-1 ring-theme-brand-binance/20'
+          : 'border-theme-border-subtle hover:border-theme-brand-binance/50'
+      }`}
     >
       {/* 1. Header: Avatar, Name & Quick Action */}
       <div className="flex items-start justify-between gap-2.5">
@@ -101,9 +107,16 @@ export const AgentCard = memo(function AgentCard({
           </div>
         </div>
 
-        {/* Hover Inspect Arrow */}
-        <div className="size-7 rounded-lg bg-theme-bg-elevated/70 group-hover:bg-theme-brand-binance group-hover:text-theme-bg-overlay flex items-center justify-center text-theme-text-muted transition-all shrink-0">
-          <ArrowUpRight className="size-3.5 group-hover:translate-x-0.2 group-hover:-translate-y-0.2 transition-transform" />
+        {/* Hover Inspect Arrow + Spotlight tag */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          {isSpotlight && (
+            <span className="text-3xs font-extrabold px-1.5 py-0.5 rounded-full bg-theme-brand-binance/15 text-theme-brand-binance border border-theme-brand-binance/30 uppercase tracking-wider">
+              {APP_CONTENT.marketplace.card.spotlightTag}
+            </span>
+          )}
+          <div className="size-7 rounded-lg bg-theme-bg-elevated/70 group-hover:bg-theme-brand-binance group-hover:text-theme-bg-overlay flex items-center justify-center text-theme-text-muted transition-all shrink-0">
+            <ArrowUpRight className="size-3.5 group-hover:translate-x-0.2 group-hover:-translate-y-0.2 transition-transform" />
+          </div>
         </div>
       </div>
 

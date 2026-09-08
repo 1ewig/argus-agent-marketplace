@@ -18,6 +18,7 @@ import type { ScanAgentItem } from '@/lib/8004scan/types';
 
 export interface AgentGridProps {
   agents: ScanAgentItem[];
+  spotlightAgents?: ScanAgentItem[];
   totalCount: number;
   isLoading: boolean;
   isError: boolean;
@@ -179,6 +180,16 @@ export const AgentGrid = memo(function AgentGrid({
 
       {/* Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {/* Inline Spotlights (Page 0 of all categories) */}
+        {spotlightAgents?.map((agent) => (
+          <AgentCard
+            key={`spotlight-${agent.chain_id}-${agent.token_id}`}
+            agent={agent}
+            onSelect={onSelectAgent}
+            isSpotlight={true}
+          />
+        ))}
+
         {agents.map((agent) => (
           <AgentCard
             key={`${agent.chain_id}-${agent.token_id}`}

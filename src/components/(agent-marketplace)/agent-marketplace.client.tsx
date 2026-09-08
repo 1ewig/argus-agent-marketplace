@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useAgentMarketplace } from '@/hooks/agents';
 import { useAppStore } from '@/stores/app-store';
 import { MarketplaceHeader } from './marketplace-header';
-import { MarketplaceSpotlight } from './marketplace-spotlight';
 import { MarketplaceFilterBar } from './marketplace-filter-bar';
 import { AgentGrid } from './agent-grid';
 import { AgentDetailModal } from './agent-detail-modal';
@@ -80,15 +79,6 @@ export function AgentMarketplaceClient() {
 
       {/* 2. Main Scrollable Marketplace Area */}
       <div className="flex-1 overflow-y-auto flex flex-col">
-        {/* Spotlight Showcase (shown on default view without search query) */}
-        {!searchQuery && selectedTab === 'all' && (
-          <MarketplaceSpotlight
-            hevoAgents={spotlightHevo}
-            alphaAgents={spotlightAlpha}
-            onSelectAgent={handleSelectAgent}
-          />
-        )}
-
         {/* Categories & Curated Feeds Filter Tabs */}
         <MarketplaceFilterBar
           selectedTab={selectedTab}
@@ -98,6 +88,11 @@ export function AgentMarketplaceClient() {
         {/* Agents Grid & Pagination */}
         <AgentGrid
           agents={agents}
+          spotlightAgents={
+            !searchQuery && selectedTab === 'all' && page === 0
+              ? [...spotlightHevo.slice(0, 1), ...spotlightAlpha.slice(0, 1)]
+              : undefined
+          }
           totalCount={totalCount}
           isLoading={isLoading}
           isError={isError}
