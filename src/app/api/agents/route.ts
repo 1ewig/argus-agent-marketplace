@@ -49,25 +49,10 @@ function respondWithCache(payload: unknown, isHit: boolean) {
   });
 }
 
-interface FallbackAgent {
-  agent_id: string;
-  token_id: string;
-  name?: string | null;
-  description?: string | null;
-  image_url?: string | null;
-  owner_address: string;
-  owner_ens?: string | null;
-  total_score?: number;
-  rank?: number | null;
-  health_score?: number | null;
-  total_feedbacks?: number;
-  average_score?: number;
-  supported_protocols?: string[];
-  x402_supported?: boolean;
-  categories?: string[];
-  created_at?: string;
-  updated_at?: string;
-}
+type FallbackAgent = Pick<
+  ScanAgentItem,
+  'agent_id' | 'token_id' | 'name' | 'description' | 'image_url' | 'owner_address' | 'owner_ens' | 'total_score' | 'rank' | 'health_score' | 'total_feedbacks' | 'average_score' | 'supported_protocols' | 'x402_supported' | 'created_at' | 'updated_at'
+> & { categories?: string[] };
 
 async function loadFallbackData(): Promise<ScanAgentItem[]> {
   try {

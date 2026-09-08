@@ -1,27 +1,7 @@
 import { queryOptions } from '@tanstack/react-query';
-import type { DiscoveryCategory, ScanAgentItem } from '@/lib/8004scan/types';
+import type { FetchAgentsParams } from '@/lib/8004scan/types';
 
-export interface AgentsApiResponse {
-  success: boolean;
-  feed: string;
-  items: ScanAgentItem[];
-  total: number;
-  fallback?: boolean;
-  spotlight?: {
-    hevo: ScanAgentItem[];
-    alpha: ScanAgentItem[];
-  };
-}
-
-export interface FetchAgentsParams {
-  feed?: string;
-  category?: DiscoveryCategory | null;
-  search?: string;
-  limit?: number;
-  offset?: number;
-}
-
-export async function fetchAgents(params: FetchAgentsParams = {}): Promise<AgentsApiResponse> {
+export async function fetchAgents(params: FetchAgentsParams = {}) {
   const query = new URLSearchParams();
   if (params.feed) query.set('feed', params.feed);
   if (params.category) query.set('category', params.category);
@@ -37,7 +17,7 @@ export async function fetchAgents(params: FetchAgentsParams = {}): Promise<Agent
     throw new Error(`Failed to fetch agents (${res.status})`);
   }
 
-  return res.json() as Promise<AgentsApiResponse>;
+  return res.json();
 }
 
 export const agentsQuery = {

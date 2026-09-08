@@ -18,7 +18,7 @@ import {
   Bot,
 } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
-import type { MarketplaceTab } from '@/hooks/agents/use-agent-marketplace';
+import type { MarketplaceTab } from '@/lib/8004scan/types';
 
 export interface MarketplaceFilterBarProps {
   selectedTab: MarketplaceTab;

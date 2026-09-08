@@ -1,5 +1,5 @@
 /**
- * 8004scan API Types & Data Contracts for Next.js Discovery
+ * 8004scan API Types & Data Contracts
  */
 
 export interface ScanAgentItem {
@@ -54,4 +54,39 @@ export interface CategoryQueryResult {
   total: number;
   agents: ScanAgentItem[];
   error?: boolean;
+}
+
+export type MarketplaceTab =
+  | 'all'
+  | 'yield_optimisation'
+  | 'grid_trading'
+  | 'rebalancing'
+  | 'health_factor'
+  | 'monitoring'
+  | 'security'
+  | 'payments'
+  | 'cross_agent'
+  | 'leaderboard'
+  | 'trending'
+  | 'featured'
+  | 'latest';
+
+export interface FetchAgentsParams {
+  feed?: string;
+  category?: DiscoveryCategory | null;
+  search?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface AgentsApiResponse {
+  success: boolean;
+  feed: string;
+  items: ScanAgentItem[];
+  total: number;
+  fallback?: boolean;
+  spotlight?: {
+    hevo: ScanAgentItem[];
+    alpha: ScanAgentItem[];
+  };
 }

@@ -1,7 +1,6 @@
-/**
- * Centralized UI text and copy for the Agent Marketplace & Discovery workspace.
- * Strictly adheres to Rule 1: Zero hardcoded text in JSX.
- */
+import { CATEGORY_DISCOVERY_CONFIG } from '@/lib/8004scan/categories';
+
+const cat = CATEGORY_DISCOVERY_CONFIG;
 
 export const marketplaceContent = {
   marketplace: {
@@ -18,14 +17,14 @@ export const marketplaceContent = {
     },
     tabs: {
       all: 'All',
-      yield_optimisation: 'Yield',
-      grid_trading: 'Grid',
-      rebalancing: 'Rebalance',
-      health_factor: 'Health',
-      monitoring: 'Sentinels',
-      security: 'Security',
-      payments: 'x402',
-      cross_agent: 'Multi-Agent',
+      yield_optimisation: cat.yield_optimisation.label,
+      grid_trading: cat.grid_trading.label,
+      rebalancing: cat.rebalancing.label,
+      health_factor: cat.health_factor.label,
+      monitoring: cat.monitoring.label,
+      security: cat.security.label,
+      payments: cat.payments.label,
+      cross_agent: cat.cross_agent.label,
       sortBy: 'Sort',
       leaderboard: 'Top Ranked',
       trending: 'Trending',
@@ -50,7 +49,7 @@ export const marketplaceContent = {
     },
     grid: {
       showingRange: (start: number, end: number, total: number) =>
-        `Showing ${start}–${end} of ${total.toLocaleString()}`,
+        `Showing ${start}-${end} of ${total.toLocaleString()}`,
       pageIndicator: (current: number, total: number) =>
         `Page ${current} of ${total}`,
       previousPage: 'Previous',

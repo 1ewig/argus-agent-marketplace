@@ -3,22 +3,7 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { agentsQuery } from '@/lib/queries/agents.query';
-import type { DiscoveryCategory, ScanAgentItem } from '@/lib/8004scan/types';
-
-export type MarketplaceTab =
-  | 'all'
-  | 'yield_optimisation'
-  | 'grid_trading'
-  | 'rebalancing'
-  | 'health_factor'
-  | 'monitoring'
-  | 'security'
-  | 'payments'
-  | 'cross_agent'
-  | 'leaderboard'
-  | 'trending'
-  | 'featured'
-  | 'latest';
+import type { MarketplaceTab, ScanAgentItem, DiscoveryCategory } from '@/lib/8004scan/types';
 
 export interface UseAgentMarketplaceReturn {
   // Filters & State

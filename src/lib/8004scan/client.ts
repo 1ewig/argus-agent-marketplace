@@ -4,24 +4,11 @@ import type {
   ScanAgentItem,
   ScanAgentListResponse,
 } from './types';
+import { CATEGORY_DISCOVERY_CONFIG } from './categories';
 
 const BASE_URL = 'https://api.8004scan.io/api/v1';
 const BSC_CHAIN_ID = 56;
 const DEFAULT_REVALIDATE_SECONDS = 30;
-
-export const CATEGORY_DISCOVERY_CONFIG: Record<
-  DiscoveryCategory,
-  { query: string; label: string }
-> = {
-  yield_optimisation: { query: 'yield', label: 'Yield Optimisation' },
-  grid_trading: { query: 'grid', label: 'Grid Trading' },
-  rebalancing: { query: 'rebalance', label: 'Rebalancing' },
-  health_factor: { query: 'health', label: 'Health Factor' },
-  monitoring: { query: 'monitoring', label: 'Monitoring' },
-  security: { query: 'security', label: 'Security & Audit' },
-  payments: { query: 'x402', label: 'x402 Micropayments' },
-  cross_agent: { query: 'MCP', label: 'Multi-Agent & MCP' },
-};
 
 function getHeaders(): HeadersInit {
   const headers: Record<string, string> = {
@@ -43,10 +30,6 @@ export interface DiscoveryOptions {
   sortOrder?: string;
 }
 
-/**
- * Fetch discovery agents matching one of the reference hackathon domains.
- * Uses tested single keywords without rigid score sorting to retain new hackathon submissions.
- */
 export async function getAgentsByCategory(
   category: DiscoveryCategory,
   options: DiscoveryOptions = {},
@@ -80,10 +63,6 @@ export async function getAgentsByCategory(
   return res.json() as Promise<ScanAgentListResponse>;
 }
 
-/**
- * Fetch paginated agents from the primary /agents endpoint.
- * Supports limit, offset, chain_id, sort_by, and sort_order.
- */
 export async function listAgents(
   limit = 24,
   offset = 0,
@@ -115,9 +94,6 @@ export async function listAgents(
   return res.json() as Promise<ScanAgentListResponse>;
 }
 
-/**
- * Fetch top-ranked agents from the pre-computed leaderboard endpoint (~0.2s latency).
- */
 export async function getLeaderboard(
   limit = 24,
   chainId = BSC_CHAIN_ID,
@@ -155,9 +131,6 @@ export async function getLeaderboard(
   };
 }
 
-/**
- * Fetch fastest-trending agents (~0.34s latency).
- */
 export async function getTrendingAgents(
   limit = 24,
   chainId = BSC_CHAIN_ID,
@@ -195,9 +168,6 @@ export async function getTrendingAgents(
   };
 }
 
-/**
- * Fetch curated / featured agents (~0.44s latency).
- */
 export async function getFeaturedAgents(
   limit = 24,
   chainId = BSC_CHAIN_ID,
@@ -235,9 +205,6 @@ export async function getFeaturedAgents(
   };
 }
 
-/**
- * Fetch latest agents (~0.39s latency).
- */
 export async function getLatestAgents(
   limit = 20,
   offset = 0,
@@ -262,9 +229,6 @@ export async function getLatestAgents(
   return res.json() as Promise<ScanAgentListResponse>;
 }
 
-/**
- * Fetch single agent detail on-demand (~0.13s latency).
- */
 export async function getAgentDetail(
   tokenId: string,
   chainId = BSC_CHAIN_ID,
@@ -282,10 +246,6 @@ export async function getAgentDetail(
   return res.json() as Promise<ScanAgentItem>;
 }
 
-/**
- * Fetch all 4 reference categories in parallel with per-category graceful fallback.
- * If one category query fails or times out, the remaining categories still return successfully.
- */
 export async function fetchAllCategories(
   limit = 8,
   options: DiscoveryOptions = {},
@@ -318,9 +278,6 @@ export async function fetchAllCategories(
   return Promise.all(requests);
 }
 
-/**
- * Fetch spotlight agents (Hevo & 4LPHA) tailored for the hackathon reference categories.
- */
 export async function getSpotlightAgents(
   limit = 10,
   options: DiscoveryOptions = {},
@@ -348,9 +305,6 @@ export async function getSpotlightAgents(
   };
 }
 
-/**
- * Search agents by free text across name, description, address, or metadata.
- */
 export async function searchAgents(
   query: string,
   options: DiscoveryOptions = {},
