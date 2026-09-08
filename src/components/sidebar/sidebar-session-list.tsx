@@ -4,19 +4,16 @@ import React, { memo } from 'react';
 import { motion } from 'framer-motion';
 import { APP_CONTENT } from '@/constants/content';
 import { sidebarHeadingCollapseVariants } from '@/constants/animation';
-import type { SymbolWorkspaceGroup } from '@/hooks';
-import { SidebarWorkspaceGroup } from './sidebar-workspace-group';
+import type { ConversationRecord } from '@/lib/db';
+import { SidebarSessionItem } from './sidebar-session-item';
 
 export interface SidebarSessionListProps {
-  groups: SymbolWorkspaceGroup[];
+  conversations: ConversationRecord[];
   activeConversationId: string;
-  activeSymbol: string;
-  collapsedWorkspaceGroups: Record<string, boolean>;
   editingId: string | null;
   editTitle: string;
   isCollapsed: boolean;
   onSelectSession: (id: string) => void;
-  onToggleWorkspaceGroup: (symbol: string) => void;
   onStartRename: (id: string, title: string, e: React.MouseEvent) => void;
   onSaveRename: (id: string, e?: React.FormEvent | React.MouseEvent) => void;
   onCancelRename: () => void;
@@ -25,19 +22,15 @@ export interface SidebarSessionListProps {
 }
 
 /**
- * Pure presentation list component rendering symbol workspace groups.
- * Driven exclusively by props passed down from LeftSidebar.
+ * Flat chronological conversation list (ChatGPT-style).
  */
 export const SidebarSessionList = memo(function SidebarSessionList({
-  groups,
+  conversations,
   activeConversationId,
-  activeSymbol,
-  collapsedWorkspaceGroups,
   editingId,
   editTitle,
   isCollapsed,
   onSelectSession,
-  onToggleWorkspaceGroup,
   onStartRename,
   onSaveRename,
   onCancelRename,
@@ -46,7 +39,6 @@ export const SidebarSessionList = memo(function SidebarSessionList({
 }: SidebarSessionListProps) {
   return (
     <div className="flex-1 flex flex-col min-h-0 py-spacing-sm px-3.5 overflow-hidden">
-      {/* Section Heading: Collapses height to 0 */}
       <motion.div
         initial={false}
         variants={sidebarHeadingCollapseVariants}
@@ -54,17 +46,16 @@ export const SidebarSessionList = memo(function SidebarSessionList({
         className="overflow-hidden w-full"
       >
         <span className="text-2xs font-bold uppercase tracking-wider text-theme-text-muted px-2 py-0.5 whitespace-nowrap block">
-          {APP_CONTENT.sidebar.workspaceGroupsTitle}
+          {APP_CONTENT.sidebar.historyTitle}
         </span>
       </motion.div>
 
-      {/* Scrollable Conversation List Container */}
       <div
         className={`flex-1 overflow-y-auto overflow-x-hidden flex flex-col gap-1.5 custom-scrollbar ${
           isCollapsed ? 'items-center pr-0' : 'pr-0.5'
         }`}
       >
-        {groups.length === 0 ? (
+        {conversations.length === 0 ? (
           <motion.div
             initial={false}
             animate={{
@@ -74,34 +65,26 @@ export const SidebarSessionList = memo(function SidebarSessionList({
             className="overflow-hidden"
           >
             <span className="text-2xs text-theme-text-muted italic px-2 py-2 whitespace-nowrap block">
-              {APP_CONTENT.sidebar.emptyWorkspaces}
+              {APP_CONTENT.sidebar.emptyHistory}
             </span>
           </motion.div>
         ) : (
-          groups.map((group) => {
-            const upper = group.symbol.toUpperCase();
-            // Group collapsed state survives refresh via persisted store (defaults to expanded)
-            const isGroupExpanded = !collapsedWorkspaceGroups[upper];
-            return (
-              <SidebarWorkspaceGroup
-                key={group.symbol}
-                group={group}
-                activeConversationId={activeConversationId}
-                activeSymbol={activeSymbol}
-                isExpanded={isGroupExpanded}
-                onToggleExpand={() => onToggleWorkspaceGroup(group.symbol)}
-                editingId={editingId}
-                editTitle={editTitle}
-                isCollapsed={isCollapsed}
-                onSelectSession={onSelectSession}
-                onStartRename={onStartRename}
-                onSaveRename={onSaveRename}
-                onCancelRename={onCancelRename}
-                onEditTitleChange={onEditTitleChange}
-                onOpenDelete={onOpenDelete}
-              />
-            );
-          })
+          conversations.map((conv) => (
+            <SidebarSessionItem
+              key={conv.id}
+              conversation={conv}
+              isActive={conv.id === activeConversationId}
+              isEditing={editingId === conv.id}
+              editTitle={editTitle}
+              isCollapsed={isCollapsed}
+              onSelect={() => onSelectSession(conv.id)}
+              onStartRename={(e) => onStartRename(conv.id, conv.title, e)}
+              onSaveRename={(e) => onSaveRename(conv.id, e)}
+              onCancelRename={onCancelRename}
+              onEditTitleChange={onEditTitleChange}
+              onOpenDelete={(e) => onOpenDelete(conv.id, e)}
+            />
+          ))
         )}
       </div>
     </div>

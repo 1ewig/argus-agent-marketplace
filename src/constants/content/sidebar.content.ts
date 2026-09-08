@@ -1,5 +1,5 @@
 /**
- * Navigation, sidebar workspaces, session modals, and branding copy.
+ * Navigation, sidebar, session modals, and branding copy.
  */
 
 export const sidebarContent = {
@@ -12,14 +12,8 @@ export const sidebarContent = {
     viewsTitle: 'Workspace Views',
     agentView: 'Agent Chat',
     marketplaceView: 'Agent Marketplace',
-    globalView: 'Global Workspace',
-    globalViewTooltip: 'Open workspace not tied to any symbol',
-    historyTitle: 'Saved Conversations',
+    historyTitle: 'Conversations',
     emptyHistory: 'No conversations yet',
-    workspaceGroupsTitle: 'Active Workspaces',
-    emptyWorkspaces: 'No symbol workspaces yet',
-    globalWorkspaceGroup: 'Global Market',
-    newChatInSymbolTooltip: (symbol: string) => `Start new chat in #${symbol}`,
     chatsCount: (count: number) => `${count} ${count === 1 ? 'chat' : 'chats'}`,
     statusOnline: 'Live Binance Feeds',
     themeLight: 'Light Mode',
@@ -30,8 +24,6 @@ export const sidebarContent = {
     expandSidebar: 'Expand sidebar',
     openMobileSidebar: 'Open navigation sidebar',
     closeMobileSidebar: 'Close navigation sidebar',
-    expandGroup: 'Expand workspace group',
-    collapseGroup: 'Collapse workspace group',
     deleteChat: 'Delete Chat',
     renameChat: 'Rename Chat',
     deleteDialogTitle: 'Delete Conversation',

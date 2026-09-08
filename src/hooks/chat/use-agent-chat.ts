@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useEffect } from 'react';
 import { APP_CONTENT } from '@/constants/content';
-import { generateMessageId, getNowTimestamp, isGlobalSymbol } from '@/lib/utils';
+import { generateMessageId, getNowTimestamp } from '@/lib/utils';
 import { useAppStore } from '@/stores/app-store';
 import {
   getConversation,
@@ -31,13 +31,7 @@ export interface UseAgentChatOptions {
 
 /**
  * Custom hook orchestrating agent chat interaction, Dexie message persistence,
- * and real-time SSE streaming for autonomous Binance Agent OS reasoning steps.
- * 
- * Composes specialized `useChatSessions`, `useChatScroll`, and `useMessages`
- * to maintain strict separation of concerns.
- * 
- * @param options - Execution mode ('simulation')
- * @returns State, refs, and action handlers for the chat console
+ * and real-time SSE streaming.
  */
 export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) {
   const isLoading = useAppStore((state) => state.isLoading);
@@ -46,11 +40,9 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
   const setActiveStreamMessage = useAppStore((state) => state.setActiveStreamMessage);
   const errorNotice = useAppStore((state) => state.errorNotice);
   const setErrorNotice = useAppStore((state) => state.setErrorNotice);
-  const selectedSymbol = useAppStore((state) => state.selectedSymbol);
 
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  // Clean up any in-flight streaming requests when hook unmounts
   useEffect(() => {
     return () => {
       if (abortControllerRef.current) {
@@ -60,18 +52,15 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
     };
   }, []);
 
-  // 1. Session and menu management
   const sessions = useChatSessions();
   const { activeConversationId } = sessions;
 
-  // 2. Reactive query for active conversation messages
   const { messages, isMessagesLoading } = useMessages(activeConversationId);
 
   const messagesCount = messages.length;
   const streamStepCount = activeStreamMessage?.steps?.length ?? 0;
   const streamContentLength = activeStreamMessage?.content?.length ?? 0;
 
-  // 3. Scroll orchestration with RAF throttling
   const scroll = useChatScroll({
     activeConversationId,
     messagesCount,
@@ -80,7 +69,6 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
     isLoading,
   });
 
-  // User-initiated stop/abort handler
   const handleStop = useCallback(() => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -90,18 +78,12 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
     setActiveStreamMessage(null);
   }, [setIsLoading, setActiveStreamMessage]);
 
-  // 4. Send message with real-time SSE streaming and persistent Dexie transactions
   const handleSend = useCallback(async (textToSend?: string) => {
     const prompt = (textToSend ?? '').trim();
     if (!prompt || isLoading) return;
 
-    if (process.env.NODE_ENV !== 'production') {
-      console.log(`[Argus:ChatAgent] Sending message | Symbol: ${selectedSymbol ?? 'GLOBAL'}`, { prompt });
-    }
-
     setErrorNotice(null);
 
-    // Cancel any previous stream before starting a new one
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
@@ -113,16 +95,13 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
       conversationId: activeConversationId,
       role: 'user',
       content: prompt,
-      symbol: selectedSymbol,
       status: 'success',
       timestamp: getNowTimestamp(),
     };
 
-    // Optimistically persist user prompt to Dexie and memory cache
     updateCachedMessage(userMessage);
     await saveStoredMessage(userMessage);
 
-    // Smooth scroll down on user send
     scroll.scrollToBottom(true);
 
     const streamMessageId = generateMessageId('agt');
@@ -131,7 +110,6 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
       conversationId: activeConversationId,
       role: 'assistant',
       content: '',
-      symbol: selectedSymbol,
       status: 'pending',
       steps: [],
       timestamp: getNowTimestamp(),
@@ -188,14 +166,11 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
 
     const conversationHistory = prepareConversationHistory(messages);
     const isFirstTurn = conversationHistory.length === 0;
-    const isGlobal = isGlobalSymbol(selectedSymbol);
-    const effectiveSymbol = isGlobal ? undefined : selectedSymbol;
 
     try {
       const finalResult: AgentResult | null = await streamAgentChat({
         message: prompt,
         mode,
-        symbol: effectiveSymbol,
         history: conversationHistory,
         isFirstTurn,
         signal: controller.signal,
@@ -253,7 +228,6 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
         updateRafId = null;
       }
 
-      // Finalize and persist completed agent message into Dexie
       const finalSteps = finalResult?.steps ?? currentSteps;
       const rawContent = finalResult?.analysis ?? sanitizeAgentText(currentText);
       const cleanContent = stripIntermediateTextPrefix(rawContent, finalSteps);
@@ -275,14 +249,9 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
       updateCachedMessage(finalMessage);
       await saveStoredMessage(finalMessage);
 
-      if (process.env.NODE_ENV !== 'production') {
-        console.log(`[Argus:ChatAgent] Message stream completed`, finalMessage);
-      }
-
-      // Ensure conversation title is updated on first turn if still a default title
       const resolvedTitle =
         finalResult?.sessionTitle ||
-        (isFirstTurn ? generateFallbackSessionTitle(prompt, effectiveSymbol) : undefined);
+        (isFirstTurn ? generateFallbackSessionTitle(prompt) : undefined);
 
       if (resolvedTitle) {
         const convRecord = await getConversation(activeConversationId);
@@ -296,7 +265,6 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
         (err instanceof Error && err.name === 'AbortError');
 
       if (isAborted) {
-        // User stopped generation - preserve partial response if any tokens were produced
         if (currentText.trim() || currentSteps.length > 0) {
           const stoppedMessage: ChatMessageRecord = {
             id: streamMessageId,
@@ -317,7 +285,7 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
           if (isDefaultSessionTitle(convRecord?.title)) {
             await renameConversation(
               activeConversationId,
-              generateFallbackSessionTitle(prompt, effectiveSymbol)
+              generateFallbackSessionTitle(prompt)
             );
           }
         }
@@ -327,7 +295,6 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
       const msg = err instanceof Error ? err.message : APP_CONTENT.chat.errorNotice;
       setErrorNotice(msg);
 
-      // Persist durable error message into Dexie to avoid orphaned prompts
       const errorRecord: ChatMessageRecord = {
         id: generateMessageId('err'),
         conversationId: activeConversationId,
@@ -349,7 +316,6 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
     isLoading,
     activeConversationId,
     mode,
-    selectedSymbol,
     messages,
     scroll,
     setActiveStreamMessage,
@@ -358,7 +324,6 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
   ]);
 
   return {
-    // State
     activeConversationId: sessions.activeConversationId,
     currentTitle: sessions.currentTitle,
     conversations: sessions.conversations,
@@ -373,13 +338,9 @@ export function useAgentChat({ mode = 'simulation' }: UseAgentChatOptions = {}) 
     setEditingId: sessions.setEditingId,
     editTitle: sessions.editTitle,
     setEditTitle: sessions.setEditTitle,
-
-    // Element Refs
     messagesEndRef: scroll.messagesEndRef,
     scrollContainerRef: scroll.scrollContainerRef,
     menuRef: sessions.menuRef,
-
-    // Action Handlers
     handleScroll: scroll.handleScroll,
     handleToggleMenu: sessions.handleToggleMenu,
     handleNewSession: sessions.handleNewSession,

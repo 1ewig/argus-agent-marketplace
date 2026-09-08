@@ -9,21 +9,18 @@ export interface ExtractedFollowUpsResult {
 }
 
 /**
- * Returns 3 intelligent fallback follow-up questions for the active symbol or global workspace.
+ * Returns 3 intelligent fallback follow-up questions.
  */
-export function getFallbackFollowUpQuestions(symbol?: string): string[] {
-  const clean = symbol?.toUpperCase().trim();
-  return clean && clean !== 'GLOBAL'
-    ? [...APP_CONTENT.chat.fallbackFollowUps(clean)]
-    : [...APP_CONTENT.chat.globalFallbackFollowUps];
+export function getFallbackFollowUpQuestions(): string[] {
+  return [...APP_CONTENT.chat.fallbackFollowUps];
 }
 
 /**
  * Extracts exactly 3 follow-up questions from the agent output and strips <follow_up_questions> markup.
  */
-export function extractFollowUpQuestions(rawText: string, symbol?: string): ExtractedFollowUpsResult {
+export function extractFollowUpQuestions(rawText: string): ExtractedFollowUpsResult {
   const match = rawText.match(/<follow_up_questions>([\s\S]*?)<\/follow_up_questions>/i);
-  const fallbacks = getFallbackFollowUpQuestions(symbol);
+  const fallbacks = getFallbackFollowUpQuestions();
 
   const parsed = match?.[1]
     ?.split('\n')
@@ -38,4 +35,3 @@ export function extractFollowUpQuestions(rawText: string, symbol?: string): Extr
 
   return { followUpQuestions: questions, cleanedText };
 }
-

@@ -3,14 +3,11 @@ import { persist } from 'zustand/middleware';
 import type { ExecutionMode, RightPanelTab } from '@/lib/types';
 import type { ChatMessageRecord } from '@/lib/db';
 import { DEFAULT_CONVERSATION_ID } from '@/lib/db';
-import { isGlobalSymbol } from '@/lib/utils';
 
 export interface AppState {
-  // Execution Mode ('simulation')
   executionMode: ExecutionMode;
   setExecutionMode: (mode: ExecutionMode) => void;
 
-  // Active Chat Session State
   activeConversationId: string;
   setActiveConversationId: (id: string) => void;
   input: string;
@@ -27,38 +24,18 @@ export interface AppState {
   errorNotice: string | null;
   setErrorNotice: (error: string | null) => void;
 
-  // Selected Workspace Symbol (e.g. BTCUSDT, SOLUSDT, or GLOBAL)
-  selectedSymbol: string;
-  setSelectedSymbol: (symbol: string) => void;
-  lastActiveSymbol: string;
-  setLastActiveSymbol: (symbol: string) => void;
-
-  // Symbol Search Modal State
-  isSymbolSearchOpen: boolean;
-  setIsSymbolSearchOpen: (open: boolean) => void;
-  toggleSymbolSearch: () => void;
-
-  // Sidebar Collapsed State (Persisted in localStorage)
   isSidebarCollapsed: boolean;
   setIsSidebarCollapsed: (collapsed: boolean) => void;
   toggleSidebar: () => void;
 
-  // Mobile Sidebar Drawer State (Ephemerally managed, not persisted)
   isMobileSidebarOpen: boolean;
   setIsMobileSidebarOpen: (open: boolean) => void;
   toggleMobileSidebar: () => void;
   closeMobileSidebar: () => void;
 
-  // Workspace Groups Collapsed State (Persisted in localStorage)
-  collapsedWorkspaceGroups: Record<string, boolean>;
-  setWorkspaceGroupCollapsed: (symbol: string, collapsed: boolean) => void;
-  toggleWorkspaceGroupCollapsed: (symbol: string) => void;
-
-  // Right Panel Active Tab
   rightPanelTab: RightPanelTab;
   setRightPanelTab: (tab: RightPanelTab) => void;
 
-  // Hydration state tracking
   _hasHydrated: boolean;
   setHasHydrated: (hasHydrated: boolean) => void;
 }
@@ -66,11 +43,9 @@ export interface AppState {
 export const useAppStore = create<AppState>()(
   persist(
     (set) => ({
-      // Execution Mode defaults to 'simulation'
       executionMode: 'simulation',
       setExecutionMode: (mode) => set({ executionMode: mode }),
 
-      // Chat State
       activeConversationId: DEFAULT_CONVERSATION_ID,
       setActiveConversationId: (id) => set({ activeConversationId: id }),
       input: '',
@@ -88,62 +63,18 @@ export const useAppStore = create<AppState>()(
       errorNotice: null,
       setErrorNotice: (errorNotice) => set({ errorNotice }),
 
-      // Selected Workspace Symbol
-      selectedSymbol: 'BTCUSDT',
-      setSelectedSymbol: (selectedSymbol) =>
-        set((state) => {
-          if (state.selectedSymbol === selectedSymbol) return state;
-          const isGlobal = isGlobalSymbol(selectedSymbol);
-          return {
-            selectedSymbol,
-            lastActiveSymbol: !isGlobal ? selectedSymbol : state.lastActiveSymbol,
-          };
-        }),
-      lastActiveSymbol: 'BTCUSDT',
-      setLastActiveSymbol: (lastActiveSymbol) => set({ lastActiveSymbol }),
-
-      // Symbol Search Modal State
-      isSymbolSearchOpen: false,
-      setIsSymbolSearchOpen: (isSymbolSearchOpen) => set({ isSymbolSearchOpen }),
-      toggleSymbolSearch: () => set((state) => ({ isSymbolSearchOpen: !state.isSymbolSearchOpen })),
-
-      // Sidebar Collapsed State
       isSidebarCollapsed: false,
       setIsSidebarCollapsed: (isSidebarCollapsed) => set({ isSidebarCollapsed }),
       toggleSidebar: () => set((state) => ({ isSidebarCollapsed: !state.isSidebarCollapsed })),
 
-      // Mobile Sidebar Drawer State
       isMobileSidebarOpen: false,
       setIsMobileSidebarOpen: (isMobileSidebarOpen) => set({ isMobileSidebarOpen }),
       toggleMobileSidebar: () => set((state) => ({ isMobileSidebarOpen: !state.isMobileSidebarOpen })),
       closeMobileSidebar: () => set({ isMobileSidebarOpen: false }),
 
-      // Workspace Groups Collapsed State
-      collapsedWorkspaceGroups: {},
-      setWorkspaceGroupCollapsed: (symbol, collapsed) =>
-        set((state) => ({
-          collapsedWorkspaceGroups: {
-            ...state.collapsedWorkspaceGroups,
-            [symbol.toUpperCase()]: collapsed,
-          },
-        })),
-      toggleWorkspaceGroupCollapsed: (symbol) =>
-        set((state) => {
-          const upper = symbol.toUpperCase();
-          const currentCollapsed = Boolean(state.collapsedWorkspaceGroups[upper]);
-          return {
-            collapsedWorkspaceGroups: {
-              ...state.collapsedWorkspaceGroups,
-              [upper]: !currentCollapsed,
-            },
-          };
-        }),
-
-      // Right Panel Active Tab (defaults to overview)
       rightPanelTab: 'overview',
       setRightPanelTab: (rightPanelTab) => set({ rightPanelTab }),
 
-      // Hydration state
       _hasHydrated: false,
       setHasHydrated: (_hasHydrated) => set({ _hasHydrated }),
     }),
@@ -156,11 +87,7 @@ export const useAppStore = create<AppState>()(
         activeConversationId: state.activeConversationId,
         isSidebarCollapsed: state.isSidebarCollapsed,
         rightPanelTab: state.rightPanelTab,
-        selectedSymbol: state.selectedSymbol,
-        lastActiveSymbol: state.lastActiveSymbol,
-        collapsedWorkspaceGroups: state.collapsedWorkspaceGroups,
       }),
     }
   )
 );
-

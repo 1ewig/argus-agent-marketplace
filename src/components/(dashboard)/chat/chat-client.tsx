@@ -2,10 +2,7 @@
 
 import React, { useMemo, memo } from 'react';
 import { useAgentChat } from '@/hooks';
-import { isGlobalSymbol, normalizeSymbolForDisplay } from '@/lib/utils';
-import { parseSymbolAssets } from '@/lib/symbols';
 import { APP_CONTENT } from '@/constants/content';
-import { useAppStore } from '@/stores/app-store';
 import { ChatEmptyState } from './chat-empty-state';
 import { ChatMessageList } from './chat-message-list';
 import { ChatDock } from './chat-dock';
@@ -18,19 +15,8 @@ export interface ChatClientProps {
 
 /**
  * Dedicated Chat Stage Client Orchestrator
- *
- * Encapsulates agent chat streaming, message history queries, scroll refs,
- * empty state templates, and user message submission.
- * Isolates high-frequency chat renders from the parent dashboard shell and siblings.
  */
 export const ChatClient = memo(function ChatClient({ mode = 'simulation' }: ChatClientProps) {
-  const selectedSymbol = useAppStore((state) => state.selectedSymbol);
-
-  // Symbol domain parsing for localized quick actions
-  const cleanSymbol = normalizeSymbolForDisplay(selectedSymbol) || 'BTCUSDT';
-  const isGlobalWorkspace = isGlobalSymbol(cleanSymbol);
-
-  // Agent chat orchestration hook (handles persistence, SSE streams, scroll refs, session actions)
   const {
     messages,
     isMessagesLoading,
@@ -44,19 +30,13 @@ export const ChatClient = memo(function ChatClient({ mode = 'simulation' }: Chat
     handleStop,
   } = useAgentChat({ mode });
 
-  // Derive empty state indicator
   const isChatEmpty = !isMessagesLoading && messages.length === 0 && !activeStreamMessage;
 
-  // Prepare quick-action prompt templates for empty state
-  const quickActions = useMemo<QuickActionItem[]>(() => {
-    if (isGlobalWorkspace) {
-      return APP_CONTENT.chat.globalQuickActions;
-    }
-    const { baseAsset, quoteAsset } = parseSymbolAssets(cleanSymbol);
-    return APP_CONTENT.chat.getSymbolQuickActions(cleanSymbol, baseAsset, quoteAsset);
-  }, [isGlobalWorkspace, cleanSymbol]);
+  const quickActions = useMemo<QuickActionItem[]>(
+    () => APP_CONTENT.chat.quickActions,
+    []
+  );
 
-  // Identify latest completed assistant message to host interactive follow-up chips
   const lastAssistantMessageId = useMemo(() => {
     if (activeStreamMessage) return null;
     for (let i = messages.length - 1; i >= 0; i--) {
@@ -69,7 +49,6 @@ export const ChatClient = memo(function ChatClient({ mode = 'simulation' }: Chat
 
   return (
     <div className="relative flex-1 min-h-0 min-w-0 flex flex-col overflow-hidden">
-      {/* Atmospheric Ambient Depth Glow */}
       <div
         aria-hidden="true"
         className={`pointer-events-none absolute inset-0 ambient-glow-gemini transition-opacity duration-500 ease-out ${
@@ -77,7 +56,6 @@ export const ChatClient = memo(function ChatClient({ mode = 'simulation' }: Chat
         }`}
       />
 
-      {/* Empty State Overlay */}
       {isChatEmpty && (
         <ChatEmptyState
           isLoading={isLoading}
@@ -87,7 +65,6 @@ export const ChatClient = memo(function ChatClient({ mode = 'simulation' }: Chat
         />
       )}
 
-      {/* Messages Scroll Feed */}
       <ChatMessageList
         messages={messages}
         activeStreamMessage={activeStreamMessage}
@@ -101,7 +78,6 @@ export const ChatClient = memo(function ChatClient({ mode = 'simulation' }: Chat
         onSend={handleSend}
       />
 
-      {/* Persistent Bottom Dock Input */}
       {!isChatEmpty && (
         <ChatDock
           isLoading={isLoading}

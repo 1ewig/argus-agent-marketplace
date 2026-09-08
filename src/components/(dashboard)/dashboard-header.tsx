@@ -3,33 +3,24 @@
 import React, { memo } from 'react';
 import { motion } from 'framer-motion';
 import {
-  ChevronDown,
   Plus,
-  Globe,
   Menu,
 } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
 import { tapScalePill } from '@/constants/animation';
 
 export interface DashboardHeaderProps {
-  symbol: string;
-  isGlobal: boolean;
   isNewChatDisabled: boolean;
   onToggleMobileSidebar?: () => void;
-  onOpenSymbolSearch: () => void;
   onNewChat: () => void;
 }
 
 /**
  * Pure presentation header for the dashboard stage.
- * Receives symbol state and action callbacks.
  */
 export const DashboardHeader = memo(function DashboardHeader({
-  symbol,
-  isGlobal,
   isNewChatDisabled,
   onToggleMobileSidebar,
-  onOpenSymbolSearch,
   onNewChat,
 }: DashboardHeaderProps) {
   return (
@@ -47,27 +38,9 @@ export const DashboardHeader = memo(function DashboardHeader({
         </motion.button>
 
         <div className="flex items-center gap-2.5 overflow-x-auto no-scrollbar py-1">
-          <motion.button
-            type="button"
-            whileTap={tapScalePill}
-            onClick={onOpenSymbolSearch}
-            title={APP_CONTENT.chat.switchSymbolTooltip}
-            className="group inline-flex items-center gap-1.5 px-2.5 py-1.5 -ml-2 rounded-lg text-theme-text-primary hover:bg-theme-bg-surface active:bg-theme-bg-elevated border border-transparent hover:border-theme-border-subtle transition-colors cursor-pointer select-none shrink-0"
-          >
-            {isGlobal ? (
-              <>
-                <Globe className="size-3.5 text-theme-brand-binance shrink-0" />
-                <span className="text-xs sm:text-sm font-bold tracking-wider">
-                  {APP_CONTENT.chat.globalWorkspaceTitle}
-                </span>
-              </>
-            ) : (
-              <span className="text-xs sm:text-sm font-bold tracking-wider">
-                {symbol}
-              </span>
-            )}
-            <ChevronDown className="size-3.5 text-theme-text-muted group-hover:text-theme-text-primary transition-colors" />
-          </motion.button>
+          <span className="text-xs sm:text-sm font-bold tracking-wider text-theme-text-primary">
+            {APP_CONTENT.sidebar.brand}
+          </span>
         </div>
       </div>
 

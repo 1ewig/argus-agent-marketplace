@@ -1,25 +1,6 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { normalizeSymbolForDisplay } from './symbols';
 
-export { normalizeSymbolForDisplay };
-
-/**
- * Global workspace symbol identifier
- */
-export const GLOBAL_WORKSPACE_SYMBOL = 'GLOBAL';
-
-/**
- * Checks if a trading symbol represents the global workspace or is unassigned/empty.
- */
-export function isGlobalSymbol(symbol?: string | null): boolean {
-  const clean = normalizeSymbolForDisplay(symbol);
-  return clean === GLOBAL_WORKSPACE_SYMBOL || clean === '';
-}
-
-/**
- * Combines multiple Tailwind CSS classes with proper precedence
- */
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -88,4 +69,3 @@ export function truncateAddress(
   if (address.length <= startChars + endChars) return address;
   return `${address.slice(0, startChars)}...${address.slice(-endChars)}`;
 }
-

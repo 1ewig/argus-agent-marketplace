@@ -1,5 +1,3 @@
-import { GLOBAL_WORKSPACE_SYMBOL } from './utils';
-
 /**
  * Standard crypto quote currencies recognized across Binance markets
  */
@@ -18,10 +16,7 @@ export const KNOWN_QUOTE_ASSETS = [
 export type KnownQuoteAsset = (typeof KNOWN_QUOTE_ASSETS)[number];
 
 /**
- * Normalizes any raw trading symbol input for display and query formatting:
- * - Trims whitespace
- * - Converts to uppercase
- * - Strips common pairing separators: / \ - _
+ * Normalizes any raw trading symbol input for display and query formatting.
  */
 export function normalizeSymbolForDisplay(rawSymbol?: string | null): string {
   if (!rawSymbol) return '';
@@ -29,17 +24,13 @@ export function normalizeSymbolForDisplay(rawSymbol?: string | null): string {
 }
 
 /**
- * Splits a Binance trading symbol (e.g. BTCUSDT, SOLUSDC) into base and quote assets,
- * or identifies special workspace symbols like 'GLOBAL'.
+ * Splits a Binance trading symbol (e.g. BTCUSDT, SOLUSDC) into base and quote assets.
  */
 export function parseSymbolAssets(rawSymbol?: string | null): {
   baseAsset: string;
   quoteAsset: string;
 } {
   const clean = normalizeSymbolForDisplay(rawSymbol) || 'BTCUSDT';
-  if (clean === GLOBAL_WORKSPACE_SYMBOL) {
-    return { baseAsset: GLOBAL_WORKSPACE_SYMBOL, quoteAsset: '' };
-  }
 
   for (const quote of KNOWN_QUOTE_ASSETS) {
     if (clean.endsWith(quote) && clean.length > quote.length) {

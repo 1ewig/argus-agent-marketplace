@@ -1,6 +1,4 @@
 import { APP_CONTENT } from '@/constants/content';
-import { extractBaseAsset } from '@/lib/symbols';
-import { isGlobalSymbol } from '@/lib/utils';
 import {
   SESSION_TITLE_TAG_REGEX,
   INCOMPLETE_SESSION_TITLE_TAG_REGEX,
@@ -26,16 +24,13 @@ export interface ExtractedTitleResult {
 }
 
 /**
- * Generates an intelligent, natural 2-4 word session title from the user prompt and symbol.
+ * Generates an intelligent, natural 2-4 word session title from the user prompt.
  */
-export function generateFallbackSessionTitle(prompt: string, symbol?: string): string {
+export function generateFallbackSessionTitle(prompt: string): string {
   const cleanPrompt = (prompt || '').trim();
-  const upperPrompt = cleanPrompt.toUpperCase();
 
-  // Detect coin / symbol in prompt or use provided workspace symbol
   const matchedCoin =
-    upperPrompt.match(/\b(BTC|ETH|SOL|BNB|XRP|DOGE|ADA|AVAX|LINK|SUI|PEPE|SHIB|NEAR|APT|RENDER|TAO|FET|ARB|OP|DOT)\b/)?.[1] ||
-    (symbol && !isGlobalSymbol(symbol) ? extractBaseAsset(symbol) : undefined);
+    cleanPrompt.toUpperCase().match(/\b(BTC|ETH|SOL|BNB|XRP|DOGE|ADA|AVAX|LINK|SUI|PEPE|SHIB|NEAR|APT|RENDER|TAO|FET|ARB|OP|DOT)\b/)?.[1];
 
   const coinPrefix = matchedCoin ? `${matchedCoin} ` : '';
 
@@ -61,7 +56,6 @@ export function generateFallbackSessionTitle(prompt: string, symbol?: string): s
     return 'Top Market Movers';
   }
 
-  // If the prompt is already a short 2-4 word inquiry, clean and title-case it
   const words = cleanPrompt.split(/\s+/).filter(Boolean);
   if (words.length >= 2 && words.length <= 4 && cleanPrompt.length <= 30) {
     return words.map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
@@ -72,16 +66,13 @@ export function generateFallbackSessionTitle(prompt: string, symbol?: string): s
 
 /**
  * Extracts and removes <session_title> tags from accumulated agent text.
- * Uses flexible regex patterns and falls back to autonomous title generation on turn 1.
  */
 export function extractSessionTitle(
   rawText: string,
   fallbackTitle?: string,
   prompt?: string,
-  symbol?: string,
   isFirstTurn?: boolean
 ): ExtractedTitleResult {
-  // Match standard <session_title> tags or fallback variations
   const titleMatch =
     rawText.match(/<session_title>([\s\S]*?)<\/session_title>/i) ||
     rawText.match(/<title>([\s\S]*?)<\/title>/i) ||
@@ -92,9 +83,8 @@ export function extractSessionTitle(
   let sessionTitle =
     fallbackTitle ?? (rawTitle ? rawTitle.replace(/^["'`]+|["'`]+$/g, '').trim() : undefined);
 
-  // If on first turn and still no title found, generate intelligent fallback
   if (!sessionTitle && isFirstTurn && prompt) {
-    sessionTitle = generateFallbackSessionTitle(prompt, symbol);
+    sessionTitle = generateFallbackSessionTitle(prompt);
   }
 
   let cleanedText = rawText
@@ -110,5 +100,3 @@ export function extractSessionTitle(
 
   return { sessionTitle, cleanedText };
 }
-
-

@@ -144,13 +144,11 @@ export async function executeAgentStream(
     accumulatedText,
     emittedTitle,
     options.prompt,
-    symbol,
     effectiveIsFirstTurn
   );
 
   const { followUpQuestions, cleanedText } = extractFollowUpQuestions(
-    textWithoutTitle,
-    symbol
+    textWithoutTitle
   );
 
   const cleanAnalysis = stripIntermediateTextPrefix(cleanedText, steps);

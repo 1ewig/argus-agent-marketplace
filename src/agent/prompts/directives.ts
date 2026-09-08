@@ -16,15 +16,6 @@ export function getEnvironmentDirective(_mode?: string): string {
 - **Transparency**: When asked about trading or capabilities, explain that you provide real-time market data analysis, liquidity depth evaluation, and derivative sentiment directly from live Binance public feeds.`;
 }
 
-export function getWorkspaceSymbolDirective(symbol: string): string {
-  const clean = symbol.toUpperCase().trim();
-  return `### Active Symbol Workspace: #${clean}
-- You are currently operating inside the **#${clean}** trading workspace.
-- **Contextual Default**: When the user asks market questions without explicitly naming a coin or pair (e.g. "what is the price?", "inspect the order book", "show 24h stats", "is it pumping or dumping?", "check funding rate", "any breaking news?"), ALWAYS default your tool executions and analysis to **#${clean}**.
-- **Right Market Deck Synchronization**: The trader's right companion panel is synchronized to **#${clean}** (streaming sub-second WebSocket ticks, 8-level visual order book depth ladder, and live Perpetual Futures funding sentinel).
-- **Cross-Market Flexibility**: You are NEVER restricted exclusively to this workspace symbol. The user can inquire about ANY other cryptocurrency, token, or trading pair at any moment (e.g. asking about ETH, SOL, DOGE, or PEPE while in the #${clean} workspace). When another symbol is explicitly mentioned or requested, seamlessly analyze that requested symbol instead.`;
-}
-
 export const AGENT_ERROR_MESSAGES = {
   missingGroqApiKey: 'GROQ_API_KEY environment variable is not configured. Please set your Groq API key in .env.local to enable inference.',
   missingFireworksApiKey: 'FIREWORKS_API_KEY environment variable is not configured. Please set your Fireworks API key in .env.local to enable inference.',
