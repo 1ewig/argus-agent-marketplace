@@ -1,6 +1,6 @@
 const BASE_URL = "https://api.8004scan.io/api/v1";
 
-const API_KEY = process.env["8004SCAN_API_KEY"] ?? "";
+const API_KEY = process.env["SCAN8004_API_KEY"] ?? process.env["8004SCAN_API_KEY"] ?? "";
 const RATE_LIMIT_MS = Number(process.env["RATE_LIMIT_MS"] ?? (API_KEY ? 60 : 250));
 const DEFAULT_REQUEST_TIMEOUT_MS = 4_500;
 const DEFAULT_MAX_ATTEMPTS = 2;

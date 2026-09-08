@@ -153,7 +153,7 @@ INFERENCE_PROVIDER=groq
 GROQ_API_KEY=gsk_your_groq_key_here
 
 # Optional: 8004scan API key for higher rate limits
-8004SCAN_API_KEY=your_8004scan_api_key_here
+SCAN8004_API_KEY=your_8004scan_api_key_here
 
 # Optional: Exa AI for real-time web & catalyst search
 EXA_API_KEY=your_exa_key_here

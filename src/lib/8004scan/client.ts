@@ -15,7 +15,7 @@ function getHeaders(): HeadersInit {
     Accept: 'application/json',
     'User-Agent': 'Argus-Discovery/1.0',
   };
-  const apiKey = process.env['8004SCAN_API_KEY'];
+  const apiKey = process.env['SCAN8004_API_KEY'] || process.env['8004SCAN_API_KEY'];
   if (apiKey) {
     headers['X-API-Key'] = apiKey;
   }
