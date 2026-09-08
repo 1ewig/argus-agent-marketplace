@@ -1,6 +1,3 @@
-import type { X402PaymentReceipt } from './x402';
-import type { AlphaReport } from './alpha';
-import type { RiskCertificate } from './risk';
 import type { ExecutionReceipt } from './execution';
 
 /**
@@ -47,8 +44,5 @@ export interface AgentMessage {
   timestamp: number;
   status: 'idle' | 'working' | 'success' | 'warning' | 'error';
   metadata?: Record<string, unknown>;
-  x402Receipt?: X402PaymentReceipt;
-  alphaReport?: AlphaReport;
-  riskCertificate?: RiskCertificate;
   executionReceipt?: ExecutionReceipt;
 }
