@@ -6,8 +6,6 @@ import {
   ChevronDown,
   Plus,
   Globe,
-  PanelRightClose,
-  PanelRightOpen,
   Menu,
 } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
@@ -17,32 +15,26 @@ export interface DashboardHeaderProps {
   symbol: string;
   isGlobal: boolean;
   isNewChatDisabled: boolean;
-  isMarketPanelOpen: boolean;
   onToggleMobileSidebar?: () => void;
   onOpenSymbolSearch: () => void;
   onNewChat: () => void;
-  onToggleMarketPanel: () => void;
 }
 
 /**
  * Pure presentation header for the dashboard stage.
- * Receives symbol state, panel status, and action callbacks.
+ * Receives symbol state and action callbacks.
  */
 export const DashboardHeader = memo(function DashboardHeader({
   symbol,
   isGlobal,
   isNewChatDisabled,
-  isMarketPanelOpen,
   onToggleMobileSidebar,
   onOpenSymbolSearch,
   onNewChat,
-  onToggleMarketPanel,
 }: DashboardHeaderProps) {
   return (
     <div className="relative z-30 h-14 px-spacing-md sm:px-spacing-lg border-b border-theme-border-subtle bg-theme-bg-base/90 backdrop-blur-xs flex items-center justify-between shrink-0 gap-3">
-      {/* Left Header Section: Mobile Menu Trigger + Symbol Dropdown */}
       <div className="flex items-center gap-2 min-w-0">
-        {/* 3-Line Hamburger Menu Trigger (Mobile only) */}
         <motion.button
           type="button"
           whileTap={tapScalePill}
@@ -55,7 +47,6 @@ export const DashboardHeader = memo(function DashboardHeader({
         </motion.button>
 
         <div className="flex items-center gap-2.5 overflow-x-auto no-scrollbar py-1">
-          {/* Minimal Symbol / Workspace Dropdown Button with Tactile Press */}
           <motion.button
             type="button"
             whileTap={tapScalePill}
@@ -80,9 +71,7 @@ export const DashboardHeader = memo(function DashboardHeader({
         </div>
       </div>
 
-      {/* Right Header Section: New Chat + Market Panel Toggle */}
       <div className="flex items-center gap-2 shrink-0">
-        {/* New Chat Primary Action Button (Compact '+' icon on mobile, full pill on desktop) */}
         <motion.button
           type="button"
           whileTap={isNewChatDisabled ? undefined : tapScalePill}
@@ -102,34 +91,6 @@ export const DashboardHeader = memo(function DashboardHeader({
         >
           <Plus className="size-4 sm:size-3.5 stroke-[2.75]" />
           <span className="hidden sm:inline font-bold">{APP_CONTENT.chat.newChatButton}</span>
-        </motion.button>
-
-        {/* Collapsible Market Panel Toggle Button (Visible on both desktop & mobile) */}
-        <motion.button
-          type="button"
-          whileTap={tapScalePill}
-          onClick={onToggleMarketPanel}
-          title={
-            isMarketPanelOpen
-              ? APP_CONTENT.marketPanel.collapsePanel
-              : APP_CONTENT.marketPanel.expandPanel
-          }
-          aria-label={
-            isMarketPanelOpen
-              ? APP_CONTENT.marketPanel.collapsePanel
-              : APP_CONTENT.marketPanel.expandPanel
-          }
-          className={`size-8 rounded-lg flex items-center justify-center select-none cursor-pointer transition-colors border ${
-            isMarketPanelOpen
-              ? 'bg-theme-bg-elevated text-theme-brand-binance border-theme-border-subtle shadow-2xs'
-              : 'text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-surface border-transparent hover:border-theme-border-subtle'
-          }`}
-        >
-          {isMarketPanelOpen ? (
-            <PanelRightClose className="size-4" />
-          ) : (
-            <PanelRightOpen className="size-4" />
-          )}
         </motion.button>
       </div>
     </div>

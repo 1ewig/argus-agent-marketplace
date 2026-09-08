@@ -54,11 +54,6 @@ export interface AppState {
   setWorkspaceGroupCollapsed: (symbol: string, collapsed: boolean) => void;
   toggleWorkspaceGroupCollapsed: (symbol: string) => void;
 
-  // Right Market Overview Panel State (Persisted in localStorage)
-  isMarketPanelOpen: boolean;
-  setIsMarketPanelOpen: (open: boolean) => void;
-  toggleMarketPanel: () => void;
-
   // Right Panel Active Tab
   rightPanelTab: RightPanelTab;
   setRightPanelTab: (tab: RightPanelTab) => void;
@@ -144,12 +139,6 @@ export const useAppStore = create<AppState>()(
           };
         }),
 
-      // Right Market Overview Panel State (defaults to open)
-      isMarketPanelOpen: true,
-      setIsMarketPanelOpen: (isMarketPanelOpen) => set({ isMarketPanelOpen }),
-      toggleMarketPanel: () =>
-        set((state) => ({ isMarketPanelOpen: !state.isMarketPanelOpen })),
-
       // Right Panel Active Tab (defaults to overview)
       rightPanelTab: 'overview',
       setRightPanelTab: (rightPanelTab) => set({ rightPanelTab }),
@@ -166,7 +155,6 @@ export const useAppStore = create<AppState>()(
       partialize: (state) => ({
         activeConversationId: state.activeConversationId,
         isSidebarCollapsed: state.isSidebarCollapsed,
-        isMarketPanelOpen: state.isMarketPanelOpen,
         rightPanelTab: state.rightPanelTab,
         selectedSymbol: state.selectedSymbol,
         lastActiveSymbol: state.lastActiveSymbol,
