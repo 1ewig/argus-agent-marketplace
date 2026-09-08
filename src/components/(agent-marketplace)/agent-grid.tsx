@@ -65,6 +65,7 @@ function SkeletonCard() {
 
 export const AgentGrid = memo(function AgentGrid({
   agents,
+  spotlightAgents,
   totalCount,
   isLoading,
   isError,
