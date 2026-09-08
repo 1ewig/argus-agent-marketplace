@@ -1,7 +1,6 @@
-export * from './sidebar-header';
-export * from './sidebar-new-chat';
-export * from './sidebar-nav-views';
-export * from './sidebar-session-item';
-export * from './sidebar-workspace-group';
-export * from './sidebar-session-list';
-export * from './sidebar-theme-toggle';
+export { SidebarHeader } from './sidebar-header';
+export { SidebarNewChat } from './sidebar-new-chat';
+export { SidebarSessionList } from './sidebar-session-list';
+export { SidebarSessionItem } from './sidebar-session-item';
+export { SidebarThemeToggle } from './sidebar-theme-toggle';
+export { SidebarWorkspaceGroup } from './sidebar-workspace-group';

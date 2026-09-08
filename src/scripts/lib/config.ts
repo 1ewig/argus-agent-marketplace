@@ -3,7 +3,7 @@ import type { HackathonCategory } from "./types";
 
 export const BSC_CHAIN_ID = 56;
 export const PAGE_SIZE = 50;
-export const MAX_PAGES_PER_SEARCH = 4;
+export const MAX_PAGES_PER_SEARCH = 2;
 export const DATA_DIR = join(
   import.meta.dirname ?? join(process.cwd(), "src", "scripts", "lib"),
   "..",
@@ -39,6 +39,5 @@ export const CATEGORY_SEARCHES: Record<HackathonCategory, string[]> = {
   research: ["research", "market analysis", "sentiment"],
 };
 
-export const CRAWL_OFFSETS = [
-  0, 50, 100, 150, 200, 250, 300, 350, 400, 500, 600, 700, 800,
-];
+export const CRAWL_OFFSETS = [0, 50, 100, 150, 200, 250, 300, 400];
+

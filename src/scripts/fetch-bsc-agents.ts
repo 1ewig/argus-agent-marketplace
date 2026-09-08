@@ -65,10 +65,15 @@ async function main(): Promise<void> {
   // 1. Global stats
   await logGlobalStats();
 
-  // 2. Targeted category crawl
+  // 2. Targeted category crawl (parallelized across categories)
   const crawled = new Map<string, AgentSummary>();
-  for (const [category, keywords] of Object.entries(CATEGORY_SEARCHES)) {
-    for (const agent of await crawlCategory(category, keywords)) {
+  const categoryBatches = await Promise.all(
+    Object.entries(CATEGORY_SEARCHES).map(([category, keywords]) =>
+      crawlCategory(category, keywords),
+    ),
+  );
+  for (const batch of categoryBatches) {
+    for (const agent of batch) {
       if (!crawled.has(agent.agent_id)) crawled.set(agent.agent_id, agent);
     }
   }
@@ -91,8 +96,8 @@ async function main(): Promise<void> {
   const compact = allBsc.map((a) => toCompact(a));
   console.log(`\nTotal interesting BSC agents: ${compact.length}`);
 
-  // 5. Enrichment pass for top agents across required categories
-  await enrichTopAgents(compact);
+  // 5. Fast enrichment pass for top agents across required categories
+  enrichTopAgents(compact);
 
   // 6. Partition into category buckets
   const byCategory = partitionCategories(compact);

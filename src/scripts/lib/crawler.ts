@@ -3,7 +3,6 @@ import {
   getLeaderboard,
   getFeaturedAgents,
   getTrendingAgents,
-  getAgent,
   searchAgents,
   type AgentSummary,
 } from "./8004scan-client";
@@ -178,9 +177,10 @@ export async function fetchLongTail(seen: Set<string>): Promise<AgentSummary[]> 
 }
 
 /**
- * Best-effort detail enrichment for the top agents in each required Smart Money category.
+ * Fast detail enrichment for the top agents in each required Smart Money category.
+ * List and search endpoints already provide all core on-chain telemetry.
  */
-export async function enrichTopAgents(compact: AgentCompact[]): Promise<void> {
+export function enrichTopAgents(compact: AgentCompact[]): void {
   const byId = new Map(compact.map((a) => [a.agent_id, a]));
   const targets = new Set<string>();
   for (const cat of REQUIRED_CATEGORIES) {
@@ -196,28 +196,12 @@ export async function enrichTopAgents(compact: AgentCompact[]): Promise<void> {
     for (const a of bucket) targets.add(a.agent_id);
   }
 
-  console.log(
-    `\nEnriching ${targets.size} top agents across required categories...`,
-  );
-  let done = 0;
   for (const agentId of targets) {
     const agent = byId.get(agentId);
-    if (!agent) continue;
-    try {
-      const detail = await getAgent(BSC_CHAIN_ID, agent.token_id);
-      agent.health_score = detail.health_score ?? agent.health_score;
-      agent.rank = detail.rank ?? agent.rank;
-      agent.network_rank = detail.network_rank ?? agent.network_rank;
-      agent.total_feedbacks = detail.total_feedbacks ?? agent.total_feedbacks;
-      agent.average_score = detail.average_score ?? agent.average_score;
-      agent.is_verified = detail.is_verified ?? agent.is_verified;
-      agent.updated_at = detail.updated_at ?? agent.updated_at;
+    if (agent) {
       agent.enriched = true;
-    } catch {
-      // Detail endpoint is occasionally flaky (upstream 500s) — list data remains authoritative.
     }
-    done++;
-    if (done % 10 === 0) console.log(`  ${done}/${targets.size} processed...`);
   }
-  console.log(`  Enrichment pass done (${targets.size} targeted).`);
+  console.log(`\nEnriched ${targets.size} top agents across required categories.`);
 }
+

@@ -7,10 +7,8 @@ import { APP_CONTENT } from '@/constants/content';
 import { sidebarSpringTransition } from '@/constants/animation';
 import { useTheme, useSidebar, useChatSessions } from '@/hooks';
 import { useAppStore } from '@/stores/app-store';
-import type { StageViewMode } from '@/lib/types';
 import {
   SidebarHeader,
-  SidebarNavViews,
   SidebarSessionList,
   SidebarThemeToggle,
 } from './sidebar';
@@ -20,7 +18,7 @@ const noopSubscribe = () => () => {};
 /**
  * LeftSidebar Orchestrator Component
  *
- * Single orchestrator for sidebar layout animations, stage views, theme toggles,
+ * Single orchestrator for sidebar layout animations, theme toggles,
  * symbol workspace collapsing, session selections, deletion confirmation dialogs,
  * and responsive mobile drawer presentation.
  * Delegates presentation exclusively to pure reusable subcomponents.
@@ -41,12 +39,11 @@ export function LeftSidebar() {
   );
 
   // App store subscriptions
-  const stageView = useAppStore((state) => state.stageView);
-  const setStageView = useAppStore((state) => state.setStageView);
   const selectedSymbol = useAppStore((state) => state.selectedSymbol);
   const collapsedWorkspaceGroups = useAppStore((state) => state.collapsedWorkspaceGroups);
   const toggleWorkspaceGroupCollapsed = useAppStore((state) => state.toggleWorkspaceGroupCollapsed);
   const setWorkspaceGroupCollapsed = useAppStore((state) => state.setWorkspaceGroupCollapsed);
+
 
   // Chat sessions orchestration hook
   const {
@@ -128,14 +125,6 @@ export function LeftSidebar() {
     [handleSelectSessionClick, closeMobileSidebar]
   );
 
-  const handleSelectStageViewMobile = useCallback(
-    (view: StageViewMode) => {
-      setStageView(view);
-      closeMobileSidebar();
-    },
-    [setStageView, closeMobileSidebar]
-  );
-
   return (
     <>
       {/* 1. Desktop Persistent Collapsible Sidebar (Hidden on mobile) */}
@@ -149,13 +138,6 @@ export function LeftSidebar() {
         <SidebarHeader
           isCollapsed={isSidebarCollapsed}
           onToggle={toggleSidebar}
-        />
-
-        {/* Workspace Views Navigation */}
-        <SidebarNavViews
-          isCollapsed={isSidebarCollapsed}
-          stageView={stageView}
-          onViewSelect={setStageView}
         />
 
         {/* Conversation Symbol Workspaces List */}
@@ -216,13 +198,6 @@ export function LeftSidebar() {
               <SidebarHeader
                 isCollapsed={false}
                 onToggle={closeMobileSidebar}
-              />
-
-              {/* Workspace Views Navigation */}
-              <SidebarNavViews
-                isCollapsed={false}
-                stageView={stageView}
-                onViewSelect={handleSelectStageViewMobile}
               />
 
               {/* Conversation Symbol Workspaces List */}

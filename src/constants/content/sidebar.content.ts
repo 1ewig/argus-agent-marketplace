@@ -11,7 +11,6 @@ export const sidebarContent = {
     newChatDisabled: 'Current chat is already new',
     viewsTitle: 'Workspace Views',
     agentView: 'Agent Chat',
-    chartView: 'Trading Chart',
     globalView: 'Global Workspace',
     globalViewTooltip: 'Open workspace not tied to any symbol',
     historyTitle: 'Saved Conversations',
@@ -73,10 +72,6 @@ export const sidebarContent = {
     category: 'Market Overview',
     defaultSymbol: 'BTC / USDT',
     defaultSubtitle: 'Binance Spot • Real-time Feeds & Agent Reasoner',
-    switcher: {
-      agent: 'Agent',
-      chart: 'Chart',
-    },
   },
   cards: {
     account: {
@@ -96,13 +91,6 @@ export const sidebarContent = {
       badge: 'Coming Soon',
       emptyTitle: 'Market Sentiment & Analysis',
       emptySubtitle: 'Daily market overview, sentiment metrics, and Exa web search synthesis will be displayed here.',
-    },
-    chart: {
-      title: 'Trading Chart',
-      badge: 'Interactive View',
-      emptyTitle: 'Trading Chart Integration',
-      emptySubtitle: 'Interactive real-time candlestick charts and technical indicator overlays will be available here.',
-      switchHint: 'Switch back to the Agent view to interact with live Binance feeds and market analysis.',
     },
   },
   modes: {
