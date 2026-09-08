@@ -1,180 +1,193 @@
-# Argus — Your Intelligent Trading Desk Companion
+# Argus — Autonomous AI Agent Marketplace & Trading Desk for BNB Chain
 
 <p align="left">
   <a href="https://argus-ai-agent-hackathon.vercel.app" target="_blank">
-    <img src="https://img.shields.io/badge/⚡%20Live%20Demo-Launch%20Terminal-F0B90B?style=for-the-badge&logo=vercel&logoColor=000000" alt="Live Demo" />
+    <img src="https://img.shields.io/badge/⚡%20Live%20Terminal-Launch%20Argus-F0B90B?style=for-the-badge&logo=vercel&logoColor=000000" alt="Live Demo" />
   </a>
-  <a href="https://argus-ai-agent-hackathon.vercel.app" target="_blank">
-    <img src="https://img.shields.io/badge/Binance%20Agent%20OS-Track%20A%20Submission-181A20?style=for-the-badge&logo=binance&logoColor=F0B90B" alt="Binance Hackathon" />
+  <a href="https://github.com/1ewig/argus-agent-marketplace" target="_blank">
+    <img src="https://img.shields.io/badge/BNB%20Chain-Build%20the%20Era%20Hackathon-181A20?style=for-the-badge&logo=binance&logoColor=F0B90B" alt="BNB Hackathon" />
   </a>
+  <img src="https://img.shields.io/badge/Standard-ERC--8004%20Registry-F3BA2F?style=for-the-badge&logo=ethereum&logoColor=000000" alt="ERC-8004" />
   <img src="https://img.shields.io/badge/Runtime-Bun%201.4%2B-FBF0DF?style=for-the-badge&logo=bun&logoColor=000000" alt="Bun" />
   <img src="https://img.shields.io/badge/TypeScript-Strict%207-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
   <img src="https://img.shields.io/badge/Next.js-16.3%20App%20Router-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" alt="Next.js" />
 </p>
 
-> **Built for the Binance Agent OS Mini Hackathon (Track A)**  
-> An autonomous, grounded crypto intelligence terminal pairing live Binance Spot & Futures feeds with Exa AI neural search.
+> **Built for the BNB Chain "Build the Era" Hackathon**  
+> The definitive on-chain marketplace and intelligent trading companion for discovering, inspecting, benchmarking, and interacting with **200,000+ autonomous AI agents** registered under the **ERC-8004 specification** on BNB Smart Chain (BSC - Chain ID 56).
 >
-> 🌐 **Live Web Terminal:** [https://argus-ai-agent-hackathon.vercel.app](https://argus-ai-agent-hackathon.vercel.app)
-
-<video src="public/videos/Argus-Binance-Agent-Os.mp4" poster="public/images/argus-welcome-stage.webp" controls width="100%" playsinline>
-  Your browser does not support the video tag.
-</video>
+> 🌐 **Live Web Terminal & Marketplace:** [https://argus-ai-agent-hackathon.vercel.app](https://argus-ai-agent-hackathon.vercel.app)  
+> 📦 **GitHub Repository:** [https://github.com/1ewig/argus-agent-marketplace](https://github.com/1ewig/argus-agent-marketplace)
 
 ---
 
-## The Problem: Trading in the Noise
+## The Problem: The On-Chain Agent Discoverability Gap
 
-If you've ever traded crypto during high volatility, you already know the pain of **tab overload**:
+Over **200,000 autonomous AI agents** are registered on BNB Smart Chain under the ERC-8004 standard. However, the ecosystem faces a critical discoverability gap:
 
-* Binance Spot open in one window tracking rapid price ticks.
-* Futures funding rates and mark prices open in another to see who's paying who.
-* Order book depth open on a third screen trying to spot spoofed walls.
-* Twitter, Telegram, and Discord open on your phone trying to uncover *why* an asset just broke out 12% in three minutes.
+* **No Legible Agent Telemetry:** Existing raw block explorers only display contract addresses and bytecodes, leaving traders blind to an agent's actual capabilities, health score, total score, and user reputation.
+* **Fragmented Capability Standards:** Agents supporting cutting-edge rails like **x402 pay-per-request micropayments**, **Model Context Protocol (MCP)**, and **Agent-to-Agent (A2A)** collaboration are buried without unified filtering.
+* **Disjointed Execution Workflows:** Traders are forced to jump between discovery explorers, charting websites, Telegram bots, and exchange interfaces to evaluate and utilize agent intelligence.
 
-By the time you piece all the clues together, the move is over. Most AI chatbots don't help either — they hallucinate prices, summarize stale training data, or offer generic platitudes that get traders liquidated.
+### The Solution: Argus
 
-**We built Argus to be the partner you actually want sitting beside you on the desk.**
+**Argus bridges this gap by unifying discovery, on-chain diagnostics, live market feeds, and conversational AI into a singular, high-performance terminal.**
 
-Argus doesn't guess, extrapolate, or recite textbook definitions. When you ask a question, it queries live Binance exchange endpoints and Exa neural search in parallel. It calculates the spread, weighs the order book imbalance, measures funding pressure, checks whale long/short ratios, and pulls the breaking catalyst — giving you an unvarnished, executive breakdown in seconds.
-
----
-
-## Visual Tour
-
-### 1. The Welcome Stage — Clean, Instant, Focused
-
-When you boot Argus, you're greeted with a focused workspace designed to reduce cognitive friction:
-
-![Argus Welcome Stage](public/images/argus-welcome-stage.webp)
-
-* **Zero-Friction Prompt Starters:** One-click launchpads to dissect 24h momentum, audit perpetual funding rates, or inspect order book depth.
-* **Persistent Sessions:** Conversations are saved locally in your browser and restored on return — pick up right where you left off.
+Traders can explore the entire ERC-8004 registry by core reference pillars (Yield, Trading, Risk & Health, Monitoring, Research, Infrastructure), multi-filter by capability tags (`x402`, `MCP`, `A2A`, `Verified`, `Venus`, `PancakeSwap`), inspect on-chain telemetry, and hand off any agent directly into the Argus Trading Desk with one click.
 
 ---
 
-### 2. Multi-Turn Conversational Reasoning with Inspectable Proof
+## Key Platform Surfaces
 
-Ask open-ended, complex market questions and watch Argus orchestrate live tools in parallel:
+### 1. ERC-8004 Agent Marketplace (`/marketplace` & `/agents`)
 
-![Argus Multi-Turn Agent Conversation](public/images/argus-agent-conversation.webp)
+The primary discovery engine built specifically for BNB Chain's autonomous agent ecosystem:
 
-* **Autonomous Tool Orchestration:** Asking *"What are the biggest crypto gainers, losers, and top volume movers today?"* triggers parallel 24h ticker scans, volume analysis, and Exa catalyst searches in a single round trip.
-* **Inspectable Reasoning Timeline:** Click into the collapsible **Worked for X seconds** timeline to see every tool call, raw payload, parameter, and intermediate reasoning step. Total transparency — zero black box.
-* **Narrative Catalysts:** Argus connects price action with real-world news (such as identifying that Arbitrum's +29.2% surge was fueled by the Robinhood Chain L2 revenue catalyst).
+![Argus Agent Marketplace](public/images/argus-agent-marketplace.webp)
 
----
-
-### 3. Interactive Candlestick Trading Stage
-
-Tired of toggling to external charting sites? Switch the center stage from **Agent** to **Chart** with one click:
-
-![Argus Candlestick Trading Chart](public/images/argus-candlestick-chart.webp)
-
-* **Lightweight Charts Canvas:** High-performance, GPU-accelerated candlestick rendering.
-* **Direct Binance Feeds:** Historical klines paired with live WebSocket candle updates for seamless price action tracking.
-* **Multi-Timeframe Controls:** Toggle between `15m`, `1h`, `4h`, `1D`, `7D`, and `30D`.
-* **Dynamic Crosshair & Legend:** Real-time Open, High, Low, Close, and Volume readouts on hover, with one-click recent zoom and fullscreen mode.
+* **6 Core Reference Pillars:** Structured navigation across **Yield & Staking**, **Trading & Market Making**, **Risk & Health Factor**, **Monitoring & Alerts**, **Research & Intelligence**, and **Infrastructure & Tools**.
+* **Specialized Sub-Domain Explorer:** Deep categorization into Liquid Staking (Lista DAO slisBNB), Portfolio Rebalancers, DePIN / Greenfield storage, DAO Governance, Four.meme fair-launch bots, and Cross-Chain bridges.
+* **Secondary Capability Multi-Tagging:** Instant multi-select filtering for:
+  * ⚡ **x402 Pay:** HTTP 402 pay-per-request micropayment agents.
+  * 🤖 **MCP Protocol:** Model Context Protocol multi-agent support.
+  * 🔄 **A2A Protocol:** Autonomous Agent-to-Agent communication.
+  * ✅ **Verified Contracts:** On-chain verified agent contracts.
+  * 🪙 **Venus Protocol:** Venus lending & liquidity optimizers.
+  * 🥞 **PancakeSwap:** PancakeSwap swap routing and LP rebalancing.
+  * ⭐ **High Reputation:** Top-ranked agents with high feedback and score thresholds.
+* **Instant Keyboard-Navigable Search (`/`):** Real-time search across agent names, descriptions, protocols, and token IDs.
+* **Curated Feed Sorting:** Sort by Top Ranked (Leaderboard), Trending, Featured, and Recently Added agents with smooth pagination windows.
 
 ---
 
-### 4. Agent Marketplace — ERC-8004 Registry
+### 2. On-Chain Registry Diagnostics & 1-Click Handoff
 
-Browse and inspect autonomous on-chain AI agents registered under the ERC-8004 specification on BNB Chain:
+Clicking any agent card opens the comprehensive ERC-8004 diagnostic suite:
 
-![Argus Agent Marketplace](public/images/argus-welcome-stage.webp)
-
-* **Live Registry Feed:** Paginated grid of 300K+ agents sourced from the 8004scan API, with in-memory caching and graceful offline fallback.
-* **Category Filters:** Browse by Yield, Grid Trading, Rebalancing, Health Factor, Monitoring, Security, x402 Payments, and Multi-Agent/MCP.
-* **Curated Feeds:** Top Ranked (leaderboard), Trending, Featured, and Recently Added agent streams.
-* **Spotlight Agents:** Highlighted Hevo & 4LPHA agents pinned at the top of the default feed.
-* **Agent Detail Modal:** Full profile view with contract address, deployer info, health score, total score, supported protocols, and links to BscScan and 8004scan.
-* **Analyze in Chat:** One-click transfer any agent's profile into the trading desk chat for deep analysis by Argus.
+* **On-Chain Identity & Ownership:** Verified contract address, deployer ENS/address, and registration timestamp.
+* **Registry Performance Metrics:** Total score, health factor %, average user rating (5.0 scale), and total feedback count.
+* **Protocol & Interface Badges:** Direct visibility into supported communication protocols (MCP, A2A, x402).
+* **Direct Verification Links:** Quick-access links to verify transactions on **BscScan** and view registry metadata on **8004scan.io**.
+* **Analyze in Trading Desk:** 1-Click action that pre-populates a specialized diagnostic prompt and hands off the agent directly to the Argus AI Reasoning Desk.
 
 ---
 
-### 5. Local-First Privacy
+### 3. Conversational AI Trading Desk (`/`)
 
-All conversation histories, session metadata, and intelligence snapshots are stored directly in your browser using Dexie IndexedDB. No external user database, no telemetry tracking, no data leakage.
+A grounded crypto intelligence assistant paired with live Binance exchange endpoints and Exa AI search:
 
----
-
-## Under the Hood: Production-Grade Engineering
-
-Argus was built from day one to adhere to strict engineering principles:
-
-* **Bun Runtime (`bun@1.4.0+`):** Built and tested strictly with Bun for maximum package installation and runtime velocity.
-* **TypeScript 7 Strict & Oxlint:** Zero untyped `any` escapes and 0 warnings / 0 errors across 170+ files.
-* **Multi-Cluster Failover Pool:** Binance REST calls cycle through a multi-cluster pool (`api.binance.com`, `data-api.binance.vision`, `api1/2/3.binance.com`, `api-gcp.binance.com`) with automated fallback on network hiccups or rate limits.
-* **Frankfurt (`fra1`) Edge Routing:** Serverless API endpoints pin the Frankfurt region (`fra1`) to prevent Binance's HTTP 451 geo-restrictions on US serverless IP ranges.
-* **Zero Hardcoded Design Tokens / Copy:** Every color, spacing value, and border token is defined semantically in `src/app/globals.css`, and 100% of user-facing UI copy lives in `src/constants/content/`.
-
-> 💡 **For a comprehensive architectural breakdown, check out the [Technical Project Summary (`docs/PROJECT_SUMMARY.md`)](docs/PROJECT_SUMMARY.md).**
+* **Autonomous Tool Orchestration:** 11 parallel AI SDK tools querying live 24h ticker statistics, order book depth imbalance, mark prices, funding rates, and Exa neural news.
+* **Transparent Step Timeline:** Inspectable reasoning accordion revealing every tool call, parameter, latency, and intermediate step.
+* **Zero Hallucination Guarantee:** Argus queries live public exchange feeds directly — never generating synthetic prices or stale training fallbacks.
 
 ---
 
-## Quickstart for Judges & Reviewers
+### 4. Interactive Candlestick Stage & Live Telemetry Deck
 
-Get Argus running on your local machine in under two minutes:
+* **Lightweight Charts Canvas:** High-performance, GPU-accelerated candlestick rendering with multi-timeframe controls (`15m`, `1h`, `4h`, `1D`, `7D`, `30D`).
+* **Real-Time Spot Ticker:** Sub-second directional price tick flashes with micro-sparklines and 24h range bars.
+* **Perpetual Futures Sentinel:** Spot-futures basis spread, annualized funding APR, and settlement countdown timer.
+* **20-Level Depth Imbalance:** Real-time buyer vs. seller bid/ask volume distribution.
+* **Smart Sleep Mode:** WebSockets automatically hibernate on tab defocus to conserve network and CPU resources.
+
+---
+
+### 5. 100% Local-First Privacy
+
+* All chat histories, session metadata, bookmarks, and diagnostics are stored locally in your browser using **Dexie IndexedDB (v4)**.
+* Zero external user database, zero tracking telemetry, zero data leakage.
+
+---
+
+## Technology Stack
+
+| Layer | Technology |
+| :--- | :--- |
+| **Framework & App** | Next.js 16.3.4 (App Router, React 19, Turbopack) |
+| **Runtime & Tooling** | Bun `bun@1.4.0+`, TypeScript 7 Strict, Oxlint |
+| **On-Chain Agent Registry** | ERC-8004 Specification, 8004scan REST API (BNB Chain - Chain ID 56) |
+| **AI Reasoning Engine** | Vercel AI SDK (`ai@^7`, `@ai-sdk/groq`, `@ai-sdk/fireworks`) |
+| **Market Data Feeds** | Binance Public REST Failover Pool + Binance WebSockets (Spot + Futures) |
+| **Neural Web Search** | Exa AI REST API |
+| **Local Persistence** | Dexie IndexedDB v4 (`dexie@^4.4.5`, `dexie-react-hooks`) |
+| **Global State & Caching** | Zustand 5 (`persist`), TanStack React Query 5 |
+| **Styling & Animation** | Tailwind CSS v4 Semantic Tokens, Framer Motion |
+| **Charts** | `lightweight-charts@^5.2.1` |
+
+---
+
+## Under the Hood: Production-Grade Architecture
+
+* **Strict Token Architecture:** Zero raw hex or magic pixel values in JSX; 100% semantic design tokens in `src/app/globals.css`.
+* **Centralized Copy:** All user-facing labels, headings, error states, and tooltips are centralized in `src/constants/content/` (Rule 1 of `AGENTS.md`).
+* **Multi-Cluster API Failover:** Binance REST client cycles through a multi-cluster pool (`api.binance.com`, `data-api.binance.vision`, `api1/2/3.binance.com`, `api-gcp.binance.com`) with automatic fallback on rate limits.
+* **Frankfurt (`fra1`) Edge Routing:** Serverless API endpoints pin the `fra1` region to eliminate HTTP 451 geo-restrictions on serverless ranges.
+
+---
+
+## Quickstart
+
+Get Argus running locally in under two minutes:
 
 ### 1. Prerequisites
 * [Bun](https://bun.sh/) `v1.4.0` or higher
-* A free API key from [Groq](https://console.groq.com/keys) (primary model: `qwen/qwen3.8-27b`) or [Fireworks AI](https://fireworks.ai/api-keys)
-* *(Optional)* An API key from [Exa AI](https://dashboard.exa.ai/api-keys) for live news search
+* An API key from [Groq](https://console.groq.com/keys) (primary model: `qwen/qwen3.8-27b`) or [Fireworks AI](https://fireworks.ai/api-keys)
+* *(Optional)* An API key from [8004scan.io](https://8004scan.io) and [Exa AI](https://dashboard.exa.ai/api-keys)
 
 ### 2. Clone & Install
 ```bash
-git clone <repository-url>
-cd argus
+git clone https://github.com/1ewig/argus-agent-marketplace.git
+cd argus-agent-marketplace
 bun install
 ```
 
-### 3. Set Up Environment Keys
-Create your `.env.local` file:
+### 3. Configure Environment
 ```bash
 cp .env.example .env.local
 ```
 
-Populate your keys:
+Populate your `.env.local`:
 ```env
-# Primary inference provider ('groq' or 'fireworks')
+# Primary AI inference provider ('groq' or 'fireworks')
 INFERENCE_PROVIDER=groq
 GROQ_API_KEY=gsk_your_groq_key_here
+
+# Optional: 8004scan API key for higher rate limits
+8004SCAN_API_KEY=your_8004scan_api_key_here
 
 # Optional: Exa AI for real-time web & catalyst search
 EXA_API_KEY=your_exa_key_here
 ```
 
-### 4. Start the Application
+### 4. Run Development Server
 ```bash
 bun run dev
 ```
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open [http://localhost:3000](http://localhost:3000) (Trading Desk) or [http://localhost:3000/marketplace](http://localhost:3000/marketplace) (Agent Marketplace) in your browser.
 
 ### 5. Verify Code Quality Gates
 ```bash
-# Verify strict TypeScript types (0 errors)
+# Strict TypeScript checking (0 errors)
 bun x tsc --noEmit
 
-# Verify Oxlint compliance (0 warnings, 0 errors)
+# Oxlint compliance (0 warnings, 0 errors)
 bun run lint
 ```
 
 ---
 
-## Why Argus Wins Track A
+## Alignment with BNB Chain "Build the Era" Goals
 
-Argus is not a wrapper around an LLM chat prompt. It is a **production-minded trading workstation** built specifically for the Binance ecosystem:
-
-1. **Grounded in Truth:** It never hallucinates market data. Every single price, imbalance ratio, and funding metric is verified against live Binance endpoints.
-2. **Built for Real Traders:** An intelligent chat companion backed by 11 parallel Binance tools replaces the chaotic multi-tab workflow.
-3. **Resilient by Design:** Multi-cluster API failover, WebSocket auto-sleep/reconnect, and deterministic fallbacks keep the workstation operational even when external providers stumble.
-4. **Agent Discovery:** The integrated ERC-8004 Agent Marketplace lets traders discover, inspect, and analyze autonomous on-chain agents — all from within the same desk.
-
-Thank you to the Binance team and hackathon judges for reviewing Argus!
+| Hackathon Requirement | Argus Implementation |
+| :--- | :--- |
+| **ERC-8004 Discoverability** | Hierarchical 6-pillar explorer, instant search, and secondary capability filtering across 200,000+ BSC agents |
+| **Legible On-Chain Data** | Visualizes total scores, health factors, user feedback, ratings, deployer ENS, and contract addresses |
+| **Agent Capability Rails** | Dedicated badges and filters for `x402` micropayments, `MCP` swarms, and `A2A` protocols |
+| **Actionable Usability** | 1-Click handoff from marketplace cards directly into the AI Trading Desk for conversational diagnostics |
+| **Production Readiness** | 100% strict TypeScript, Oxlint compliance, multi-cluster REST failovers, and local-first Dexie storage |
 
 ---
 
 ## License
 
-MIT © Argus Contributors
+MIT © [Argus Contributors](https://github.com/1ewig/argus-agent-marketplace)
