@@ -26,7 +26,6 @@ export type SyndicateMode = GuardianMode; // Backwards-compatible alias
  */
 export type RightPanelTab =
   | 'overview'
-  | 'intelligence'
   | 'market-data'
   | 'technical-analysis'
   | 'risk-volatility'

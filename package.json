@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "oxlint"
+    "lint": "oxlint",
+    "fetch:agents": "bun run src/scripts/fetch-bsc-agents.ts"
   },
   "dependencies": {
     "@ai-sdk/fireworks": "^3.0.46",

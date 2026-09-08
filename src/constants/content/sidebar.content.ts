@@ -94,7 +94,7 @@ export const sidebarContent = {
     marketAnalysis: {
       title: 'Daily Market Analysis',
       badge: 'Coming Soon',
-      emptyTitle: 'Market Sentiment & Intelligence',
+      emptyTitle: 'Market Sentiment & Analysis',
       emptySubtitle: 'Daily market overview, sentiment metrics, and Exa web search synthesis will be displayed here.',
     },
     chart: {

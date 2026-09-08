@@ -8,21 +8,17 @@ import type {
   StreamConnectionStatus,
   LiveFuturesFundingData,
 } from '@/lib/binance-websocket';
-import type { MarketIntelligencePayload } from '@/agent/intelligence/schemas';
 import type { GlobalMarketOverviewData } from '@/lib/types';
 import {
   PriceTickerCard,
   FuturesFundingCard,
   OrderBookDepthCard,
 } from './telemetry';
-import { MarketIntelligenceAgentView } from './agents';
 import { GlobalMarketView } from './global';
 
 export interface MarketPanelBodyProps {
   isGlobal: boolean;
-  isIntelligenceActive: boolean;
   symbol: string;
-  cleanSymbol: string;
   ticker?: LiveTickerData | null;
   orderBook?: LiveOrderBookData | null;
   spotStatus?: StreamConnectionStatus;
@@ -31,11 +27,6 @@ export interface MarketPanelBodyProps {
   isGlobalFetching?: boolean;
   isGlobalError?: boolean;
   onRetryGlobal?: () => void;
-  intelligenceData?: MarketIntelligencePayload | null;
-  isIntelligenceLoading?: boolean;
-  isIntelligenceFetching?: boolean;
-  isIntelligenceError?: boolean;
-  onRetryIntelligence?: () => void;
   futuresData?: LiveFuturesFundingData | null;
   isFuturesAvailable?: boolean;
   futuresCountdownFormatted?: string;
@@ -46,9 +37,7 @@ export interface MarketPanelBodyProps {
  */
 export const MarketPanelBody = memo(function MarketPanelBody({
   isGlobal,
-  isIntelligenceActive,
   symbol,
-  cleanSymbol,
   ticker = null,
   orderBook = null,
   spotStatus = 'idle',
@@ -57,11 +46,6 @@ export const MarketPanelBody = memo(function MarketPanelBody({
   isGlobalFetching = false,
   isGlobalError = false,
   onRetryGlobal,
-  intelligenceData,
-  isIntelligenceLoading = false,
-  isIntelligenceFetching = false,
-  isIntelligenceError = false,
-  onRetryIntelligence,
   futuresData = null,
   isFuturesAvailable = false,
   futuresCountdownFormatted = '',
@@ -76,19 +60,6 @@ export const MarketPanelBody = memo(function MarketPanelBody({
         isFetching={isGlobalFetching}
         isError={isGlobalError}
         onRetry={onRetryGlobal ?? (() => {})}
-      />
-    );
-  }
-
-  if (isIntelligenceActive) {
-    return (
-      <MarketIntelligenceAgentView
-        key={`intelligence_${cleanSymbol}`}
-        data={intelligenceData || undefined}
-        isLoading={isIntelligenceLoading}
-        isFetching={isIntelligenceFetching}
-        isError={isIntelligenceError}
-        onRetry={onRetryIntelligence}
       />
     );
   }

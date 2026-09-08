@@ -10,9 +10,6 @@ import {
   getConversationMessageCount,
 } from './messages';
 import {
-  prewarmIntelligenceCache,
-} from './intelligence';
-import {
   type ConversationRecord,
   type ChatMessageRecord,
   DEFAULT_CONVERSATION_ID,
@@ -73,7 +70,6 @@ export function clearMessagesCache(conversationId?: string): void {
 export function useConversations(): ConversationRecord[] {
   useEffect(() => {
     void prewarmMessagesCache();
-    void prewarmIntelligenceCache();
   }, []);
 
   const live = useLiveQuery(() => listConversations(), []);

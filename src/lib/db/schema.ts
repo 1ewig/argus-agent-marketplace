@@ -3,7 +3,6 @@ import { APP_CONTENT } from '@/constants/content';
 import type {
   ExecutedToolCall,
   AgentExecutionStep,
-  MarketIntelligenceResponse,
 } from '@/agent';
 
 export interface ConversationRecord {
@@ -45,12 +44,11 @@ export const DEFAULT_CONVERSATION_TITLE = APP_CONTENT.chat.defaultSessionTitle;
 
 /**
  * Institutional Dexie IndexedDB Database for Argus multi-session chat history,
- * telemetry persistence, symbol-specific market intelligence snapshots, and retention pruning.
+ * telemetry persistence, and retention pruning.
  */
 export class ArgusDatabase extends Dexie {
   conversations!: EntityTable<ConversationRecord, 'id'>;
   messages!: EntityTable<ChatMessageRecord, 'id'>;
-  marketIntelligence!: EntityTable<MarketIntelligenceResponse, 'symbol'>;
 
   constructor() {
     super('ArgusDatabase');
@@ -89,15 +87,8 @@ export class ArgusDatabase extends Dexie {
         }
       });
     });
-
-    // Schema v4: Symbol-specific Market Intelligence snapshots
-    this.version(4).stores({
-      conversations: 'id, symbol, createdAt, updatedAt',
-      messages: 'id, conversationId, symbol, timestamp, role, status',
-      marketIntelligence: 'symbol, timestamp',
-    });
   }
 }
 
 // Singleton database instance
-export const db = new ArgusDatabase();
+export const db = new ArgusDatabase();

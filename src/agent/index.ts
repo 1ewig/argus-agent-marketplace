@@ -10,4 +10,3 @@ export * from './providers';
 export * from './tools';
 export * from './transforms';
 export * from './chat';
-export * from './intelligence';

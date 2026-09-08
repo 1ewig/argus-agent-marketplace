@@ -79,24 +79,7 @@ Sitting directly beside your chat is a dedicated telemetry panel streaming live 
 
 ---
 
-### 4. Market Intelligence Sidecar Agent (`4-Card Synthesis`)
-
-Switch over to the **Market Intelligence** tab to engage an autonomous sidecar agent that runs in the background:
-
-![Argus Market Intelligence Agent](public/images/argus-market-intelligence.webp)
-
-It fires 9 parallel requests across klines, order book depth, 5m VWAP, funding rates, retail accounts, top-trader long/short ratios, and Exa news, synthesizing everything into **four executive trading cards**:
-
-1. **CONTROL:** Who owns the current auction — live bid/ask volume imbalance ratio (e.g. `3.31x bid defense`) and order book liquidity walls.
-2. **KEY LEVELS:** Mathematical support/resistance anchors, 5m VWAP pivots, and 15m range boundaries.
-3. **POSITIONING:** Whale sentiment vs. retail long/short skew, annualized funding rate drift, and systemic leverage bias.
-4. **TACTICAL PLAYBOOK:** Actionable trade setups complete with entry triggers, invalidation levels, and risk parameters.
-
-> **Reliability Guarantee:** Snapshots are cached locally for 1 hour with a live countdown timer. If LLM provider limits occur, a deterministic mathematical fallback computes the exact 4-card payload using raw exchange math — never synthetic prices or broken cards.
-
----
-
-### 5. Global Macro Deck (`GLOBAL` Workspace)
+### 4. Global Macro Deck (`GLOBAL` Workspace)
 
 Need a high-altitude view of the entire crypto landscape before drilling into specific pairs? Switch to the **GLOBAL** workspace:
 
@@ -110,7 +93,7 @@ Need a high-altitude view of the entire crypto landscape before drilling into sp
 
 ---
 
-### 6. Interactive Candlestick Trading Stage
+### 5. Interactive Candlestick Trading Stage
 
 Tired of toggling to external charting sites? Switch the center stage from **Agent** to **Chart** with one click:
 
@@ -123,7 +106,7 @@ Tired of toggling to external charting sites? Switch the center stage from **Age
 
 ---
 
-### 7. Multi-Symbol Workspaces & Local-First Privacy
+### 6. Multi-Symbol Workspaces & Local-First Privacy
 
 Organize your trading sessions cleanly by asset without mixing up thoughts or indicators:
 

@@ -83,10 +83,8 @@ export const marketContent = {
     sparklineLoading: 'Loading trend...',
     tabs: {
       overview: 'Live Telemetry',
-      intelligence: 'Market Intelligence',
       tooltips: {
         overview: 'Live Binance WebSocket streams',
-        intelligence: '1 Agent · 1 JSON · 3 Executive Cards',
       },
     },
   },

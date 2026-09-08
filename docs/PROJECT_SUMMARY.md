@@ -17,8 +17,7 @@ The product solves a real pain point for active traders: juggling multiple tabs 
 ### Key product surfaces
 - **Agent chat (center stage):** multi-turn, tool-calling conversation streamed via SSE with a visible, collapsible reasoning/tool-execution timeline.
 - **Trading Chart stage (center stage alt):** an interactive `lightweight-charts` candlestick canvas toggled from the header (Agent ⇄ Chart). Fetches historical klines per active timeframe, then live-streams `<symbol>@kline_<interval>` + `<symbol>@ticker` over WebSocket — with crosshair legend, zoom-to-recent, reset zoom, and fullscreen. Six timeframes (15M/1H/4H/1D/7D/30D).
-- **Live market panel (right):** real-time Binance WebSocket telemetry — price ticker + micro-sparkline, order book depth, and a perpetual futures funding sentinel. Symbol workspaces get a two-tab switcher (**Live Telemetry** / **Market Intelligence**).
-- **Market Intelligence Agent (right-panel tab):** a background sidecar agent that scans 9 live data sources in parallel and emits **one structured JSON payload → four executive cards** (CONTROL, KEY LEVELS, POSITIONING, TACTICAL PLAYBOOK) via `generateObject`, cached for 1 hour.
+- **Live market panel (right):** real-time Binance WebSocket telemetry — price ticker + micro-sparkline, order book depth, and a perpetual futures funding sentinel.
 - **Global Market deck (GLOBAL workspace):** the right panel swaps to a macro overview — **Market Pulse**, **Top Movers**, **Funding Heatmap**, and **Macro Positioning** — aggregated server-side by `GET /api/binance/global-overview` and refreshed every 30s.
 - **Workspaces & sessions:** symbol-tagged workspaces (`BTCUSDT`, `SOLUSDT`, `GLOBAL`, ...) with persistent chat sessions stored locally in the browser, deep-linkable via URL params (`?symbol=BTCUSDT&chat=conv_...`).
 
@@ -41,11 +40,7 @@ The product solves a real pain point for active traders: juggling multiple tabs 
 | Validation | Zod v4 |
 | Markdown Rendering | `react-markdown` + `remark-gfm` |
 | Icons | `lucide-react` |
-| Charts | `lightweight-charts@^5.2.1` (candlestick canvas) |
-
----
-
-## 3. Architecture & Directory Map
+| Charts | `lightweight-charts@^5.2.1` (candlestick ca## 3. Architecture & Directory Map
 
 The repository follows the modular convention laid out in [`AGENTS.md`](../AGENTS.md): strict separation of the agent reasoning engine, external clients, reactive hooks, pure presentation components, centralized copy, and persisted global state.
 
@@ -56,10 +51,6 @@ src/
 │   │   ├── prepare-invocation.ts # builds model+prompt+messages+directives per request
 │   │   ├── stream-state-machine.ts # thinking/tool/intermediate_text step timeline
 │   │   └── stream-engine.ts      # streamText execution + step timeline + failover
-│   ├── intelligence/             # Market Intelligence Agent (generateObject → 4-card payload)
-│   │   ├── engine.ts             # 9-source parallel scan + generateObject orchestration
-│   │   ├── schemas.ts            # strict Zod MarketIntelligencePayloadSchema
-│   │   └── synthesizer.ts        # deterministic fallback from raw exchange math
 │   ├── prompts/                  # system prompt, directives, tool descriptions
 │   ├── providers/                # Groq/Fireworks model resolution + cross-provider failover
 │   ├── tools/                    # 11 AI SDK tool definitions wrapped around lib clients
@@ -76,14 +67,12 @@ src/
 │   │   └── types.ts
 │   ├── exa/                      # Exa search client + input/output types + Zod schema
 │   ├── db/                       # Dexie IndexedDB schema + reactive queries
-│   │   ├── schema.ts             # record types, constants, v1→v4 migrations, db singleton
+│   │   ├── schema.ts             # record types, constants, v1→v3 migrations, db singleton
 │   │   ├── conversations.ts      # session CRUD, default/global workspaces, symbol resolution
 │   │   ├── messages.ts           # message persistence, retention pruning, normalizeMessageSteps
-│   │   ├── intelligence.ts       # Market Intelligence in-memory Map + Dexie v4 snapshot cache
 │   │   ├── queries.ts            # useConversations / useMessages (+prewarm cache)
 │   │   └── index.ts              # barrel export (public API for the db layer)
 │   ├── queries/                  # TanStack queryOptions factories
-│   │   ├── market-intelligence.query.ts # 4-card scan cache (1h stale / 24h GC)
 │   │   ├── global-market.query.ts # macro deck (30s poll / force-refresh cache-bust)
 │   │   └── symbols.query.ts      # cached USDT symbol catalog
 │   ├── chat/                     # client-side transport & history helpers
@@ -98,12 +87,11 @@ src/
 │   │   ├── use-agent-chat.ts     # SSE streaming + Dexie persistence orchestration
 │   │   ├── use-chat-sessions.ts  # session CRUD, symbol workspace grouping, Global pinning
 │   │   └── use-chat-scroll.ts    # RAF-throttled scroll orchestration
-│   ├── market/                   # live market data + intelligence
+│   ├── market/                   # live market data
 │   │   ├── use-binance-market-stream.ts # live spot WS ticker/depth (tab-visibility sleep)
 │   │   ├── use-binance-futures-funding.ts # futures mark-price/funding stream + REST availability + countdown
 │   │   ├── use-global-market-overview.ts # macro deck hook (30s poll, force refresh)
-│   │   ├── use-market-intelligence.ts / use-scan-market-intelligence.ts # TanStack+Dexie cached agent
-│   │   ├── use-market-panel-data.ts # bundles telemetry + intelligence + global hooks for the panel
+│   │   ├── use-market-panel-data.ts # bundles telemetry + global hooks for the panel
 │   │   ├── use-symbol-search.ts  # symbol catalog, fuzzy + keyboard nav, ⌘K
 │   │   └── use-sparkline-data.ts / use-sparkline-geometry.ts # micro price sparkline math
 │   ├── ui/                       # generic UX hooks
@@ -128,9 +116,8 @@ src/
 │   │   │   ├── candlestick-canvas.tsx # minimal canvas, crosshair sync, zoom-to-recent
 │   │   │   ├── chart-header.tsx  # floating live price / 24h stats / WS status / actions
 │   │   │   └── chart-legend.tsx  # O/H/L/C crosshair legend
-│   │   ├── market-panel/         # collapsible right deck (Live Telemetry / Market Intelligence / Global Market)
+│   │   ├── market-panel/         # collapsible right deck (Live Telemetry / Global Market)
 │   │   │   ├── telemetry/        # price-ticker (+sparkline), futures-funding, order-book-depth
-│   │   │   ├── agents/           # market-intelligence-agent-view + cards/ (4 executive cards)
 │   │   │   └── global/           # global-market-view + cards/ (4 macro cards: Pulse, Movers, Funding, Positioning)
 │   │   └── market-chart-view.tsx # thin wrapper reusing ChartClient
 │   ├── sidebar/                  # workspace groups, session list, nav views, theme toggle
@@ -141,15 +128,13 @@ src/
 │
 ├── stores/
 │   └── app-store.ts              # Zustand persisted UI state (symbol, panel, tabs, streams,
-│                                 #  sidebar) via persist → localStorage; 7-value rightPanelTab
-│                                 #  union defaults 'overview' (UI renders 2 tabs; legacy
-│                                 #  'market-data' accepted by isIntelligenceTabActive)
+│                                 #  sidebar) via persist → localStorage
 │
 ├── constants/
 │   └── content/                  # ALL user-facing copy, modularized (AGENTS.md Rule 1)
 │       ├── index.ts              # assembles APP_CONTENT
 │       ├── sidebar.content.ts / chat.content.ts / process.content.ts
-│       ├── market.content.ts / intelligence.content.ts / chart.content.ts
+│       ├── market.content.ts / chart.content.ts
 │   └── animation.ts              # Framer Motion animation tokens
 │
 └── app/
@@ -158,7 +143,6 @@ src/
     ├── globals.css               # design tokens + Tailwind utilities
     └── api/
         ├── agent/chat/route.ts         # SSE streaming endpoint
-        ├── agent/intelligence/route.ts # Market Intelligence Agent endpoint
         ├── binance/global-overview/route.ts # Global Market Overview endpoint (pure data layer)
         └── binance/symbols/route.ts    # cached USDT symbol catalog
 ```
@@ -178,24 +162,14 @@ src/
 7. The engine translates SDK stream parts into SSE events (`step_start`, `step_update`, `reasoning_delta`, `text_delta`, `clear_text`, `session_title`, `done`, `error`) streamed back to the client.
 8. The client reconstructs a live `activeStreamMessage`, strips internal markup (`<session_title>` / `<follow_up_questions>`), and persists the completed message to Dexie once `done` arrives. Conversation title + follow-up questions are applied.
 
-### 4.2 Market Intelligence Agent lifecycle
-
-1. User opens the **Market Intelligence** tab (from the right panel tabs) → [`MarketIntelligenceAgentView`](../src/components/(dashboard)/market-panel/agents/market-intelligence-agent-view.tsx) mounts.
-2. TanStack React Query keyed `['market-intelligence', symbol]` resolves from the React Query cache, the synchronous in-memory `getCachedIntelligence`, or Dexie v4 `marketIntelligence` storage while fresh (<1h) — then `POST /api/agent/intelligence` on first miss.
-3. The route validates `{ symbol, apiKey?, providerOverride? }` and calls `executeMarketIntelligence` ([`src/agent/intelligence/engine.ts`](../src/agent/intelligence/engine.ts)).
-4. The engine fires **9 parallel `Promise.allSettled` fetches**: ticker price, 20-level order book, 15m klines (30), 1h klines (24), 5m VWAP, funding rate, global long/short account ratio (5m×5), top trader long/short (5m×5), and Exa news (3 results, `category: 'news'`).
-5. Quantitative anchors are derived deterministically (best bid/ask, bid/ask volume imbalance, 15m/1h range low/high) and injected — alongside live news snippets — into a grounded prompt.
-6. `generateObject` fills the strict `MarketIntelligencePayloadSchema` using a model **hardcoded to Groq** (primary `DEFAULT_GROQ_MODEL`, backup `DEFAULT_GROQ_BACKUP_MODEL` — see [§5](#5-agent-engine-details-srcagent)); the route's `providerOverride` is currently not consulted by the engine. If both models fail, a **deterministic fallback synthesizer** computes the 4-card payload from the same raw exchange math (never hallucinated prices).
-7. The response is returned via JSON, persisted directly to Dexie v4 (`marketIntelligence` table), hydrated into React Query (`staleTime: 1h`, `gcTime: 24h`), and rendered as 4 executive cards. The panel header's **Scan Market** button (`handleScan` → `fetchMarketIntelligence({ force: true })`) forces a fresh scan; while the snapshot is fresh (< 1h) the button is replaced by a **Next Run** countdown chip (`useScanMarketIntelligence` ticks every second) plus a `1H SNAPSHOT` cached badge.
-
-### 4.3 Live market telemetry (WebSocket)
+### 4.2 Live market telemetry (WebSocket)
 
 - [`use-binance-market-stream`](../src/hooks/market/use-binance-market-stream.ts) opens a combined Binance Spot stream: `<symbol>@ticker` (1000ms) + `<symbol>@depth10@100ms`.
 - [`use-binance-futures-funding`](../src/hooks/market/use-binance-futures-funding.ts) performs an initial REST `premiumIndex` fetch (instant display + availability check), then a Futures `<symbol>@markPrice@1s` stream; drives a per-second settlement countdown.
 - Parsers in [`src/lib/binance-websocket/parsers.ts`](../src/lib/binance-websocket/parsers.ts) normalize raw frames into UI-ready models (spread, depth imbalance, annualized APR, flash direction, precision, basis).
 - Both streams **auto-sleep when the browser tab is hidden** (`visibilitychange` + `useSyncExternalStore`) and auto-reconnect with exponential backoff (Spot: `min(1000·1.5^retries, 10s)`; Futures: fixed 3s).
 
-### 4.4 Global Market Overview lifecycle (macro deck)
+### 4.3 Global Market Overview lifecycle (macro deck)
 
 1. On the **GLOBAL** workspace the right panel mounts [`GlobalMarketView`](../src/components/(dashboard)/market-panel/global/global-market-view.tsx); `useGlobalMarketOverview` ([`src/hooks/market/use-global-market-overview.ts`](../src/hooks/market/use-global-market-overview.ts)) is enabled only while the panel is open on the GLOBAL workspace.
 2. The hook subscribes to a TanStack React Query keyed `['global-market-overview']` (`globalMarketQuery` in [`src/lib/queries/global-market.query.ts`](../src/lib/queries/global-market.query.ts)) with `staleTime: 30s`, `gcTime: 5min`, and a 30s background `refetchInterval`.
@@ -203,7 +177,7 @@ src/
 4. The route assembles a four-section payload — `marketPulse` (bias + average 24h change + core-asset tiles), `topMovers` (top 3 gainers/losers), `funding` (perpetual funding heatmap with APR), and `positioning` (retail vs whale L/S bias summary) — served with `Cache-Control: public, s-maxage=15, stale-while-revalidate=30`.
 5. The **Refresh** button (`handleRefresh` → `fetchGlobalMarketOverview({ force: true })`) issues a cache-busting request (`?t=<now>` + `cache: 'no-store'`), hydrates the query cache directly, and shows a ~600ms minimum spinner state.
 
-### 4.5 Trading Chart stage lifecycle
+### 4.4 Trading Chart stage lifecycle
 
 1. The **Chart** entry in the header toggles `stageView` between `'agent'` and `'chart'` ([`src/lib/types/agent.ts`](../src/lib/types/agent.ts)); the chart mounts only while active (zero-flash hidden subtree in [`DashboardClient`](../src/components/(dashboard)/dashboard-client.tsx)).
 2. [`ChartClient`](../src/components/(dashboard)/chart/chart-client.tsx) resolves the active timeframe (default `1D`, six options from `APP_CONTENT.chart.timeframes`) and fetches historical klines via Binance Spot REST (`/api/v3/klines?interval=<tf>&limit=<tf.limit>`).
@@ -225,7 +199,6 @@ src/
 - **Reasoning effort:** per-provider env (`GROQ_REASONING_EFFORT` / `FIREWORKS_REASONING_EFFORT`, default `'low'`), mapped into `providerOptions` (`groq.reasoningEffort`, `fireworks.thinking.enabled`).
 - **Max tokens:** default `6000`, overridable via `GROQ_MAX_TOKENS` or `AgentOptions.maxTokens`.
 - **Failover:** if the primary model throws before producing text, the engine retries on the backup model — including **cross-provider** failover (Groq→Fireworks) whenever a `FIREWORKS_API_KEY` is present or `BACKUP_INFERENCE_PROVIDER` is set.
-- **Market Intelligence model:** the sidecar engine deliberately **pins Groq** — `getAgentModel(DEFAULT_GROQ_MODEL, apiKey, 'groq')` primary and `getBackupAgentModel(DEFAULT_GROQ_BACKUP_MODEL, apiKey, 'groq')` backup — so `INFERENCE_PROVIDER` does not apply to the intelligence path (rapid structured `generateObject` synthesis).
 
 ### Step timeline state machine
 Each turn maintains an ordered list of `AgentExecutionStep` with types `thinking` | `tool` | `intermediate_text` and status `active` | `completed` | `error`. The engine:
@@ -286,14 +259,12 @@ Dexie `ArgusDatabase` with **versioned migrations**:
 - **v1:** flat `messages` (`id, symbol, timestamp, role`).
 - **v2:** multi-conversation threads — adds `conversations` table, indexes `conversationId`/`status`, backfills legacy rows to a default conversation.
 - **v3:** symbol workspaces — adds `symbol` index on conversations, backfills to `BTCUSDT`.
-- **v4:** symbol-specific Market Intelligence — adds `marketIntelligence` table keyed by `symbol` (`symbol, timestamp`), enabling 1-hour durable snapshot caching.
 
 Key behaviors:
 - `ConversationRecord` (id, title, symbol, createdAt, updatedAt) and `ChatMessageRecord` (id, conversationId, role, content, symbol?, status, followUpQuestions?, toolCalls?, steps?, stepCount?, workedDurationMs?, timestamp).
 - **Special conversations:** `DEFAULT_CONVERSATION_ID = 'default'`, `DEFAULT_GLOBAL_CONVERSATION_ID = 'default_global'`, `GLOBAL_WORKSPACE_SYMBOL = 'GLOBAL'`; `ensureDefaultGlobalConversation()` always keeps a permanent Global workspace chat.
 - **Retention pruning:** `MAX_MESSAGES_PER_CONVERSATION = 100` (oldest trimmed after every save).
 - **Message cache** (`prewarmMessagesCache`/`updateCachedMessage`/`useMessages` in [`queries.ts`](../src/lib/db/queries.ts)) eliminates flash-of-empty when switching conversations (0ms switching).
-- **Intelligence cache** — two-tier read path: synchronous in-memory Map for 0ms within-session switching (`getCachedIntelligence`), backed durably by the Dexie `marketIntelligence` table (`getStoredIntelligence`/`saveStoredIntelligence`), all respecting `ONE_HOUR_MS` freshness; `prewarmIntelligenceCache()` rehydrates memory from Dexie on boot.
 - `normalizeMessageSteps` backfills legacy `toolCalls`-only message records into the new `steps` timeline for rendering.
 - `prepareConversationHistory` ([`src/lib/chat/chat-history.ts`](../src/lib/chat/chat-history.ts)) builds a sliding 10-message context window, filtering `error` states.
 - `useChatSessions` groups conversations into symbol workspaces (`symbolGroups`) via `parseSymbolAssets`, keeps Global pinned at top, and syncs the persisted `selectedSymbol` workspace across refresh/session-switching.
@@ -308,22 +279,19 @@ Streams SSE events of `AgentStreamEvent`. Request schema (`AgentChatRequestSchem
 
 Event types emitted: `step_start`, `step_update`, `reasoning_delta`, `text_delta`, `clear_text`, `session_title`, `done`, `error`. Aborts cleanly when the client disconnects (`req.signal`).
 
-### `POST /api/agent/intelligence`
-Validates `{ symbol (required), apiKey?, providerOverride? ('groq'|'fireworks') }`, calls `executeMarketIntelligence`, and returns `{ success, symbol, timestamp, data, newsCount, sources }` where `data` is the 4-card `MarketIntelligencePayload`.
-
 ### `GET /api/binance/global-overview`
 Pure data layer for the **Global Market deck** (no LLM involved). Runs parallel server-side aggregation for an 8-symbol universe — 24h stats, funding rates for the 4 core majors, and BTC/ETH retail + whale long/short ratios — assembled into a four-section `GlobalMarketOverviewData` payload (`marketPulse`, `topMovers`, `funding`, `positioning`). `dynamic = 'force-dynamic'` with `Cache-Control: public, s-maxage=15, stale-while-revalidate=30`; clients poll every 30s or force cache-busting refresh.
 
 ### `GET /api/binance/symbols`
 Returns active Binance **USDT spot pairs** (from `exchangeInfo?permissions=SPOT`, filtered to `TRADING` + USDT quote + spot-trading allowed), prioritized popular pairs first (BTC, ETH, SOL, ...) then alphabetical. `dynamic = 'force-static'`, `revalidate = 3600`, plus an in-memory 1-hour TTL cache. Fetches with `cache: 'no-store'` (bypassing Next's 2MB data-cache limit on the ~23MB raw payload) across its own multi-cluster failover pool (8s timeout), and degrades gracefully to a fallback symbol list on network failure.
 
-> **Deployment:** all four API routes pin `preferredRegion = 'fra1'` and [`vercel.json`](../vercel.json) declares `regions: ["fra1"]` — keeping Vercel serverless functions on the Frankfurt cluster to avoid Binance's HTTP 451 geo-restriction on US-region IPs.
+> **Deployment:** all API routes pin `preferredRegion = 'fra1'` and [`vercel.json`](../vercel.json) declares `regions: ["fra1"]` — keeping Vercel serverless functions on the Frankfurt cluster to avoid Binance's HTTP 451 geo-restriction on US-region IPs.
 
 ---
 
 ## 10. Conventions & Tooling (from [`AGENTS.md`](../AGENTS.md))
 
-1. **Zero hardcoded theme values / UI text** — design tokens live in `src/app/globals.css` (e.g. `bg-theme-bg-surface`, `text-theme-brand-binance`, `p-spacing-md`); all copy lives in `src/constants/content/` (modular sidebar/chat/process/market/intelligence files exported as `APP_CONTENT`).
+1. **Zero hardcoded theme values / UI text** — design tokens live in `src/app/globals.css` (e.g. `bg-theme-bg-surface`, `text-theme-brand-binance`, `p-spacing-md`); all copy lives in `src/constants/content/` (modular sidebar/chat/process/market files exported as `APP_CONTENT`).
 2. **Bun only** — `bun install`, `bun run dev`, `bun run build`, `bun run start`, `bun run lint`, `bun x tsc --noEmit`, `bun x oxlint`.
 3. **TypeScript 7 strict + Oxlint** — zero `any` escapes; zero lint warnings/errors.
 4. **Modular layering** — agent / lib / hooks / components / constants / stores clearly separated.
@@ -339,12 +307,11 @@ Returns active Binance **USDT spot pairs** (from `exchangeInfo?permissions=SPOT`
 
 ## 11. Roadmap Status
 
-The roadmap centers on a **workstation architecture**: symbol catalog (Dexie-cached USDT pairs), a center stage that toggles between agent chat and a live candlestick trading chart, and a right **intelligence deck** with isolated sidecar agents producing strict-Zod structured JSON via `generateObject`.
+The roadmap centers on a **workstation architecture**: symbol catalog (Dexie-cached USDT pairs), a center stage that toggles between agent chat and a live candlestick trading chart, and a right **live market deck**.
 
 **Implemented so far:**
-- Full workstation shell (sidebar ↔ center stage with Agent chat / Trading Chart ↔ collapsible right panel with Live Telemetry / Market Intelligence tabs).
+- Full workstation shell (sidebar ↔ center stage with Agent chat / Trading Chart ↔ collapsible right panel with Live Telemetry).
 - **Trading Chart stage** — interactive `lightweight-charts` candlestick canvas (six timeframes), live kline + ticker WebSocket stream, crosshair legend, zoom/reset/fullscreen, tab-visibility sleep with exponential backoff, and a `BTCUSDT` benchmark fallback on the GLOBAL workspace.
-- **Market Intelligence Agent** — a unified sidecar agent covering the Quant/Levels, Catalyst/News, and Liquidity/Positioning planes in **one structured 4-card payload** (CONTROL, KEY LEVELS, POSITIONING, TACTICAL PLAYBOOK) with 1-hour snapshot caching.
 - **Global Market Overview** — a pure data-layer macro deck for the `GLOBAL` workspace (Market Pulse, Top Movers, Funding Heatmap, Macro Positioning), aggregated by `GET /api/binance/global-overview` and polled every 30s.
 
 **Still on the roadmap:** dedicated independent sidecar **agent** endpoints (Tactical Signal & Key Levels, Catalyst & News Radar as standalone subscriptions, Liquidity & Risk Sentinel with slippage tiers), trading-chart upgrades (technical indicator/volume-flow overlays), and additional workspace-deck modules.
