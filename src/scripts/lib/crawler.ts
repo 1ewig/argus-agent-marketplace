@@ -115,9 +115,9 @@ export async function crawlCategory(
 export async function fetchCurated(): Promise<AgentSummary[]> {
   console.log("Fetching curated sources (leaderboard / featured / trending)...");
   const results = await Promise.allSettled([
-    getLeaderboard(),
-    getFeaturedAgents(),
-    getTrendingAgents(),
+    getLeaderboard(PAGE_SIZE, BSC_CHAIN_ID),
+    getFeaturedAgents(PAGE_SIZE, BSC_CHAIN_ID),
+    getTrendingAgents(PAGE_SIZE, BSC_CHAIN_ID),
   ]);
   const labels = ["Leaderboard", "Featured", "Trending"];
   const collected: AgentSummary[] = [];

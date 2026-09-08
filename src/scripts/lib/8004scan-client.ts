@@ -1,11 +1,10 @@
-const BASE_URL = "https://8004scan.io/api/v1";
+const BASE_URL = "https://api.8004scan.io/api/v1";
 
-const RATE_LIMIT_MS = 60;
+const API_KEY = process.env["8004SCAN_API_KEY"] ?? "";
+const RATE_LIMIT_MS = Number(process.env["RATE_LIMIT_MS"] ?? (API_KEY ? 60 : 250));
 const DEFAULT_REQUEST_TIMEOUT_MS = 4_500;
 const DEFAULT_MAX_ATTEMPTS = 2;
 const RETRY_BASE_DELAY_MS = 150;
-
-const API_KEY = process.env["8004SCAN_API_KEY"] ?? "";
 
 let throttleQueue = Promise.resolve();
 
@@ -219,32 +218,38 @@ export async function getLatestAgents(
 }
 
 export async function getLeaderboard(
+  limit = 50,
+  chainId?: number,
   options?: RequestOptions,
 ): Promise<AgentSummaryListResponse> {
   return request<AgentSummaryListResponse>(
     "/agents/leaderboard",
-    undefined,
-    options ?? { timeoutMs: 3_000, maxAttempts: 1 },
+    { limit, chain_id: chainId },
+    options,
   );
 }
 
 export async function getFeaturedAgents(
+  limit = 50,
+  chainId?: number,
   options?: RequestOptions,
 ): Promise<AgentSummaryListResponse> {
   return request<AgentSummaryListResponse>(
     "/agents/featured",
-    undefined,
-    options ?? { timeoutMs: 2_500, maxAttempts: 1 },
+    { limit, chain_id: chainId },
+    options,
   );
 }
 
 export async function getTrendingAgents(
+  limit = 50,
+  chainId?: number,
   options?: RequestOptions,
 ): Promise<AgentSummaryListResponse> {
   return request<AgentSummaryListResponse>(
     "/agents/trending",
-    undefined,
-    options ?? { timeoutMs: 3_000, maxAttempts: 1 },
+    { limit, chain_id: chainId },
+    options,
   );
 }
 
