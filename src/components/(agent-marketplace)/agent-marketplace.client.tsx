@@ -68,9 +68,6 @@ export function AgentMarketplaceClient() {
     <div className="relative flex flex-col h-full w-full bg-theme-bg-base overflow-hidden">
       {/* 1. Header Toolbar */}
       <MarketplaceHeader
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        onClearSearch={clearSearch}
         onRefresh={refetch}
         onToggleMobileSidebar={toggleMobileSidebar}
         totalCount={totalCount}
@@ -81,6 +78,9 @@ export function AgentMarketplaceClient() {
       <div className="flex-1 overflow-y-auto flex flex-col">
         {/* Categories & Curated Feeds Filter Tabs */}
         <MarketplaceFilterBar
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          onClearSearch={clearSearch}
           selectedTab={selectedTab}
           onSelectTab={setSelectedTab}
         />

@@ -6,7 +6,7 @@ Core rules for AI coding agents working in this repository:
 
 ### 1. Zero Hardcoded Theme Values & UI Text
 * **Design Tokens:** Never hardcode raw hex codes, RGB, HSL, or magic pixel values in JSX or styles. Always use semantic design tokens and Tailwind utility classes defined in `src/app/globals.css` (e.g. `bg-theme-bg-surface`, `text-theme-brand-binance`, `p-spacing-md`).
-* **Centralized Copy:** Never place arbitrary hardcoded strings in JSX. Store all user-facing labels, headings, error messages, and descriptions in `src/constants/content.ts`.
+* **Centralized Copy:** Never place arbitrary hardcoded strings in JSX. Store all user-facing labels, headings, error messages, and descriptions in `src/constants/content/`.
 
 ---
 
