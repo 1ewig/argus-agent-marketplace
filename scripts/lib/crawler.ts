@@ -13,6 +13,7 @@ import {
   ENRICH_TOP_N,
   REQUIRED_CATEGORIES,
   CRAWL_OFFSETS,
+  HACKATHON_SPOTLIGHT_TERMS,
 } from "./config";
 import { filterBsc, isInteresting } from "./filter";
 import {
@@ -113,13 +114,22 @@ export async function crawlCategory(
  * Fetch top-tier curated feeds (leaderboard, featured, trending).
  */
 export async function fetchCurated(): Promise<AgentSummary[]> {
-  console.log("Fetching curated sources (leaderboard / featured / trending)...");
+  console.log("Fetching curated sources (leaderboard / featured / trending / spotlights)...");
+  const spotlightPromises = HACKATHON_SPOTLIGHT_TERMS.map((term) =>
+    searchAgents(term, PAGE_SIZE, 0, BSC_CHAIN_ID),
+  );
   const results = await Promise.allSettled([
     getLeaderboard(PAGE_SIZE, BSC_CHAIN_ID),
     getFeaturedAgents(PAGE_SIZE, BSC_CHAIN_ID),
     getTrendingAgents(PAGE_SIZE, BSC_CHAIN_ID),
+    ...spotlightPromises,
   ]);
-  const labels = ["Leaderboard", "Featured", "Trending"];
+  const labels = [
+    "Leaderboard",
+    "Featured",
+    "Trending",
+    ...HACKATHON_SPOTLIGHT_TERMS.map((t) => `Spotlight(${t})`),
+  ];
   const collected: AgentSummary[] = [];
   results.forEach((res, i) => {
     if (res.status === "fulfilled") {

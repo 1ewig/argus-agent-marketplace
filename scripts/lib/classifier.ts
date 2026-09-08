@@ -41,7 +41,15 @@ export const REGEX_RULES: Record<HackathonCategory, RegExp[]> = {
   security: [/\bsecurity\b/i, /\baudit/i, /\bvulnerabilit/i, /\bhoneypot\b/i],
   payments: [/\bx402\b/i, /\bb402\b/i, /\bpayment\b/i, /\bmicropayment\b/i, /\bgasless\b/i],
   cross_agent: [/\ba2a\b/i, /\bmcp\b/i, /\bagent-to-agent\b/i, /\borchestrat/i],
-  research: [/\bresearch\b/i, /\banaly(sis|tics|zer|st)/i, /\bsentiment\b/i, /\bforecast/i, /\bpredict/i],
+  research: [
+    /\bresearch\b/i,
+    /\banaly(sis|tics|zer|st)/i,
+    /\bsentiment\b/i,
+    /\bforecast/i,
+    /\bpredict/i,
+    /\bmonitor(ing)?\b/i,
+    /\bsentinel\b/i,
+  ],
 };
 
 /** Provenance recorded while crawling: agent_id -> "category:keyword" hits. */

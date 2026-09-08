@@ -5,7 +5,7 @@ export const BSC_CHAIN_ID = 56;
 export const PAGE_SIZE = 50;
 export const MAX_PAGES_PER_SEARCH = 2;
 export const DATA_DIR = join(
-  import.meta.dirname ?? join(process.cwd(), "src", "scripts", "lib"),
+  import.meta.dirname ?? join(process.cwd(), "scripts", "lib"),
   "..",
   "data",
 );
@@ -22,21 +22,17 @@ export const REQUIRED_CATEGORIES = [
 
 export type RequiredCategory = (typeof REQUIRED_CATEGORIES)[number];
 
+export const HACKATHON_SPOTLIGHT_TERMS = ["Hevo", "4LPHA"] as const;
+
 export const CATEGORY_SEARCHES: Record<HackathonCategory, string[]> = {
-  rebalancing: [
-    "rebalance",
-    "liquidity position",
-    "range order",
-    "LP manager",
-    "concentrated liquidity",
-  ],
-  grid_trading: ["grid trading", "grid bot", "TWAP", "DCA bot"],
-  yield: ["yield", "APY", "staking", "auto compound"],
-  health_factor: ["health factor", "liquidation", "lending", "borrow"],
-  security: ["security audit", "honeypot", "vulnerability"],
-  payments: ["x402", "payment", "micropayment"],
-  cross_agent: ["agent-to-agent", "orchestrator", "MCP"],
-  research: ["research", "market analysis"],
+  rebalancing: ["rebalance", "liquidity position"],
+  grid_trading: ["grid"],
+  yield: ["yield", "rebalance"],
+  health_factor: ["health", "liquidation"],
+  security: ["security", "audit"],
+  payments: ["x402", "payment"],
+  cross_agent: ["agent-to-agent", "MCP"],
+  research: ["monitoring", "research"],
 };
 
 export const CRAWL_OFFSETS = [0, 50, 150, 200];

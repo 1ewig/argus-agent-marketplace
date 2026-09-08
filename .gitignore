@@ -49,5 +49,5 @@ ai_studio_code (2).html
 
 # fetched agent data
 /data/
-src/scripts/data/
+scripts/data/
 .zcode/

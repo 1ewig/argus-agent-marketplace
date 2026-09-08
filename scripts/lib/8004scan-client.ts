@@ -195,11 +195,20 @@ export async function searchAgents(
   limit = 50,
   offset = 0,
   chainId?: number,
+  sortBy?: string,
+  sortOrder?: string,
   options?: RequestOptions,
 ): Promise<AgentSummaryListResponse> {
   return request<AgentSummaryListResponse>(
     "/agents",
-    { search, limit, offset, chain_id: chainId },
+    {
+      search,
+      limit,
+      offset,
+      chain_id: chainId,
+      sort_by: sortBy,
+      sort_order: sortOrder,
+    },
     options,
   );
 }
