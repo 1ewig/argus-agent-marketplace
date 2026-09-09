@@ -7,7 +7,6 @@ import {
   CandlestickChart,
   Coins,
   RefreshCcw,
-  Eye,
   Bot,
 } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
@@ -54,14 +53,6 @@ export const STRATEGY_OPTIONS: StrategyOption[] = [
     defaultTitle: 'PancakeSwap v3 LP Rebalancer',
     defaultTarget: 'CAKE/BNB 0.25% (PancakeSwap)',
     icon: RefreshCcw,
-  },
-  {
-    type: 'monitoring',
-    label: APP_CONTENT.hiredAgents.modal.strategies.monitoring.label,
-    desc: APP_CONTENT.hiredAgents.modal.strategies.monitoring.desc,
-    defaultTitle: 'Whale & Depth Sentinel',
-    defaultTarget: 'BNB/USDT',
-    icon: Eye,
   },
   {
     type: 'custom',
@@ -125,11 +116,14 @@ export const HireStepStrategy = memo(function HireStepStrategy({
           {STRATEGY_OPTIONS.map((opt) => {
             const Icon = opt.icon;
             const isSelected = selectedStrategy === opt.type;
+            const isCustom = opt.type === 'custom';
             return (
               <div
                 key={opt.type}
                 onClick={() => onStrategyChange(opt.type)}
                 className={`p-3 rounded-xl border cursor-pointer transition-all flex flex-col gap-1.5 ${
+                  isCustom ? 'sm:col-span-2' : ''
+                } ${
                   isSelected
                     ? 'bg-theme-bg-elevated border-theme-brand-binance/60 ring-1 ring-theme-brand-binance/30'
                     : 'bg-theme-bg-elevated/40 border-theme-border-subtle hover:border-theme-border-subtle/80'

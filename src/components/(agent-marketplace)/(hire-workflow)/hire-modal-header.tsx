@@ -36,7 +36,7 @@ export const HireModalHeader = memo(function HireModalHeader({
             <h2 className="text-sm sm:text-base font-bold text-theme-text-primary truncate">
               {APP_CONTENT.hiredAgents.modal.title}
             </h2>
-            <span className="text-3xs font-extrabold px-1.5 py-0.5 rounded-full bg-theme-brand-binance/15 text-theme-brand-binance border border-theme-brand-binance/30 uppercase">
+            <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-theme-brand-binance/15 text-theme-brand-binance border border-theme-brand-binance/30 uppercase tracking-wide">
               Simulation
             </span>
           </div>

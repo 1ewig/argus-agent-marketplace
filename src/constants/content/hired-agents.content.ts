@@ -55,10 +55,6 @@ export const hiredAgentsContent = {
           label: 'PancakeSwap LP Rebalancer',
           desc: 'Dynamically rebalances concentrated liquidity ranges and auto-compounds trading fees on PancakeSwap v3.',
         },
-        monitoring: {
-          label: 'Whale & Telemetry Sentinel',
-          desc: 'Tracks large volume movements and order book depth imbalances in real-time.',
-        },
         custom: {
           label: 'Custom Autonomous Mandate',
           desc: 'Provide custom natural language instructions and strategy constraints.',

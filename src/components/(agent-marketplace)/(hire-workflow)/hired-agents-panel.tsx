@@ -192,7 +192,7 @@ export const HiredAgentsPanel = memo(function HiredAgentsPanel({
                     type="button"
                     onClick={toggleAutoTicker}
                     title={APP_CONTENT.hiredAgents.panel.autoCycleTooltip}
-                    className={`h-6 px-2.5 rounded-full text-3xs font-bold tracking-wide uppercase transition-all cursor-pointer border flex items-center gap-1 ${
+                    className={`h-6.5 px-2.5 rounded-full text-2xs font-bold tracking-wide uppercase transition-all cursor-pointer border flex items-center gap-1 ${
                       isAutoTickerActive
                         ? 'bg-theme-brand-binance text-theme-bg-overlay border-theme-brand-binance shadow-2xs'
                         : 'bg-theme-bg-elevated border-theme-border-subtle text-theme-text-muted hover:text-theme-text-primary'
