@@ -238,12 +238,24 @@ export async function triggerAgentExecutionCycle(id: string): Promise<void> {
   });
 }
 
+const SEED_STORAGE_KEY = 'argus_has_seeded_hired_agents_v1';
+
 /**
- * Seeds initial demo hired agents if the table is currently empty.
+ * Seeds initial demo hired agents on first launch.
  */
-export async function seedInitialHiredAgents(): Promise<void> {
+export async function seedInitialHiredAgents(force = false): Promise<void> {
+  if (typeof window !== 'undefined' && !force) {
+    const hasSeeded = localStorage.getItem(SEED_STORAGE_KEY);
+    if (hasSeeded) return;
+  }
+
   const count = await db.hiredAgents.count();
-  if (count > 0) return;
+  if (count > 0 && !force) {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(SEED_STORAGE_KEY, 'true');
+    }
+    return;
+  }
 
   const now = Date.now();
 
@@ -390,4 +402,8 @@ export async function seedInitialHiredAgents(): Promise<void> {
   ];
 
   await db.hiredAgents.bulkPut(demoAgents);
+
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(SEED_STORAGE_KEY, 'true');
+  }
 }
