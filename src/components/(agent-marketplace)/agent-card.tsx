@@ -157,7 +157,7 @@ export const AgentCard = memo(function AgentCard({
         )}
 
         {agent.rank && agent.rank <= 100 && (
-          <span className="text-3xs font-mono font-semibold px-1 py-px rounded-full bg-theme-bg-elevated text-theme-text-muted border border-theme-border-subtle shrink-0">
+          <span className="text-2xs font-mono font-semibold px-1 py-px rounded-full bg-theme-bg-elevated text-theme-text-muted border border-theme-border-subtle shrink-0">
             {APP_CONTENT.marketplace.card.rankPrefix}
             {agent.rank}
           </span>
