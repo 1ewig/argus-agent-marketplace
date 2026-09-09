@@ -134,6 +134,9 @@ export interface FetchAgentsParams {
 export interface AgentsApiResponse {
   success: boolean;
   feed: string;
+  category?: string;
+  sort?: MarketplaceSortKey;
+  query?: string;
   items: ScanAgentItem[];
   total: number;
   fallback?: boolean;
