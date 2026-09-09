@@ -186,6 +186,16 @@ export const hoverLiftPill = {
   transition: { duration: 0.15, ease: 'easeOut' },
 } as const;
 
+export const hoverLiftCard = {
+  y: -1,
+  transition: { duration: 0.15, ease: 'easeOut' },
+} as const;
+
+export const tapScaleCard = {
+  scale: 0.98,
+  transition: { duration: 0.1, ease: 'easeOut' },
+} as const;
+
 export const hoverScaleIcon = {
   scale: 1.05,
   transition: { duration: 0.12, ease: 'easeOut' },

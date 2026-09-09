@@ -12,6 +12,7 @@ import {
   Activity,
 } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
+import { hoverLiftCard, tapScaleCard } from '@/constants/animation';
 import { truncateAddress } from '@/lib/utils';
 import type { ScanAgentItem } from '@/lib/8004scan/types';
 
@@ -51,10 +52,10 @@ export const AgentCard = memo(function AgentCard({
 
   return (
     <motion.div
-      whileHover={{ y: -3 }}
-      transition={{ duration: 0.18 }}
+      whileHover={hoverLiftCard}
+      whileTap={tapScaleCard}
       onClick={() => onSelect(agent)}
-      className={`bg-gradient-to-b from-theme-bg-surface via-theme-bg-surface to-theme-bg-elevated/25 border rounded-2xl p-4 flex flex-col justify-between gap-3 cursor-pointer group transition-all shadow-2xs hover:shadow-md hover:shadow-theme-brand-binance/5 relative select-none ${
+      className={`bg-gradient-to-b from-theme-bg-surface via-theme-bg-surface to-theme-bg-elevated/25 border rounded-2xl p-4 flex flex-col justify-between gap-3 cursor-pointer group transition-colors transition-shadow duration-150 shadow-2xs hover:shadow-md hover:shadow-theme-brand-binance/5 relative select-none ${
         isSpotlight
           ? 'border-theme-brand-binance/40 hover:border-theme-brand-binance ring-1 ring-theme-brand-binance/20'
           : 'border-theme-border-subtle hover:border-theme-brand-binance/50'
@@ -65,7 +66,7 @@ export const AgentCard = memo(function AgentCard({
         <div className="flex items-center gap-3 min-w-0">
           {/* Avatar Icon */}
           <div
-            className={`size-11 rounded-xl bg-gradient-to-br border flex items-center justify-center font-extrabold text-xs shrink-0 overflow-hidden group-hover:border-theme-brand-binance/50 transition-colors ${avatarStyle}`}
+            className={`size-11 rounded-xl bg-gradient-to-br border flex items-center justify-center font-extrabold text-xs shrink-0 overflow-hidden group-hover:border-theme-brand-binance/50 transition-colors duration-150 ${avatarStyle}`}
           >
             {agent.image_url ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -87,7 +88,7 @@ export const AgentCard = memo(function AgentCard({
           {/* Name, Token ID & Owner */}
           <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-1.5 min-w-0">
-              <h3 className="text-xs font-bold text-theme-text-primary group-hover:text-theme-brand-binance transition-colors truncate">
+              <h3 className="text-xs font-bold text-theme-text-primary group-hover:text-theme-brand-binance transition-colors duration-150 truncate">
                 {displayName}
               </h3>
               {agent.is_verified && (
@@ -114,8 +115,8 @@ export const AgentCard = memo(function AgentCard({
               {APP_CONTENT.marketplace.card.spotlightTag}
             </span>
           )}
-          <div className="size-7 rounded-lg bg-theme-bg-elevated/70 group-hover:bg-theme-brand-binance group-hover:text-theme-bg-overlay flex items-center justify-center text-theme-text-muted transition-all shrink-0">
-            <ArrowUpRight className="size-3.5 group-hover:translate-x-0.2 group-hover:-translate-y-0.2 transition-transform" />
+          <div className="size-7 rounded-lg bg-theme-bg-elevated/70 group-hover:bg-theme-brand-binance group-hover:text-theme-bg-overlay flex items-center justify-center text-theme-text-muted transition-colors duration-150 shrink-0">
+            <ArrowUpRight className="size-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-150" />
           </div>
         </div>
       </div>
