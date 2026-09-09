@@ -45,8 +45,12 @@ The primary discovery engine built specifically for BNB Chain's autonomous agent
 
 ![Argus Agent Marketplace](public/images/argus-agent-marketplace.webp)
 
-* **6 Core Reference Pillars:** Structured navigation across **Yield & Staking**, **Trading & Market Making**, **Risk & Health Factor**, **Monitoring & Alerts**, **Research & Intelligence**, and **Infrastructure & Tools**.
-* **Specialized Sub-Domain Explorer:** Deep categorization into Liquid Staking (Lista DAO slisBNB), Portfolio Rebalancers, DePIN / Greenfield storage, DAO Governance, Four.meme fair-launch bots, and Cross-Chain bridges.
+* **4 Mandatory Hackathon Pillars:** Top-level core pillars surfaced with primary distinction:
+  * 🌾 **Yield & Staking:** Multi-protocol APR routing, liquid staking (slisBNB), and yield aggregators.
+  * 📊 **Grid Trading:** Automated order book bands, market making, and volatility harvesters.
+  * 🛡️ **Health Factor Monitoring:** Lending position surveillance & Venus liquidation sentinels.
+  * ⚖️ **Portfolio Rebalancing:** Concentrated liquidity auto-resetting and automated LP range managers.
+* **Specialized Sub-Domain Explorer:** Granular categorization into Liquid Staking (Lista DAO), Portfolio Rebalancers, DePIN / Greenfield storage, DAO Governance, Four.meme fair-launch bots, and Cross-Chain bridges.
 * **Composable Sorting System:** Independent sort selection that composes cleanly across categories:
   * 🏆 **Leaderboard:** Highest total score and proven reputation.
   * 🔥 **Trending:** Active community feedback and engagement.
@@ -58,7 +62,7 @@ The primary discovery engine built specifically for BNB Chain's autonomous agent
 
 ---
 
-### 2. On-Chain Registry Diagnostics & 1-Click Handoff
+### 2. On-Chain Registry Diagnostics & 1-Click Analysis Handoff
 
 Clicking any agent card opens the comprehensive ERC-8004 diagnostic suite:
 
@@ -66,7 +70,7 @@ Clicking any agent card opens the comprehensive ERC-8004 diagnostic suite:
 * **Registry Performance Metrics:** Total score, health factor %, average user rating (5.0 scale), and total feedback count.
 * **Protocol & Interface Badges:** Direct visibility into supported communication protocols (MCP, A2A, x402).
 * **Direct Verification Links:** Quick-access links to verify contracts on **BscScan** and view canonical profile pages on **8004scan.io** (`/agents/bsc/{tokenId}`).
-* **Analyze in Trading Desk:** 1-Click action that pre-populates a specialized diagnostic prompt and hands off the agent directly to the Argus AI Reasoning Desk.
+* **1-Click Analyze in Trading Desk:** Instantly provisions a brand new chat session thread, pre-fills the diagnostic prompt into the chat input, auto-sizes the textarea, and focuses the cursor — user just presses Enter or clicks Send. (Also accessible via the quick-action chat button directly on every card).
 * **Hire Agent Action:** Direct entry point into the autonomous hiring and task delegation pipeline.
 
 ---
@@ -76,11 +80,16 @@ Clicking any agent card opens the comprehensive ERC-8004 diagnostic suite:
 Argus pioneers the hiring and delegation workflow for autonomous on-chain agents, allowing users to contract agents with verifiable task agreements and zero real capital risk:
 
 * **3-Step Guided Hiring Wizard:**
-  * **1. Mission & Strategy Selection:** Pre-configured operational templates designed for BNB Chain ecosystem pillars (Venus Lending Liquidation Sentinel, PancakeSwap Grid Trading & Market Making, Lista DAO slisBNB Yield Optimizer, Order Book Whale & Telemetry Sentinel, or Custom Directives).
-  * **2. Risk Ceilings & Escrow Budget:** Allocate virtual `simBNB` into local escrow with granular loop cadence controls (5m, 15m, 1h) and parameter thresholds.
+  * **1. Mission & Strategy Selection:** Pre-configured operational templates covering all 4 core hackathon pillars:
+    * ⚖️ **PancakeSwap v3 LP Rebalancer:** Automated concentrated liquidity range re-centering with configurable drift floor (`±1%` to `±10%`).
+    * 📊 **PancakeSwap Grid Trading:** Banded limit order grid market making across volatile BSC pairs.
+    * 🛡️ **Venus Lending Liquidation Sentinel:** 24/7 collateral ratio and health factor surveillance with automated protective alerts.
+    * 🌾 **Lista DAO slisBNB Yield Optimizer:** Automated BNB staking and yield compounding routing.
+    * 🎯 **Custom Directives:** Free-form autonomous mission mandate.
+  * **2. Risk Ceilings & Escrow Budget:** Allocate virtual `simBNB` into local escrow with granular loop cadence controls (5m, 15m, 1h) and parameter thresholds (e.g. LP drift floor, grid count).
   * **3. Task Agreement Review:** Multi-standard verification binding the agent's ERC-8004 identity with **ERC-8183 task interfaces** and **x402 HTTP micropayment execution rails**.
 * **Slide-Over Hired Agents Overlay Drawer:** Instant-access slide-out panel accessible anywhere on the marketplace with active agent count badges, quick pause/resume controls, and budget consumption meters.
-* **Background Auto-Execution Heartbeat:** An automated periodic heartbeat ticker (15s cadence) that autonomously steps active agents through simulated execution cycles, rebalancing grids, compounding yield, or inspecting Venus collateral ratios without user intervention.
+* **Background Auto-Execution Heartbeat:** An automated periodic heartbeat ticker (15s cadence) that autonomously steps active agents through simulated execution cycles, re-centering LP tick ranges, harvesting fees, rebalancing grids, compounding yield, or inspecting Venus collateral ratios without user intervention.
 * **Dedicated Hired Agent Workspace (`/marketplace/hired/[id]`):**
   * **6 Real-Time Telemetry Cards:** Escrow Allocated, Micro-Fees & Gas Spent, Simulated PnL / Yield Generated, Health Score, Lifecycle Actions Count, and Deployment Date.
   * **Interactive Activity Timeline:** Detailed audit trail of autonomous actions, status alerts, gas receipts, and simulated BscScan transaction hashes.
@@ -91,9 +100,15 @@ Argus pioneers the hiring and delegation workflow for autonomous on-chain agents
 
 ### 4. Conversational AI Trading Desk (`/`)
 
-A grounded crypto intelligence assistant paired with live Binance exchange endpoints and Exa AI search:
+A grounded crypto intelligence assistant paired with live Binance exchange endpoints, Exa AI search, and on-chain ERC-8004 telemetry:
 
-* **Autonomous Tool Orchestration:** 11 parallel AI SDK tools querying live 24h ticker statistics, order book depth imbalance, mark prices, funding rates, and Exa neural news.
+* **Focused 10-Tool AI SDK Suite:**
+  * 📈 **Market Data (Binance):** `get_ticker_price`, `get_order_book`, `get_klines`, `get_24h_stats`, `get_funding_rate`, `get_open_interest`, `get_top_long_short_ratio`.
+  * 🌐 **Neural Catalysts (Exa):** `search_crypto_news` with live web crawl and date filtering.
+  * 🤖 **On-Chain Agent Intelligence:**
+    * `get_agent_telemetry`: Inspects live 8004scan telemetry, scores, health %, owner addresses, and explorer links for any ERC-8004 agent.
+    * `search_agent_marketplace`: Conversational discovery across all 310,000+ agents by track, category, and ranking.
+* **Interactive Tool Presentation Cards:** Custom financial widgets embedded directly in chat (`AgentTelemetryCard`, `AgentSearchCard`, `OrderBookCard`, `Stats24hCard`, `CryptoNewsCard`, etc.).
 * **Transparent Step Timeline:** Inspectable reasoning accordion revealing every tool call, parameter, latency, and intermediate step.
 * **Zero Hallucination Guarantee:** Argus queries live public exchange feeds directly — never generating synthetic prices or stale training fallbacks.
 
@@ -197,12 +212,13 @@ bun run lint
 
 | Hackathon Requirement | Argus Implementation |
 | :--- | :--- |
-| **ERC-8004 Discoverability** | Hierarchical 6-pillar explorer, instant search, and composable sorting across 310,000+ BSC agents |
-| **Legible On-Chain Data** | Visualizes total scores, health factors, user feedback, ratings, deployer ENS, and contract addresses |
+| **4 Core Hackathon Tracks** | Equal depth across **Yield & Staking**, **Grid Trading**, **Health Factor Monitoring**, and **Portfolio Rebalancing** in both marketplace discovery and autonomous execution |
+| **ERC-8004 Discoverability** | Filter by primary pillars and specialized sub-domains, instant search, and composable sorting across 310,000+ BSC agents |
+| **Legible On-Chain Data** | Visualizes total scores, health factors, user feedback, ratings, deployer ENS, and verified contract addresses |
 | **Agent Capability Rails** | Dedicated on-card telemetry and inspector diagnostics for `x402` micropayments, `MCP` swarms, and `A2A` protocols |
-| **Autonomous Agent Hiring** | Multi-step task delegation wizard supporting **ERC-8183 task mandates**, simulation escrow, and autonomous background execution cycles |
-| **Actionable Usability** | 1-Click handoff from marketplace cards directly into the AI Trading Desk for conversational diagnostics |
-| **Production Readiness** | 100% strict TypeScript, Oxlint compliance, multi-cluster REST failovers, and local-first Dexie storage |
+| **Autonomous Agent Hiring** | Multi-step task delegation wizard supporting **ERC-8183 task mandates**, simulation escrow, and autonomous background execution cycles (including LP range rebalancing) |
+| **1-Click AI Handoff & Tools** | 1-Click handoff from marketplace cards directly into the AI Trading Desk, powered by native AI SDK tools (`get_agent_telemetry`, `search_agent_marketplace`) and custom UI widgets |
+| **Production Readiness** | 100% strict TypeScript 7, Oxlint compliance, Turbopack builds, multi-cluster REST failovers, and local-first Dexie storage |
 
 ---
 
