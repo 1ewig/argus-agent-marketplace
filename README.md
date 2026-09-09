@@ -225,11 +225,13 @@ bun run lint
 
 ---
 
-## Alignment with BNB Chain "Build the Era" Goals
+## Alignment with BNB Chain "Build the Era" Goals & Partner Tracks
 
-| Hackathon Requirement | Argus Implementation |
+| Hackathon Requirement / Track | Argus Implementation & Verification |
 | :--- | :--- |
 | **4 Core Hackathon Tracks** | Equal depth across **Yield & Staking**, **Grid Trading**, **Health Factor Monitoring**, and **Portfolio Rebalancing** in both marketplace discovery and autonomous execution |
+| **TermiX Partner Track ($10,000 USDT)** | Full empirical **[Agent Advantage Report](docs/termix-agent-advantage-report.md)** proving **18.4x average execution speedup** at **$0.00114 compute cost** across Trading, Security Due Diligence, and Yield benchmarks with verified [evidence snapshots](docs/evidence/README.md) |
+| **PancakeSwap Track (1,000 CAKE)** | Dedicated operational modules for **PancakeSwap v3 Concentrated LP Rebalancing** (±1% to ±10% drift tolerance) and **PancakeSwap Grid Trading** |
 | **ERC-8004 Discoverability** | Filter by 4 primary pillars and specialized sub-domains, global search across 310,000+ BSC agents, default Newest First sorting, and canonical 8004scan WebP media resolution |
 | **Legible On-Chain Data** | Visualizes total scores, health factors, user feedback, ratings, deployer ENS, and verified contract addresses |
 | **Agent Capability Rails** | Dedicated on-card telemetry and inspector diagnostics for `x402` micropayments, `MCP` swarms, and `A2A` protocols |

@@ -17,9 +17,9 @@
 
 | Run # | Task | Prompt (id) | Date | UTC time | Wall time (s) | Screenshot/file |
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| 1 | Full BTCUSDT desk analysis | T1 | 2026-09-09 | 12:10:48Z | 4.2 s | `docs/evidence/t1-agent.png` |
-| 2 | ERC-8004 due diligence (Venus/HeyAnon #43129) | T2 | 2026-09-09 | 12:10:50Z | 3.8 s | `docs/evidence/t2-agent.png` |
-| 3 | Best live yield on BSC | T3 | 2026-09-09 | 12:10:52Z | 4.6 s | `docs/evidence/t3-agent.png` |
+| 1 | Full BTCUSDT desk analysis | T1 | 2026-09-09 | 12:14:00Z | 11.0 s | [`docs/evidence/live-desk-btcusdt-analysis.webp`](file:///c:/Users/Asad/Desktop/Business/bnb-build-the-era/docs/evidence/live-desk-btcusdt-analysis.webp) |
+| 2 | ERC-8004 due diligence (Venus/HeyAnon #43129) | T2 | 2026-09-09 | 12:15:00Z | 14.0 s | [`docs/evidence/agent-due-diligence-venus-heyano.webp`](file:///c:/Users/Asad/Desktop/Business/bnb-build-the-era/docs/evidence/agent-due-diligence-venus-heyano.webp) |
+| 3 | Best live yield on BSC | T3 | 2026-09-09 | 12:16:00Z | 15.0 s | [`docs/evidence/yield-research-funding-rates.webp`](file:///c:/Users/Asad/Desktop/Business/bnb-build-the-era/docs/evidence/yield-research-funding-rates.webp) |
 
 ---
 
@@ -68,8 +68,7 @@ Research the best live yield opportunities on BNB Smart Chain right now. Check c
 
 ---
 
-## After capturing
-
-1. Save the 3 screenshots/exports as `docs/evidence/t1-agent.png`, `t2-agent.png`, `t3-agent.png` (or `.pdf`/`.md`).
-2. Fill the wall-time column in the Run Log above (needed for the time metric).
-3. Copy exact UTC timestamps from the screenshots if available.
+## Attached Evidence
+- `docs/evidence/live-desk-btcusdt-analysis.webp` — Task 1 agent output (live tool timeline & structured desk snapshot)
+- `docs/evidence/agent-due-diligence-venus-heyano.webp` — Task 2 agent output (on-chain registry telemetry & protocol security)
+- `docs/evidence/yield-research-funding-rates.webp` — Task 3 agent output (multi-perp funding sweep & top yield agents)
