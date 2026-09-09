@@ -136,21 +136,21 @@ export const AgentCard = memo(function AgentCard({
       {/* 3. Capability Badges */}
       <div className="flex flex-wrap items-center gap-1.5 min-h-[22px]">
         {agent.x402_supported && (
-          <span className="text-3xs font-bold px-1.5 py-px rounded-full bg-theme-brand-binance/10 text-theme-brand-binance border border-theme-brand-binance/25 flex items-center gap-1 shrink-0">
+          <span className="text-2xs font-bold px-1.5 py-px rounded-full bg-theme-brand-binance/10 text-theme-brand-binance border border-theme-brand-binance/25 flex items-center gap-1 shrink-0">
             <Zap className="size-2" />
             {APP_CONTENT.marketplace.card.x402Badge}
           </span>
         )}
 
         {isMCP && (
-          <span className="text-3xs font-semibold px-1.5 py-px rounded-full bg-theme-status-info/10 text-theme-status-info border border-theme-status-info/25 flex items-center gap-1 shrink-0">
+          <span className="text-2xs font-semibold px-1.5 py-px rounded-full bg-theme-status-info/10 text-theme-status-info border border-theme-status-info/25 flex items-center gap-1 shrink-0">
             <Cpu className="size-2" />
             {APP_CONTENT.marketplace.card.mcpBadge}
           </span>
         )}
 
         {isA2A && (
-          <span className="text-3xs font-semibold px-1.5 py-px rounded-full bg-theme-status-success/10 text-theme-status-success border border-theme-status-success/25 flex items-center gap-1 shrink-0">
+          <span className="text-2xs font-semibold px-1.5 py-px rounded-full bg-theme-status-success/10 text-theme-status-success border border-theme-status-success/25 flex items-center gap-1 shrink-0">
             <Bot className="size-2" />
             {APP_CONTENT.marketplace.card.a2aBadge}
           </span>
