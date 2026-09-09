@@ -111,7 +111,7 @@ export const AgentCard = memo(function AgentCard({
         {/* Actions: Spotlight, Quick Hire, Inspect */}
         <div className="flex items-center gap-1.5 shrink-0">
           {isSpotlight && (
-            <span className="text-3xs font-extrabold px-1 py-px rounded-full bg-theme-brand-binance/15 text-theme-brand-binance border border-theme-brand-binance/30 uppercase tracking-wider">
+            <span className="text-2xs font-extrabold px-1 py-px rounded-full bg-theme-brand-binance/15 text-theme-brand-binance border border-theme-brand-binance/30 uppercase tracking-wider">
               {APP_CONTENT.marketplace.card.spotlightTag}
             </span>
           )}
