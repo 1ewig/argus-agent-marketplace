@@ -85,11 +85,11 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
 };
 
 const SORT_OPTIONS: SortOption[] = [
+  { id: 'newest', label: APP_CONTENT.marketplace.tabs.newest, icon: ArrowDownNarrowWide },
   { id: 'leaderboard', label: APP_CONTENT.marketplace.tabs.leaderboard, icon: Trophy },
   { id: 'trending', label: APP_CONTENT.marketplace.tabs.trending, icon: Flame },
   { id: 'featured', label: APP_CONTENT.marketplace.tabs.featured, icon: Sparkles },
   { id: 'latest', label: APP_CONTENT.marketplace.tabs.latest, icon: Clock },
-  { id: 'newest', label: APP_CONTENT.marketplace.tabs.newest, icon: ArrowDownNarrowWide },
 ];
 
 export const MarketplaceFilterBar = memo(function MarketplaceFilterBar({
@@ -122,7 +122,7 @@ export const MarketplaceFilterBar = memo(function MarketplaceFilterBar({
     selectedSort ??
     (selectedTab && !isDiscoveryCategory(selectedTab) && selectedTab !== 'all'
       ? (selectedTab as MarketplaceSortKey)
-      : 'leaderboard');
+      : 'newest');
 
   // Keyboard shortcut '/' to focus global search
   useEffect(() => {
@@ -170,7 +170,7 @@ export const MarketplaceFilterBar = memo(function MarketplaceFilterBar({
 
   // Determine active sort label & icon
   const activeSort = SORT_OPTIONS.find((s) => s.id === currentSort);
-  const sortLabel = activeSort?.label ?? APP_CONTENT.marketplace.tabs.leaderboard;
+  const sortLabel = activeSort?.label ?? APP_CONTENT.marketplace.tabs.newest;
   const SortTriggerIcon = activeSort?.icon ?? ArrowUpDown;
 
   // Primary pillars excluding 'all'

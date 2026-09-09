@@ -83,7 +83,7 @@ export const useAppStore = create<AppState>()(
 
       marketplaceCategory: 'all',
       setMarketplaceCategory: (marketplaceCategory) => set({ marketplaceCategory }),
-      marketplaceSort: 'leaderboard',
+      marketplaceSort: 'newest',
       setMarketplaceSort: (marketplaceSort) => set({ marketplaceSort }),
 
       _hasHydrated: false,

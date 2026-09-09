@@ -77,7 +77,7 @@ export async function resolveFallbackMarketplace(
   const {
     search,
     category,
-    sort = 'leaderboard',
+    sort = 'newest',
     feed = 'all',
     limit,
     offset,

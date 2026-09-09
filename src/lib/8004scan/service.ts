@@ -35,7 +35,7 @@ export function parseAgentQueryParams(urlString: string): MarketplaceQueryParams
     (searchParams.get('sort') as MarketplaceSortKey | null) ??
     (rawFeed !== 'all' && rawFeed !== 'category' && rawFeed !== 'spotlight' && rawFeed !== 'search'
       ? (rawFeed as MarketplaceSortKey)
-      : 'leaderboard');
+      : 'newest');
   const search = searchParams.get('search')?.trim() || '';
   const limit = Math.min(Math.max(Number(searchParams.get('limit')) || 24, 1), 100);
   const offset = Math.max(Number(searchParams.get('offset')) || 0, 0);
