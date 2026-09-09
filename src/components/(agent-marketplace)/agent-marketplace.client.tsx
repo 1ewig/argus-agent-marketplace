@@ -20,8 +20,8 @@ export function AgentMarketplaceClient() {
   const toggleMobileSidebar = useAppStore((state) => state.toggleMobileSidebar);
   const setInput = useAppStore((state) => state.setInput);
 
-  // Hired Agents Panel state
-  const [isHiredPanelOpen, setIsHiredPanelOpen] = useState(true);
+  // Hired Agents Panel state (overlay)
+  const [isHiredPanelOpen, setIsHiredPanelOpen] = useState(false);
   const [agentToHire, setAgentToHire] = useState<ScanAgentItem | null>(null);
 
   // Live query for active hired count
@@ -108,49 +108,47 @@ export function AgentMarketplaceClient() {
         hiredCount={activeHiredCount}
       />
 
-      {/* 2. Main Area: Scrollable Marketplace + Docked Hired Panel */}
-      <div className="flex-1 flex overflow-hidden min-h-0">
-        <div className="flex-1 overflow-y-auto flex flex-col min-w-0">
-          {/* Categories & Curated Feeds Filter Tabs */}
-          <MarketplaceFilterBar
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            onClearSearch={clearSearch}
-            selectedCategory={selectedCategory}
-            onSelectCategory={setSelectedCategory}
-            selectedSort={selectedSort}
-            onSelectSort={setSelectedSort}
-            selectedTab={selectedTab}
-            onSelectTab={setSelectedTab}
-          />
+      {/* 2. Main Scrollable Marketplace Area */}
+      <div className="flex-1 overflow-y-auto flex flex-col">
+        {/* Categories & Curated Feeds Filter Tabs */}
+        <MarketplaceFilterBar
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          onClearSearch={clearSearch}
+          selectedCategory={selectedCategory}
+          onSelectCategory={setSelectedCategory}
+          selectedSort={selectedSort}
+          onSelectSort={setSelectedSort}
+          selectedTab={selectedTab}
+          onSelectTab={setSelectedTab}
+        />
 
-          {/* Agents Grid & Pagination */}
-          <AgentGrid
-            agents={agents}
-            spotlightAgents={
-              !searchQuery && selectedCategory === 'all' && page === 0
-                ? [...spotlightHevo.slice(0, 1), ...spotlightAlpha.slice(0, 1)]
-                : undefined
-            }
-            totalCount={totalCount}
-            isLoading={isLoading}
-            isError={isError}
-            onSelectAgent={handleSelectAgent}
-            onRetry={refetch}
-            onResetFilters={handleResetFilters}
-            page={page}
-            pageSize={pageSize}
-            totalPages={totalPages}
-            onPageChange={setPage}
-          />
-        </div>
-
-        {/* Hired Agents Docked Side Panel */}
-        <HiredAgentsPanel
-          isOpen={isHiredPanelOpen}
-          onClose={() => setIsHiredPanelOpen(false)}
+        {/* Agents Grid & Pagination */}
+        <AgentGrid
+          agents={agents}
+          spotlightAgents={
+            !searchQuery && selectedCategory === 'all' && page === 0
+              ? [...spotlightHevo.slice(0, 1), ...spotlightAlpha.slice(0, 1)]
+              : undefined
+          }
+          totalCount={totalCount}
+          isLoading={isLoading}
+          isError={isError}
+          onSelectAgent={handleSelectAgent}
+          onRetry={refetch}
+          onResetFilters={handleResetFilters}
+          page={page}
+          pageSize={pageSize}
+          totalPages={totalPages}
+          onPageChange={setPage}
         />
       </div>
+
+      {/* 3. Hired Agents Overlay Drawer */}
+      <HiredAgentsPanel
+        isOpen={isHiredPanelOpen}
+        onClose={() => setIsHiredPanelOpen(false)}
+      />
 
       {/* 3. Detailed Profile Modal */}
       <AgentDetailModal

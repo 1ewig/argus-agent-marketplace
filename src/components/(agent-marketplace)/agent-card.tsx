@@ -50,16 +50,29 @@ export const AgentCard = memo(function AgentCard({
   const isMCP = agent.supported_protocols?.some((p) => p.toUpperCase().includes('MCP'));
   const isA2A = agent.supported_protocols?.some((p) => p.toUpperCase().includes('A2A'));
 
+  // Health or Active status badge element
+  const healthOrActiveBadge =
+    agent.health_score != null && agent.health_score > 0 ? (
+      <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-theme-bg-elevated/70 border border-theme-border-subtle/80 text-theme-status-success font-semibold text-2xs shrink-0">
+        <Activity className="size-3" />
+        <span>{agent.health_score.toFixed(0)}%</span>
+      </div>
+    ) : (
+      <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-theme-bg-elevated/70 border border-theme-border-subtle/80 text-theme-status-success font-medium text-2xs shrink-0">
+        <span className="size-1.5 rounded-full bg-theme-status-success" />
+        <span>{APP_CONTENT.marketplace.card.activeStatus}</span>
+      </div>
+    );
+
   return (
     <motion.div
       whileHover={hoverLiftCard}
       whileTap={tapScaleCard}
       onClick={() => onSelect(agent)}
-      className={`bg-gradient-to-b from-theme-bg-surface via-theme-bg-surface to-theme-bg-elevated/25 border rounded-2xl p-4 flex flex-col justify-between gap-3 cursor-pointer group transition-colors transition-shadow duration-150 shadow-2xs hover:shadow-md hover:shadow-theme-brand-binance/5 relative select-none ${
-        isSpotlight
+      className={`bg-gradient-to-b from-theme-bg-surface via-theme-bg-surface to-theme-bg-elevated/25 border rounded-2xl p-4 flex flex-col justify-between gap-3 cursor-pointer group transition-colors transition-shadow duration-150 shadow-2xs hover:shadow-md hover:shadow-theme-brand-binance/5 relative select-none ${isSpotlight
           ? 'border-theme-brand-binance/40 hover:border-theme-brand-binance ring-1 ring-theme-brand-binance/20'
           : 'border-theme-border-subtle hover:border-theme-brand-binance/50'
-      }`}
+        }`}
     >
       {/* 1. Header: Avatar, Name & Quick Action */}
       <div className="flex items-start justify-between gap-2.5">
@@ -108,19 +121,9 @@ export const AgentCard = memo(function AgentCard({
           </div>
         </div>
 
-        {/* Actions: Health Score, Inspect */}
+        {/* Actions: Health Score (Spotlight only) & Inspect */}
         <div className="flex items-center gap-1.5 shrink-0">
-          {agent.health_score != null && agent.health_score > 0 ? (
-            <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-theme-bg-elevated/70 border border-theme-border-subtle/80 text-theme-status-success font-semibold text-2xs">
-              <Activity className="size-3" />
-              <span>{agent.health_score.toFixed(0)}%</span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-theme-bg-elevated/70 border border-theme-border-subtle/80 text-theme-status-success font-medium text-2xs">
-              <span className="size-1.5 rounded-full bg-theme-status-success" />
-              <span>{APP_CONTENT.marketplace.card.activeStatus}</span>
-            </div>
-          )}
+          {isSpotlight && healthOrActiveBadge}
 
           <div className="size-7 rounded-lg bg-theme-bg-elevated/70 group-hover:bg-theme-brand-binance group-hover:text-theme-bg-overlay flex items-center justify-center text-theme-text-muted transition-colors duration-150 shrink-0">
             <ArrowUpRight className="size-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-150" />
@@ -177,11 +180,13 @@ export const AgentCard = memo(function AgentCard({
           </strong>
         </div>
 
-        {/* Spotlight Badge */}
-        {isSpotlight && (
+        {/* Spotlight Badge (for spotlight) OR Active / Health Score (for non-spotlight) */}
+        {isSpotlight ? (
           <span className="px-2 py-0.5 rounded-md bg-theme-bg-elevated/70 border border-theme-brand-binance/30 text-theme-brand-binance font-extrabold text-2xs uppercase tracking-wider">
             {APP_CONTENT.marketplace.card.spotlightTag}
           </span>
+        ) : (
+          healthOrActiveBadge
         )}
       </div>
     </motion.div>

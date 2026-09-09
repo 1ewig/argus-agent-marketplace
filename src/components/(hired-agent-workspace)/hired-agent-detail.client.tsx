@@ -87,23 +87,24 @@ export const HiredAgentDetailClient = memo(function HiredAgentDetailClient({
     }
   }, [agent, router]);
 
-  // Loading or not found state
+  // Loading state
   if (agent === undefined) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-8 text-center min-h-[400px]">
         <Bot className="size-8 animate-pulse text-theme-brand-binance mb-3" />
-        <span className="text-xs text-theme-text-muted">Loading Agent Workspace...</span>
+        <span className="text-sm font-medium text-theme-text-muted">Loading Agent Workspace...</span>
       </div>
     );
   }
 
+  // Not found state
   if (!agent) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-8 text-center min-h-[400px]">
         <div className="size-12 rounded-2xl bg-theme-bg-elevated border border-theme-border-subtle flex items-center justify-center text-theme-text-muted mb-3">
           <AlertTriangle className="size-6 text-theme-status-warning" />
         </div>
-        <h2 className="text-sm font-bold text-theme-text-primary mb-1">Hired Agent Not Found</h2>
+        <h2 className="text-base font-bold text-theme-text-primary mb-1.5">Hired Agent Not Found</h2>
         <p className="text-xs text-theme-text-secondary max-w-sm mb-4">
           This hired agent may have been terminated or removed from your local database.
         </p>
@@ -132,7 +133,7 @@ export const HiredAgentDetailClient = memo(function HiredAgentDetailClient({
         <div className="flex items-center gap-3 min-w-0">
           <Link
             href="/marketplace"
-            className="h-8 px-2.5 rounded-lg bg-theme-bg-elevated border border-theme-border-subtle hover:border-theme-brand-binance/50 text-theme-text-secondary hover:text-theme-text-primary text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+            className="h-8 px-2.5 rounded-lg bg-theme-bg-elevated border border-theme-border-subtle hover:border-theme-brand-binance/50 text-theme-text-secondary hover:text-theme-text-primary text-xs font-medium flex items-center gap-1 cursor-pointer transition-colors"
           >
             <ChevronLeft className="size-3.5" />
             <span className="hidden sm:inline">Marketplace</span>
@@ -141,10 +142,10 @@ export const HiredAgentDetailClient = memo(function HiredAgentDetailClient({
           <span className="text-theme-border-subtle">/</span>
 
           <div className="flex items-center gap-2 min-w-0">
-            <span className="text-xs font-bold text-theme-text-primary truncate">
+            <span className="text-sm font-semibold text-theme-text-primary truncate">
               {agent.name}
             </span>
-            <span className="font-mono text-3xs font-semibold text-theme-brand-binance">
+            <span className="font-mono text-xs font-medium text-theme-brand-binance">
               #{agent.agentTokenId}
             </span>
           </div>
@@ -173,11 +174,10 @@ export const HiredAgentDetailClient = memo(function HiredAgentDetailClient({
             type="button"
             whileTap={tapScalePill}
             onClick={handleToggleStatus}
-            className={`h-8 px-3 rounded-lg border text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors ${
-              isActive
+            className={`h-8 px-3 rounded-lg border text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors ${isActive
                 ? 'bg-theme-bg-elevated border-theme-border-subtle hover:border-theme-status-warning text-theme-text-secondary hover:text-theme-status-warning'
                 : 'bg-theme-status-success/15 border-theme-status-success/30 text-theme-status-success hover:bg-theme-status-success/25'
-            }`}
+              }`}
           >
             {isActive ? (
               <>
@@ -225,17 +225,17 @@ export const HiredAgentDetailClient = memo(function HiredAgentDetailClient({
 
             <div className="flex flex-col min-w-0">
               <div className="flex items-center gap-2">
-                <h1 className="text-base sm:text-lg font-bold text-theme-text-primary truncate">
+                <h1 className="text-lg sm:text-xl font-bold tracking-tight text-theme-text-primary truncate">
                   {agent.name}
                 </h1>
-                <span className="font-mono text-xs font-semibold text-theme-brand-binance">
+                <span className="font-mono text-xs sm:text-sm font-semibold text-theme-brand-binance">
                   #{agent.agentTokenId}
                 </span>
-                <span className="text-3xs font-extrabold px-2 py-0.5 rounded-full bg-theme-brand-binance/15 text-theme-brand-binance border border-theme-brand-binance/30 uppercase tracking-wider">
+                <span className="text-2xs font-semibold px-2 py-0.5 rounded-full bg-theme-brand-binance/15 text-theme-brand-binance border border-theme-brand-binance/30 uppercase tracking-wider">
                   Simulation Sandbox
                 </span>
               </div>
-              <p className="text-2xs text-theme-text-secondary mt-0.5 truncate">
+              <p className="text-xs sm:text-sm text-theme-text-secondary mt-1 truncate">
                 {agent.mission.missionTitle} • {agent.mission.targetPairOrProtocol}
               </p>
             </div>
@@ -244,22 +244,20 @@ export const HiredAgentDetailClient = memo(function HiredAgentDetailClient({
           {/* Status Heartbeat Banner */}
           <div className="flex items-center gap-2 self-start sm:self-center px-3 py-1.5 rounded-xl bg-theme-bg-elevated border border-theme-border-subtle">
             <span
-              className={`size-2 rounded-full ${
-                isActive
+              className={`size-2 rounded-full ${isActive
                   ? 'bg-theme-status-success animate-pulse'
                   : isPaused
                     ? 'bg-theme-status-warning'
                     : 'bg-theme-status-danger'
-              }`}
+                }`}
             />
             <span
-              className={`text-2xs font-bold uppercase tracking-wider ${
-                isActive
+              className={`text-2xs font-semibold uppercase tracking-wider ${isActive
                   ? 'text-theme-status-success'
                   : isPaused
                     ? 'text-theme-status-warning'
                     : 'text-theme-status-danger'
-              }`}
+                }`}
             >
               {isActive
                 ? APP_CONTENT.hiredAgents.workspace.statusActive
@@ -273,27 +271,27 @@ export const HiredAgentDetailClient = memo(function HiredAgentDetailClient({
         {/* 6 Key Operational Telemetry Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {/* Allocated Budget */}
-          <div className="bg-theme-bg-surface border border-theme-border-subtle rounded-xl p-3 flex flex-col gap-1">
-            <div className="flex items-center gap-1.5 text-3xs text-theme-text-muted">
-              <Coins className="size-3 text-theme-brand-binance" />
+          <div className="bg-theme-bg-surface border border-theme-border-subtle rounded-xl p-3 flex flex-col gap-1.5">
+            <div className="flex items-center gap-1.5 text-2xs font-medium text-theme-text-muted">
+              <Coins className="size-3.5 text-theme-brand-binance" />
               <span>{APP_CONTENT.hiredAgents.workspace.metrics.allocated}</span>
             </div>
-            <span className="text-sm font-mono font-bold text-theme-text-primary truncate">
+            <span className="text-sm font-mono font-semibold text-theme-text-primary truncate">
               {agent.allocatedBudget.toFixed(2)} {agent.budgetAsset}
             </span>
           </div>
 
           {/* Spent Budget with Mini Progress Bar */}
-          <div className="bg-theme-bg-surface border border-theme-border-subtle rounded-xl p-3 flex flex-col gap-1">
-            <div className="flex items-center gap-1.5 text-3xs text-theme-text-muted">
-              <Zap className="size-3 text-theme-status-warning" />
+          <div className="bg-theme-bg-surface border border-theme-border-subtle rounded-xl p-3 flex flex-col gap-1.5">
+            <div className="flex items-center gap-1.5 text-2xs font-medium text-theme-text-muted">
+              <Zap className="size-3.5 text-theme-status-warning" />
               <span>{APP_CONTENT.hiredAgents.workspace.metrics.spent}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm font-mono font-bold text-theme-text-primary truncate">
+              <span className="text-sm font-mono font-semibold text-theme-text-primary truncate">
                 {agent.spentBudget.toFixed(4)}
               </span>
-              <span className="text-3xs text-theme-text-muted font-mono">{budgetPct.toFixed(0)}%</span>
+              <span className="text-2xs text-theme-text-muted font-mono">{budgetPct.toFixed(0)}%</span>
             </div>
             <div className="w-full h-1 bg-theme-bg-elevated rounded-full overflow-hidden mt-0.5">
               <div
@@ -304,45 +302,45 @@ export const HiredAgentDetailClient = memo(function HiredAgentDetailClient({
           </div>
 
           {/* Simulated PnL / Yield */}
-          <div className="bg-theme-bg-surface border border-theme-border-subtle rounded-xl p-3 flex flex-col gap-1">
-            <div className="flex items-center gap-1.5 text-3xs text-theme-text-muted">
-              <TrendingUp className="size-3 text-theme-status-success" />
+          <div className="bg-theme-bg-surface border border-theme-border-subtle rounded-xl p-3 flex flex-col gap-1.5">
+            <div className="flex items-center gap-1.5 text-2xs font-medium text-theme-text-muted">
+              <TrendingUp className="size-3.5 text-theme-status-success" />
               <span>{APP_CONTENT.hiredAgents.workspace.metrics.pnl}</span>
             </div>
-            <span className="text-sm font-mono font-bold text-theme-status-success truncate">
+            <span className="text-sm font-mono font-semibold text-theme-status-success truncate">
               +${agent.simulatedPnlUsd.toFixed(2)}
             </span>
           </div>
 
           {/* Health Score */}
-          <div className="bg-theme-bg-surface border border-theme-border-subtle rounded-xl p-3 flex flex-col gap-1">
-            <div className="flex items-center gap-1.5 text-3xs text-theme-text-muted">
-              <Activity className="size-3 text-theme-status-success" />
+          <div className="bg-theme-bg-surface border border-theme-border-subtle rounded-xl p-3 flex flex-col gap-1.5">
+            <div className="flex items-center gap-1.5 text-2xs font-medium text-theme-text-muted">
+              <Activity className="size-3.5 text-theme-status-success" />
               <span>{APP_CONTENT.hiredAgents.workspace.metrics.health}</span>
             </div>
-            <span className="text-sm font-mono font-bold text-theme-text-primary truncate">
+            <span className="text-sm font-mono font-semibold text-theme-text-primary truncate">
               {agent.healthScore}%
             </span>
           </div>
 
           {/* Actions Count */}
-          <div className="bg-theme-bg-surface border border-theme-border-subtle rounded-xl p-3 flex flex-col gap-1">
-            <div className="flex items-center gap-1.5 text-3xs text-theme-text-muted">
-              <Layers className="size-3 text-theme-status-info" />
+          <div className="bg-theme-bg-surface border border-theme-border-subtle rounded-xl p-3 flex flex-col gap-1.5">
+            <div className="flex items-center gap-1.5 text-2xs font-medium text-theme-text-muted">
+              <Layers className="size-3.5 text-theme-status-info" />
               <span>{APP_CONTENT.hiredAgents.workspace.metrics.actions}</span>
             </div>
-            <span className="text-sm font-mono font-bold text-theme-text-primary truncate">
+            <span className="text-sm font-mono font-semibold text-theme-text-primary truncate">
               {agent.actionsCount}
             </span>
           </div>
 
           {/* Deployed Timestamp */}
-          <div className="bg-theme-bg-surface border border-theme-border-subtle rounded-xl p-3 flex flex-col gap-1">
-            <div className="flex items-center gap-1.5 text-3xs text-theme-text-muted">
-              <Clock className="size-3 text-theme-text-muted" />
+          <div className="bg-theme-bg-surface border border-theme-border-subtle rounded-xl p-3 flex flex-col gap-1.5">
+            <div className="flex items-center gap-1.5 text-2xs font-medium text-theme-text-muted">
+              <Clock className="size-3.5 text-theme-text-muted" />
               <span>{APP_CONTENT.hiredAgents.workspace.metrics.hiredDate}</span>
             </div>
-            <span className="text-sm font-bold text-theme-text-secondary truncate">
+            <span className="text-sm font-semibold text-theme-text-primary truncate">
               {new Date(agent.hiredAt).toLocaleDateString()}
             </span>
           </div>
@@ -353,15 +351,14 @@ export const HiredAgentDetailClient = memo(function HiredAgentDetailClient({
           <button
             type="button"
             onClick={() => setActiveTab('timeline')}
-            className={`h-8 px-3.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-all ${
-              activeTab === 'timeline'
+            className={`h-8 px-3.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-all ${activeTab === 'timeline'
                 ? 'bg-theme-brand-binance text-theme-bg-overlay font-bold shadow-2xs'
                 : 'text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-elevated'
-            }`}
+              }`}
           >
             <Activity className="size-3.5" />
             <span>{APP_CONTENT.hiredAgents.workspace.tabs.timeline}</span>
-            <span className="text-3xs font-mono ml-1 px-1 rounded bg-black/15">
+            <span className="text-2xs font-mono ml-1 px-1.5 py-0.5 rounded bg-black/15">
               {agent.executionLogs.length}
             </span>
           </button>
@@ -369,11 +366,10 @@ export const HiredAgentDetailClient = memo(function HiredAgentDetailClient({
           <button
             type="button"
             onClick={() => setActiveTab('mandate')}
-            className={`h-8 px-3.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-all ${
-              activeTab === 'mandate'
+            className={`h-8 px-3.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-all ${activeTab === 'mandate'
                 ? 'bg-theme-brand-binance text-theme-bg-overlay font-bold shadow-2xs'
                 : 'text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-elevated'
-            }`}
+              }`}
           >
             <FileText className="size-3.5" />
             <span>{APP_CONTENT.hiredAgents.workspace.tabs.overview}</span>
@@ -382,11 +378,10 @@ export const HiredAgentDetailClient = memo(function HiredAgentDetailClient({
           <button
             type="button"
             onClick={() => setActiveTab('telemetry')}
-            className={`h-8 px-3.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-all ${
-              activeTab === 'telemetry'
+            className={`h-8 px-3.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-all ${activeTab === 'telemetry'
                 ? 'bg-theme-brand-binance text-theme-bg-overlay font-bold shadow-2xs'
                 : 'text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-elevated'
-            }`}
+              }`}
           >
             <Terminal className="size-3.5" />
             <span>{APP_CONTENT.hiredAgents.workspace.tabs.terminal}</span>
@@ -413,55 +408,54 @@ export const HiredAgentDetailClient = memo(function HiredAgentDetailClient({
                     className="bg-theme-bg-surface border border-theme-border-subtle rounded-xl p-3.5 flex items-start gap-3 transition-colors hover:border-theme-border-subtle/80"
                   >
                     <div
-                      className={`size-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
-                        isAlert
+                      className={`size-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${isAlert
                           ? 'bg-theme-status-warning/15 text-theme-status-warning border border-theme-status-warning/30'
                           : isAction
                             ? 'bg-theme-brand-binance/15 text-theme-brand-binance border border-theme-brand-binance/30'
                             : 'bg-theme-bg-elevated text-theme-text-muted border border-theme-border-subtle'
-                      }`}
+                        }`}
                     >
                       {isAlert ? (
-                        <Shield className="size-3.5" />
+                        <Shield className="size-4" />
                       ) : isAction ? (
-                        <Zap className="size-3.5" />
+                        <Zap className="size-4" />
                       ) : (
-                        <Bot className="size-3.5" />
+                        <Bot className="size-4" />
                       )}
                     </div>
 
                     <div className="flex-1 flex flex-col gap-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-xs font-bold text-theme-text-primary truncate">
+                        <span className="text-xs sm:text-sm font-semibold text-theme-text-primary truncate">
                           {log.title}
                         </span>
-                        <span className="text-3xs text-theme-text-muted font-mono shrink-0">
+                        <span className="text-2xs text-theme-text-muted font-mono shrink-0">
                           {new Date(log.timestamp).toLocaleTimeString()}
                         </span>
                       </div>
 
-                      <p className="text-2xs text-theme-text-secondary leading-relaxed">
+                      <p className="text-xs text-theme-text-secondary leading-relaxed">
                         {log.detail}
                       </p>
 
                       {/* Transaction Hash and Gas Info */}
                       {(log.txHash || log.gasUsedEth) && (
-                        <div className="flex flex-wrap items-center gap-2 pt-1 mt-1 border-t border-theme-border-subtle/40 text-3xs">
+                        <div className="flex flex-wrap items-center gap-2.5 pt-1.5 mt-1 border-t border-theme-border-subtle/40 text-2xs">
                           {log.txHash && (
                             <div className="flex items-center gap-1.5 font-mono text-theme-text-muted">
                               <span>Tx:</span>
-                              <span className="text-theme-brand-binance truncate max-w-[120px] sm:max-w-[200px]">
+                              <span className="text-theme-brand-binance font-medium truncate max-w-[140px] sm:max-w-[220px]">
                                 {log.txHash}
                               </span>
                               <button
                                 type="button"
                                 onClick={() => handleCopy(log.txHash!, log.id)}
-                                className="text-theme-text-muted hover:text-theme-text-primary cursor-pointer"
+                                className="text-theme-text-muted hover:text-theme-text-primary cursor-pointer transition-colors"
                               >
                                 {copiedKey === log.id ? (
-                                  <Check className="size-2.5 text-theme-status-success" />
+                                  <Check className="size-3 text-theme-status-success" />
                                 ) : (
-                                  <Copy className="size-2.5" />
+                                  <Copy className="size-3" />
                                 )}
                               </button>
                             </div>
@@ -486,22 +480,22 @@ export const HiredAgentDetailClient = memo(function HiredAgentDetailClient({
         {activeTab === 'mandate' && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Strategy & Risk Parameters */}
-            <div className="bg-theme-bg-surface border border-theme-border-subtle rounded-xl p-4 flex flex-col gap-3">
-              <span className="text-2xs font-bold uppercase tracking-wider text-theme-text-muted">
+            <div className="bg-theme-bg-surface border border-theme-border-subtle rounded-xl p-4 sm:p-5 flex flex-col gap-3">
+              <span className="text-xs font-bold uppercase tracking-wider text-theme-text-muted">
                 {APP_CONTENT.hiredAgents.workspace.mandate.title}
               </span>
 
-              <div className="flex items-center justify-between text-2xs py-1.5 border-b border-theme-border-subtle/50">
-                <span className="text-theme-text-muted">
+              <div className="flex items-center justify-between text-xs py-2 border-b border-theme-border-subtle/50">
+                <span className="text-theme-text-secondary">
                   {APP_CONTENT.hiredAgents.workspace.mandate.strategyType}
                 </span>
-                <span className="font-bold text-theme-text-primary capitalize">
+                <span className="font-semibold text-theme-text-primary capitalize">
                   {agent.mission.strategyType.replace('_', ' ')}
                 </span>
               </div>
 
-              <div className="flex items-center justify-between text-2xs py-1.5 border-b border-theme-border-subtle/50">
-                <span className="text-theme-text-muted">
+              <div className="flex items-center justify-between text-xs py-2 border-b border-theme-border-subtle/50">
+                <span className="text-theme-text-secondary">
                   {APP_CONTENT.hiredAgents.workspace.mandate.targetProtocol}
                 </span>
                 <span className="font-semibold text-theme-brand-binance">
@@ -509,37 +503,39 @@ export const HiredAgentDetailClient = memo(function HiredAgentDetailClient({
                 </span>
               </div>
 
-              <div className="flex items-center justify-between text-2xs py-1.5 border-b border-theme-border-subtle/50">
-                <span className="text-theme-text-muted">
+              <div className="flex items-center justify-between text-xs py-2 border-b border-theme-border-subtle/50">
+                <span className="text-theme-text-secondary">
                   {APP_CONTENT.hiredAgents.workspace.mandate.interval}
                 </span>
-                <span className="font-mono text-theme-text-secondary">
+                <span className="font-mono text-theme-text-primary font-medium">
                   Every {agent.mission.executionIntervalMinutes} minutes
                 </span>
               </div>
 
               {agent.mission.healthFactorThreshold && (
-                <div className="flex items-center justify-between text-2xs py-1.5 border-b border-theme-border-subtle/50">
-                  <span className="text-theme-text-muted">Health Factor Alert Threshold</span>
-                  <span className="font-mono font-bold text-theme-status-warning">
+                <div className="flex items-center justify-between text-xs py-2 border-b border-theme-border-subtle/50">
+                  <span className="text-theme-text-secondary">Health Factor Alert Threshold</span>
+                  <span className="font-mono font-semibold text-theme-status-warning">
                     {agent.mission.healthFactorThreshold}%
                   </span>
                 </div>
               )}
 
               {agent.mission.gridUpperPrice && (
-                <div className="flex items-center justify-between text-2xs py-1.5 border-b border-theme-border-subtle/50">
-                  <span className="text-theme-text-muted">Grid Range Bounds</span>
-                  <span className="font-mono font-bold text-theme-text-primary">
+                <div className="flex items-center justify-between text-xs py-2 border-b border-theme-border-subtle/50">
+                  <span className="text-theme-text-secondary">Grid Range Bounds</span>
+                  <span className="font-mono font-semibold text-theme-text-primary">
                     ${agent.mission.gridLowerPrice} - ${agent.mission.gridUpperPrice}
                   </span>
                 </div>
               )}
 
               {agent.mission.customPrompt && (
-                <div className="flex flex-col gap-1 pt-1">
-                  <span className="text-3xs text-theme-text-muted uppercase">Custom Directives</span>
-                  <p className="text-2xs text-theme-text-secondary bg-theme-bg-elevated p-2.5 rounded-lg border border-theme-border-subtle/60 leading-relaxed">
+                <div className="flex flex-col gap-1.5 pt-1.5">
+                  <span className="text-2xs font-semibold text-theme-text-muted uppercase tracking-wider">
+                    Custom Directives
+                  </span>
+                  <p className="text-xs text-theme-text-secondary bg-theme-bg-elevated p-3 rounded-lg border border-theme-border-subtle/60 leading-relaxed">
                     {agent.mission.customPrompt}
                   </p>
                 </div>
@@ -547,13 +543,13 @@ export const HiredAgentDetailClient = memo(function HiredAgentDetailClient({
             </div>
 
             {/* On-Chain Identity & Registry Links */}
-            <div className="bg-theme-bg-surface border border-theme-border-subtle rounded-xl p-4 flex flex-col gap-3">
-              <span className="text-2xs font-bold uppercase tracking-wider text-theme-text-muted">
+            <div className="bg-theme-bg-surface border border-theme-border-subtle rounded-xl p-4 sm:p-5 flex flex-col gap-3">
+              <span className="text-xs font-bold uppercase tracking-wider text-theme-text-muted">
                 On-Chain Architecture (BNB Smart Chain)
               </span>
 
-              <div className="flex items-center justify-between text-2xs py-1.5 border-b border-theme-border-subtle/50">
-                <span className="text-theme-text-muted">
+              <div className="flex items-center justify-between text-xs py-2 border-b border-theme-border-subtle/50">
+                <span className="text-theme-text-secondary">
                   {APP_CONTENT.hiredAgents.workspace.mandate.contractAddress}
                 </span>
                 <div className="flex items-center gap-2">
@@ -563,7 +559,7 @@ export const HiredAgentDetailClient = memo(function HiredAgentDetailClient({
                   <button
                     type="button"
                     onClick={() => handleCopy(agent.contractAddress, 'contract')}
-                    className="text-theme-text-muted hover:text-theme-text-primary cursor-pointer"
+                    className="text-theme-text-muted hover:text-theme-text-primary cursor-pointer transition-colors"
                   >
                     {copiedKey === 'contract' ? (
                       <Check className="size-3 text-theme-status-success" />
@@ -574,8 +570,8 @@ export const HiredAgentDetailClient = memo(function HiredAgentDetailClient({
                 </div>
               </div>
 
-              <div className="flex items-center justify-between text-2xs py-1.5 border-b border-theme-border-subtle/50">
-                <span className="text-theme-text-muted">
+              <div className="flex items-center justify-between text-xs py-2 border-b border-theme-border-subtle/50">
+                <span className="text-theme-text-secondary">
                   {APP_CONTENT.hiredAgents.workspace.mandate.ownerAddress}
                 </span>
                 <div className="flex items-center gap-2">
@@ -585,7 +581,7 @@ export const HiredAgentDetailClient = memo(function HiredAgentDetailClient({
                   <button
                     type="button"
                     onClick={() => handleCopy(agent.ownerAddress, 'owner')}
-                    className="text-theme-text-muted hover:text-theme-text-primary cursor-pointer"
+                    className="text-theme-text-muted hover:text-theme-text-primary cursor-pointer transition-colors"
                   >
                     {copiedKey === 'owner' ? (
                       <Check className="size-3 text-theme-status-success" />
@@ -596,33 +592,33 @@ export const HiredAgentDetailClient = memo(function HiredAgentDetailClient({
                 </div>
               </div>
 
-              <div className="flex items-center justify-between text-2xs py-1.5 border-b border-theme-border-subtle/50">
-                <span className="text-theme-text-muted">Execution Standard</span>
+              <div className="flex items-center justify-between text-xs py-2 border-b border-theme-border-subtle/50">
+                <span className="text-theme-text-secondary">Execution Standard</span>
                 <span className="font-mono text-theme-brand-binance font-semibold">
                   ERC-8004 / ERC-8183 / x402
                 </span>
               </div>
 
               {/* External Explorer Links */}
-              <div className="flex items-center gap-4 pt-2">
+              <div className="flex items-center gap-4 pt-3">
                 <a
                   href={bscScanContractUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-2xs font-semibold text-theme-text-secondary hover:text-theme-text-primary flex items-center gap-1 transition-colors"
+                  className="text-xs font-semibold text-theme-text-secondary hover:text-theme-text-primary flex items-center gap-1.5 transition-colors"
                 >
                   <span>Verify on BscScan</span>
-                  <ExternalLink className="size-3 text-theme-text-muted" />
+                  <ExternalLink className="size-3.5 text-theme-text-muted" />
                 </a>
 
                 <a
                   href={scan8004Url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-2xs font-semibold text-theme-text-secondary hover:text-theme-brand-binance flex items-center gap-1 transition-colors"
+                  className="text-xs font-semibold text-theme-text-secondary hover:text-theme-brand-binance flex items-center gap-1.5 transition-colors"
                 >
                   <span>View 8004scan Profile</span>
-                  <ArrowUpRight className="size-3 text-theme-brand-binance" />
+                  <ArrowUpRight className="size-3.5 text-theme-brand-binance" />
                 </a>
               </div>
             </div>
@@ -631,18 +627,18 @@ export const HiredAgentDetailClient = memo(function HiredAgentDetailClient({
 
         {/* TAB 3: Raw Telemetry & Terminal View */}
         {activeTab === 'telemetry' && (
-          <div className="bg-theme-bg-surface border border-theme-border-subtle rounded-xl p-4 flex flex-col gap-2">
-            <div className="flex items-center justify-between text-2xs pb-2 border-b border-theme-border-subtle/50">
+          <div className="bg-theme-bg-surface border border-theme-border-subtle rounded-xl p-4 flex flex-col gap-2.5">
+            <div className="flex items-center justify-between text-xs pb-2 border-b border-theme-border-subtle/50">
               <span className="font-mono text-theme-text-muted">Local IndexedDB Node Snapshot</span>
               <button
                 type="button"
                 onClick={() => handleCopy(JSON.stringify(agent, null, 2), 'json')}
-                className="text-2xs text-theme-brand-binance hover:underline flex items-center gap-1 cursor-pointer"
+                className="text-xs font-semibold text-theme-brand-binance hover:underline flex items-center gap-1 cursor-pointer"
               >
                 {copiedKey === 'json' ? <span>Copied JSON!</span> : <span>Copy JSON</span>}
               </button>
             </div>
-            <pre className="p-3 rounded-lg bg-theme-bg-elevated/70 border border-theme-border-subtle/50 font-mono text-3xs text-theme-text-secondary overflow-x-auto leading-relaxed">
+            <pre className="p-3.5 rounded-lg bg-theme-bg-elevated/70 border border-theme-border-subtle/50 font-mono text-2xs text-theme-text-secondary overflow-x-auto leading-relaxed">
               {JSON.stringify(agent, null, 2)}
             </pre>
           </div>
