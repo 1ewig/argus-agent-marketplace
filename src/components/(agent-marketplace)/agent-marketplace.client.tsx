@@ -10,8 +10,8 @@ import { MarketplaceHeader } from './marketplace-header';
 import { MarketplaceFilterBar } from './marketplace-filter-bar';
 import { AgentGrid } from './agent-grid';
 import { AgentDetailModal } from './agent-detail-modal';
-import { HireAgentModal } from './hire-agent-modal';
-import { HiredAgentsPanel } from './hired-agents-panel';
+import { HireAgentModal } from './(hire-workflow)/hire-agent-modal';
+import { HiredAgentsPanel } from './(hire-workflow)/hired-agents-panel';
 import type { ScanAgentItem } from '@/lib/8004scan/types';
 import type { HiredAgentRecord } from '@/lib/types';
 
@@ -136,7 +136,6 @@ export function AgentMarketplaceClient() {
             isLoading={isLoading}
             isError={isError}
             onSelectAgent={handleSelectAgent}
-            onHireAgent={handleOpenHireModal}
             onRetry={refetch}
             onResetFilters={handleResetFilters}
             page={page}
