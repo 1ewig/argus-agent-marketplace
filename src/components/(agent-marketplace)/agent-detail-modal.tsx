@@ -25,7 +25,7 @@ import type { ScanAgentItem } from '@/lib/8004scan/types';
 export interface AgentDetailModalProps {
   agent: ScanAgentItem | null;
   onClose: () => void;
-  onAnalyzeInChat: (prompt: string) => void;
+  onAnalyzeInChat: (prompt: string, agentName?: string) => void;
   onHireAgent?: (agent: ScanAgentItem) => void;
 }
 
@@ -56,7 +56,7 @@ export const AgentDetailModal = memo(function AgentDetailModal({
       displayName,
       agent.token_id,
     );
-    onAnalyzeInChat(prompt);
+    onAnalyzeInChat(prompt, displayName);
   };
 
   return (

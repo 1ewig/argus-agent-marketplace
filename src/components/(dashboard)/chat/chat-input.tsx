@@ -14,6 +14,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Square } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
 import { hoverScaleIcon, iconSwapVariants, tapScaleIcon } from '@/constants/animation';
+import { useAppStore } from '@/stores/app-store';
 
 export interface ChatInputHandle {
   setInputText: (text: string) => void;
@@ -56,7 +57,11 @@ export const ChatInput = memo(
     },
     ref
   ) {
-    const [text, setText] = useState('');
+    const storeInput = useAppStore((state) => state.input);
+    const setStoreInput = useAppStore((state) => state.setInput);
+
+    const [text, setText] = useState(storeInput || '');
+    const prevStoreInputRef = useRef(storeInput);
     const [isFocused, setIsFocused] = useState(false);
     const [isComposing, setIsComposing] = useState(false);
     const [isMultiLine, setIsMultiLine] = useState(false);
@@ -77,8 +82,8 @@ export const ChatInput = memo(
       el.style.overflowY = scrollHeight > maxHeight ? 'auto' : 'hidden';
 
       // Mark multi-line when height exceeds single-line threshold (~44px)
-      setIsMultiLine(scrollHeight > 46 || text.includes('\n'));
-    }, [maxHeight, text]);
+      setIsMultiLine(scrollHeight > 46 || el.value.includes('\n'));
+    }, [maxHeight]);
 
     useLayoutEffect(() => {
       resizeTextarea();
@@ -91,11 +96,30 @@ export const ChatInput = memo(
       return () => window.removeEventListener('resize', handleResize);
     }, [resizeTextarea]);
 
+    // Sync external storeInput changes (e.g. from 1-Click Agent Analysis handoff)
+    useEffect(() => {
+      if (storeInput && storeInput !== prevStoreInputRef.current) {
+        prevStoreInputRef.current = storeInput;
+        setText(storeInput);
+        const target = textareaRef.current;
+        if (target) {
+          target.value = storeInput;
+          requestAnimationFrame(() => {
+            resizeTextarea();
+            target.focus();
+            target.setSelectionRange(storeInput.length, storeInput.length);
+          });
+        }
+      }
+    }, [storeInput, resizeTextarea]);
+
     // Imperative handle for parent orchestration
     useImperativeHandle(
       ref,
       () => ({
         setInputText: (newText: string) => {
+          prevStoreInputRef.current = newText;
+          setStoreInput(newText);
           setText(newText);
           const target = textareaRef.current;
           if (target) {
@@ -111,6 +135,8 @@ export const ChatInput = memo(
         focus: () => textareaRef.current?.focus(),
         blur: () => textareaRef.current?.blur(),
         clear: () => {
+          prevStoreInputRef.current = '';
+          setStoreInput('');
           setText('');
           setIsMultiLine(false);
           if (textareaRef.current) {
@@ -119,13 +145,15 @@ export const ChatInput = memo(
           }
         },
       }),
-      [text, resizeTextarea]
+      [text, resizeTextarea, setStoreInput]
     );
 
     const handleSubmit = useCallback(() => {
       const trimmed = text.trim();
       if (!trimmed || isLoading || disabled) return;
 
+      prevStoreInputRef.current = '';
+      setStoreInput('');
       setText('');
       setIsMultiLine(false);
       if (textareaRef.current) {
@@ -133,7 +161,7 @@ export const ChatInput = memo(
         textareaRef.current.style.overflowY = 'hidden';
       }
       void onSend(trimmed);
-    }, [text, isLoading, disabled, onSend]);
+    }, [text, isLoading, disabled, onSend, setStoreInput]);
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
       // Allow newline with Shift+Enter, submit on pure Enter (unless composing via IME)
@@ -203,7 +231,12 @@ export const ChatInput = memo(
             placeholder={placeholder}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
-            onChange={(e) => setText(e.target.value)}
+            onChange={(e) => {
+              const val = e.target.value;
+              setText(val);
+              prevStoreInputRef.current = val;
+              setStoreInput(val);
+            }}
             onKeyDown={handleKeyDown}
             onPaste={handlePaste}
             onCompositionStart={() => setIsComposing(true)}

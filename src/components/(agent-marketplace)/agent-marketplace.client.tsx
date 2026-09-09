@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useAgentMarketplace } from '@/hooks/agents';
 import { useAppStore } from '@/stores/app-store';
-import { db } from '@/lib/db';
+import { db, createConversation } from '@/lib/db';
+import { APP_CONTENT } from '@/constants/content';
 import { MarketplaceHeader } from './marketplace-header';
 import { MarketplaceFilterBar } from './marketplace-filter-bar';
 import { AgentGrid } from './agent-grid';
@@ -79,14 +80,37 @@ export function AgentMarketplaceClient() {
     setIsHiredPanelOpen(true);
   }, []);
 
+  const setActiveConversationId = useAppStore((state) => state.setActiveConversationId);
+
   // Handle transfer to chat reasoning desk
   const handleAnalyzeInChat = useCallback(
-    (prompt: string) => {
+    async (prompt: string, agentName?: string) => {
       setSelectedAgent(null);
+
+      // Create a brand new conversation session
+      const title = agentName ? `Analyze ${agentName}` : undefined;
+      const newConv = await createConversation(title);
+      setActiveConversationId(newConv.id);
+
+      // Pre-populate input in store
       setInput(prompt);
+
+      // Navigate to chat trading desk
       router.push('/');
     },
-    [router, setInput, setSelectedAgent],
+    [router, setInput, setSelectedAgent, setActiveConversationId],
+  );
+
+  const handleAnalyzeAgentFromCard = useCallback(
+    (agent: ScanAgentItem) => {
+      const displayName = agent.name?.trim() || `Agent #${agent.token_id}`;
+      const prompt = APP_CONTENT.marketplace.modal.chatPromptText(
+        displayName,
+        agent.token_id,
+      );
+      void handleAnalyzeInChat(prompt, displayName);
+    },
+    [handleAnalyzeInChat],
   );
 
   const handleResetFilters = useCallback(() => {
@@ -135,6 +159,7 @@ export function AgentMarketplaceClient() {
           isLoading={isLoading}
           isError={isError}
           onSelectAgent={handleSelectAgent}
+          onAnalyzeAgent={handleAnalyzeAgentFromCard}
           onRetry={refetch}
           onResetFilters={handleResetFilters}
           page={page}
