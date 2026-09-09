@@ -4,10 +4,20 @@ import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { agentsQuery } from '@/lib/queries/agents.query';
 import { isDiscoveryCategory, matchAgentSecondaryTags } from '@/lib/8004scan/categories';
-import type { MarketplaceTab, ScanAgentItem, SecondaryTagKey } from '@/lib/8004scan/types';
+import type {
+  CategoryKey,
+  MarketplaceSortKey,
+  MarketplaceTab,
+  ScanAgentItem,
+  SecondaryTagKey,
+} from '@/lib/8004scan/types';
 
 export interface UseAgentMarketplaceReturn {
   // Filters & State
+  selectedCategory: CategoryKey;
+  setSelectedCategory: (category: CategoryKey) => void;
+  selectedSort: MarketplaceSortKey;
+  setSelectedSort: (sort: MarketplaceSortKey) => void;
   selectedTab: MarketplaceTab;
   setSelectedTab: (tab: MarketplaceTab) => void;
   searchQuery: string;
@@ -40,7 +50,8 @@ export interface UseAgentMarketplaceReturn {
 const PAGE_SIZE = 24;
 
 export function useAgentMarketplace(): UseAgentMarketplaceReturn {
-  const [selectedTab, setSelectedTabState] = useState<MarketplaceTab>('all');
+  const [selectedCategory, setSelectedCategoryState] = useState<CategoryKey>('all');
+  const [selectedSort, setSelectedSortState] = useState<MarketplaceSortKey>('leaderboard');
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedTags, setSelectedTags] = useState<SecondaryTagKey[]>([]);
@@ -56,10 +67,30 @@ export function useAgentMarketplace(): UseAgentMarketplaceReturn {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  const setSelectedTab = useCallback((tab: MarketplaceTab) => {
-    setSelectedTabState(tab);
+  const setSelectedCategory = useCallback((category: CategoryKey) => {
+    setSelectedCategoryState(category);
     setPage(0);
   }, []);
+
+  const setSelectedSort = useCallback((sort: MarketplaceSortKey) => {
+    setSelectedSortState(sort);
+    setPage(0);
+  }, []);
+
+  // Backwards-compatible tab setter
+  const setSelectedTab = useCallback(
+    (tab: MarketplaceTab) => {
+      if (tab === 'all' || isDiscoveryCategory(tab)) {
+        setSelectedCategory(tab);
+      } else {
+        setSelectedSort(tab as MarketplaceSortKey);
+      }
+    },
+    [setSelectedCategory, setSelectedSort],
+  );
+
+  const selectedTab: MarketplaceTab =
+    selectedCategory !== 'all' ? selectedCategory : selectedSort;
 
   const clearSearch = useCallback(() => {
     setSearchQuery('');
@@ -79,44 +110,18 @@ export function useAgentMarketplace(): UseAgentMarketplaceReturn {
     setPage(0);
   }, []);
 
-  // Determine query parameters from active tab
+  // Determine query parameters with composable category and sort
   const queryParams = useMemo(() => {
-    if (debouncedSearch) {
-      return {
-        search: debouncedSearch,
-        limit: PAGE_SIZE,
-        offset: page * PAGE_SIZE,
-      };
-    }
-
-    if (isDiscoveryCategory(selectedTab)) {
-      return {
-        feed: 'category',
-        category: selectedTab,
-        limit: PAGE_SIZE,
-        offset: page * PAGE_SIZE,
-      };
-    }
-
-    if (
-      selectedTab === 'leaderboard' ||
-      selectedTab === 'trending' ||
-      selectedTab === 'featured' ||
-      selectedTab === 'latest'
-    ) {
-      return {
-        feed: selectedTab,
-        limit: PAGE_SIZE,
-        offset: page * PAGE_SIZE,
-      };
-    }
-
-    return {
-      feed: 'all',
+    const params = {
+      category: selectedCategory === 'all' ? undefined : selectedCategory,
+      sort: selectedSort,
       limit: PAGE_SIZE,
       offset: page * PAGE_SIZE,
+      search: debouncedSearch || undefined,
     };
-  }, [debouncedSearch, selectedTab, page]);
+
+    return params;
+  }, [debouncedSearch, selectedCategory, selectedSort, page]);
 
   // Main agents query
   const {
@@ -158,6 +163,10 @@ export function useAgentMarketplace(): UseAgentMarketplaceReturn {
   );
 
   return {
+    selectedCategory,
+    setSelectedCategory,
+    selectedSort,
+    setSelectedSort,
     selectedTab,
     setSelectedTab,
     searchQuery,

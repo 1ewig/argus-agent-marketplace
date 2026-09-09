@@ -5,6 +5,7 @@ export async function fetchAgents(params: FetchAgentsParams = {}) {
   const query = new URLSearchParams();
   if (params.feed) query.set('feed', params.feed);
   if (params.category) query.set('category', params.category);
+  if (params.sort) query.set('sort', params.sort);
   if (params.search) query.set('search', params.search);
   if (params.limit) query.set('limit', String(params.limit));
   if (params.offset) query.set('offset', String(params.offset));

@@ -110,17 +110,22 @@ export interface CategoryQueryResult {
   error?: boolean;
 }
 
-export type MarketplaceTab =
-  | 'all'
-  | DiscoveryCategory
+export type MarketplaceSortKey =
   | 'leaderboard'
   | 'trending'
   | 'featured'
-  | 'latest';
+  | 'latest'
+  | 'newest';
+
+export type MarketplaceTab =
+  | 'all'
+  | DiscoveryCategory
+  | MarketplaceSortKey;
 
 export interface FetchAgentsParams {
   feed?: string;
   category?: DiscoveryCategory | null;
+  sort?: MarketplaceSortKey;
   search?: string;
   limit?: number;
   offset?: number;

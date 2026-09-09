@@ -16,6 +16,10 @@ export function AgentMarketplaceClient() {
   const setInput = useAppStore((state) => state.setInput);
 
   const {
+    selectedCategory,
+    setSelectedCategory,
+    selectedSort,
+    setSelectedSort,
     selectedTab,
     setSelectedTab,
     searchQuery,
@@ -65,8 +69,9 @@ export function AgentMarketplaceClient() {
   const handleResetFilters = useCallback(() => {
     clearSearch();
     clearTags();
-    setSelectedTab('all');
-  }, [clearSearch, clearTags, setSelectedTab]);
+    setSelectedCategory('all');
+    setSelectedSort('leaderboard');
+  }, [clearSearch, clearTags, setSelectedCategory, setSelectedSort]);
 
   return (
     <div className="relative flex flex-col h-full w-full bg-theme-bg-base overflow-hidden">
@@ -85,6 +90,10 @@ export function AgentMarketplaceClient() {
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           onClearSearch={clearSearch}
+          selectedCategory={selectedCategory}
+          onSelectCategory={setSelectedCategory}
+          selectedSort={selectedSort}
+          onSelectSort={setSelectedSort}
           selectedTab={selectedTab}
           onSelectTab={setSelectedTab}
           selectedTags={selectedTags}
@@ -96,7 +105,7 @@ export function AgentMarketplaceClient() {
         <AgentGrid
           agents={agents}
           spotlightAgents={
-            !searchQuery && selectedTab === 'all' && page === 0
+            !searchQuery && selectedCategory === 'all' && page === 0
               ? [...spotlightHevo.slice(0, 1), ...spotlightAlpha.slice(0, 1)]
               : undefined
           }

@@ -44,6 +44,7 @@ export const marketplaceContent = {
       trending: 'Trending',
       featured: 'Featured',
       latest: 'Recently Added',
+      newest: 'Newest First',
       primaryPillarsHeader: 'Core Pillars',
       subCategoriesHeader: 'Specialized Domains',
       filterPlaceholder: 'Filter categories...',

@@ -27,6 +27,7 @@ import {
   Folder,
   Check,
   ArrowUpDown,
+  ArrowDownNarrowWide,
   X,
   Wrench,
   Star,
@@ -34,22 +35,31 @@ import {
   SlidersHorizontal,
 } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
-import { CATEGORIES, PRIMARY_PILLARS, SECONDARY_TAGS } from '@/lib/8004scan/categories';
-import type { MarketplaceTab, SecondaryTagKey } from '@/lib/8004scan/types';
+import { CATEGORIES, PRIMARY_PILLARS, SECONDARY_TAGS, isDiscoveryCategory } from '@/lib/8004scan/categories';
+import type {
+  CategoryKey,
+  MarketplaceSortKey,
+  MarketplaceTab,
+  SecondaryTagKey,
+} from '@/lib/8004scan/types';
 
 export interface MarketplaceFilterBarProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
   onClearSearch: () => void;
-  selectedTab: MarketplaceTab;
-  onSelectTab: (tab: MarketplaceTab) => void;
+  selectedCategory?: CategoryKey;
+  onSelectCategory?: (category: CategoryKey) => void;
+  selectedSort?: MarketplaceSortKey;
+  onSelectSort?: (sort: MarketplaceSortKey) => void;
+  selectedTab?: MarketplaceTab;
+  onSelectTab?: (tab: MarketplaceTab) => void;
   selectedTags?: SecondaryTagKey[];
   onToggleTag?: (tag: SecondaryTagKey) => void;
   onClearTags?: () => void;
 }
 
 interface SortOption {
-  id: MarketplaceTab;
+  id: MarketplaceSortKey;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
 }
@@ -93,12 +103,17 @@ const SORT_OPTIONS: SortOption[] = [
   { id: 'trending', label: APP_CONTENT.marketplace.tabs.trending, icon: Flame },
   { id: 'featured', label: APP_CONTENT.marketplace.tabs.featured, icon: Sparkles },
   { id: 'latest', label: APP_CONTENT.marketplace.tabs.latest, icon: Clock },
+  { id: 'newest', label: APP_CONTENT.marketplace.tabs.newest, icon: ArrowDownNarrowWide },
 ];
 
 export const MarketplaceFilterBar = memo(function MarketplaceFilterBar({
   searchQuery,
   onSearchChange,
   onClearSearch,
+  selectedCategory,
+  onSelectCategory,
+  selectedSort,
+  onSelectSort,
   selectedTab,
   onSelectTab,
   selectedTags = [],
@@ -112,6 +127,19 @@ export const MarketplaceFilterBar = memo(function MarketplaceFilterBar({
   const globalSearchRef = useRef<HTMLInputElement>(null);
   const categoryRef = useRef<HTMLDivElement>(null);
   const sortRef = useRef<HTMLDivElement>(null);
+
+  // Compute decoupled category and sort with fallback to legacy selectedTab
+  const currentCategory: CategoryKey =
+    selectedCategory ??
+    (selectedTab && (selectedTab === 'all' || isDiscoveryCategory(selectedTab))
+      ? (selectedTab as CategoryKey)
+      : 'all');
+
+  const currentSort: MarketplaceSortKey =
+    selectedSort ??
+    (selectedTab && !isDiscoveryCategory(selectedTab) && selectedTab !== 'all'
+      ? (selectedTab as MarketplaceSortKey)
+      : 'leaderboard');
 
   // Keyboard shortcut '/' to focus global search
   useEffect(() => {
@@ -145,7 +173,7 @@ export const MarketplaceFilterBar = memo(function MarketplaceFilterBar({
   }, []);
 
   // Determine active category label & icon
-  const activeCategory = CATEGORIES.find((c) => c.key === selectedTab);
+  const activeCategory = CATEGORIES.find((c) => c.key === currentCategory);
   const isCategoryFiltered = Boolean(activeCategory && activeCategory.key !== 'all');
   const categoryLabel = activeCategory
     ? APP_CONTENT.marketplace.tabs[
@@ -158,7 +186,7 @@ export const MarketplaceFilterBar = memo(function MarketplaceFilterBar({
     : Folder;
 
   // Determine active sort label & icon
-  const activeSort = SORT_OPTIONS.find((s) => s.id === selectedTab);
+  const activeSort = SORT_OPTIONS.find((s) => s.id === currentSort);
   const sortLabel = activeSort?.label ?? APP_CONTENT.marketplace.tabs.leaderboard;
   const SortTriggerIcon = activeSort?.icon ?? ArrowUpDown;
 
@@ -193,10 +221,23 @@ export const MarketplaceFilterBar = memo(function MarketplaceFilterBar({
     });
   }, [categorySearch]);
 
-  const handleSelectCategory = (key: MarketplaceTab) => {
-    onSelectTab(key);
+  const handleSelectCategory = (key: CategoryKey) => {
+    if (onSelectCategory) {
+      onSelectCategory(key);
+    } else if (onSelectTab) {
+      onSelectTab(key);
+    }
     setIsCategoryOpen(false);
     setCategorySearch('');
+  };
+
+  const handleSelectSort = (sortKey: MarketplaceSortKey) => {
+    if (onSelectSort) {
+      onSelectSort(sortKey);
+    } else if (onSelectTab) {
+      onSelectTab(sortKey);
+    }
+    setIsSortOpen(false);
   };
 
   return (
@@ -299,16 +340,16 @@ export const MarketplaceFilterBar = memo(function MarketplaceFilterBar({
                     {/* 1. Pinned 'All Agents' */}
                     <button
                       type="button"
-                      onClick={() => handleSelectCategory('all' as MarketplaceTab)}
+                      onClick={() => handleSelectCategory('all')}
                       className={`h-8 w-full px-2 rounded-lg text-xs flex items-center gap-2 cursor-pointer transition-colors text-left ${
-                        selectedTab === 'all'
+                        currentCategory === 'all'
                           ? 'bg-theme-bg-elevated text-theme-brand-binance font-semibold'
                           : 'text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-elevated/50'
                       }`}
                     >
                       <Layers
                         className={`size-3.5 shrink-0 ${
-                          selectedTab === 'all'
+                          currentCategory === 'all'
                             ? 'text-theme-brand-binance'
                             : 'text-theme-text-muted'
                         }`}
@@ -316,7 +357,7 @@ export const MarketplaceFilterBar = memo(function MarketplaceFilterBar({
                       <span className="flex-1 truncate">
                         {APP_CONTENT.marketplace.tabs.allCategories}
                       </span>
-                      {selectedTab === 'all' && (
+                      {currentCategory === 'all' && (
                         <Check className="size-3.5 text-theme-brand-binance shrink-0" />
                       )}
                     </button>
@@ -330,7 +371,7 @@ export const MarketplaceFilterBar = memo(function MarketplaceFilterBar({
 
                     {primaryPillarsList.map((cat) => {
                       const Icon = ICON_MAP[cat.icon] ?? Folder;
-                      const isCurrent = selectedTab === cat.key;
+                      const isCurrent = currentCategory === cat.key;
                       const label =
                         APP_CONTENT.marketplace.tabs[
                           cat.key as keyof typeof APP_CONTENT.marketplace.tabs
@@ -371,7 +412,7 @@ export const MarketplaceFilterBar = memo(function MarketplaceFilterBar({
 
                     {specializedCategoriesList.map((cat) => {
                       const Icon = ICON_MAP[cat.icon] ?? Folder;
-                      const isCurrent = selectedTab === cat.key;
+                      const isCurrent = currentCategory === cat.key;
                       const label =
                         APP_CONTENT.marketplace.tabs[
                           cat.key as keyof typeof APP_CONTENT.marketplace.tabs
@@ -407,7 +448,7 @@ export const MarketplaceFilterBar = memo(function MarketplaceFilterBar({
                   /* When search query is typed: display filtered list */
                   filteredCategories.map((cat) => {
                     const Icon = ICON_MAP[cat.icon] ?? Folder;
-                    const isCurrent = selectedTab === cat.key;
+                    const isCurrent = currentCategory === cat.key;
                     const label =
                       APP_CONTENT.marketplace.tabs[
                         cat.key as keyof typeof APP_CONTENT.marketplace.tabs
@@ -486,15 +527,12 @@ export const MarketplaceFilterBar = memo(function MarketplaceFilterBar({
             <div className="absolute right-0 top-full mt-1.5 w-44 bg-theme-bg-surface/95 backdrop-blur-md border border-theme-border-subtle rounded-xl shadow-2xl p-1 z-30 flex flex-col gap-0.5 animate-in fade-in zoom-in-95 duration-100">
               {SORT_OPTIONS.map((opt) => {
                 const Icon = opt.icon;
-                const isCurrent = selectedTab === opt.id;
+                const isCurrent = currentSort === opt.id;
                 return (
                   <button
                     key={opt.id}
                     type="button"
-                    onClick={() => {
-                      onSelectTab(opt.id);
-                      setIsSortOpen(false);
-                    }}
+                    onClick={() => handleSelectSort(opt.id)}
                     className={`h-8 w-full px-2 rounded-lg text-xs flex items-center gap-2 cursor-pointer transition-colors text-left ${
                       isCurrent
                         ? 'bg-theme-bg-elevated text-theme-brand-binance font-semibold'

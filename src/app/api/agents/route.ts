@@ -9,7 +9,7 @@ import {
   listAgents,
   searchAgents,
 } from '@/lib/8004scan/client';
-import type { DiscoveryCategory, ScanAgentItem } from '@/lib/8004scan/types';
+import type { DiscoveryCategory, MarketplaceSortKey, ScanAgentItem } from '@/lib/8004scan/types';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
@@ -88,22 +88,29 @@ async function loadFallbackData(): Promise<ScanAgentItem[]> {
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const feed = searchParams.get('feed') ?? 'all';
+  const rawFeed = searchParams.get('feed') ?? 'all';
   const category = searchParams.get('category') as DiscoveryCategory | null;
+  const sort =
+    (searchParams.get('sort') as MarketplaceSortKey | null) ??
+    (rawFeed !== 'all' && rawFeed !== 'category' && rawFeed !== 'spotlight' && rawFeed !== 'search'
+      ? (rawFeed as MarketplaceSortKey)
+      : 'leaderboard');
   const search = searchParams.get('search')?.trim() || '';
   const limit = Math.min(Math.max(Number(searchParams.get('limit')) || 24, 1), 100);
   const offset = Math.max(Number(searchParams.get('offset')) || 0, 0);
 
   // 1. Check in-memory cache
-  const cacheKey = `${feed}:${category || ''}:${search}:${limit}:${offset}`;
+  const cacheKey = `${category || 'all'}:${sort}:${search}:${limit}:${offset}`;
   const cachedData = getCached(cacheKey);
   if (cachedData) {
     return respondWithCache(cachedData, true);
   }
 
+  const RECENT_COHORT_CAP = 120;
+
   try {
     // 2. Spotlight request
-    if (feed === 'spotlight') {
+    if (rawFeed === 'spotlight') {
       const spotlight = await getSpotlightAgents(10);
       const payload = {
         success: true,
@@ -118,11 +125,14 @@ export async function GET(request: Request) {
 
     // 3. Free-text search
     if (search) {
-      const result = await searchAgents(search, { limit, offset });
+      const sortBy = sort === 'newest' || sort === 'latest' ? 'created_at' : 'total_score';
+      const result = await searchAgents(search, { limit, offset, sortBy, sortOrder: 'desc' });
       const payload = {
         success: true,
         feed: 'search',
         query: search,
+        category: category ?? undefined,
+        sort,
         items: result.items ?? [],
         total: result.total ?? (result.items ?? []).length,
       };
@@ -130,13 +140,74 @@ export async function GET(request: Request) {
       return respondWithCache(payload, false);
     }
 
-    // 4. Category feed
-    if (feed === 'category' && category) {
-      const result = await getAgentsByCategory(category, { limit, offset });
+    // 4. Category-scoped queries (with composable sort)
+    if (category) {
+      if (sort === 'newest') {
+        const result = await getAgentsByCategory(category, {
+          limit,
+          offset,
+          sortBy: 'created_at',
+          sortOrder: 'desc',
+        });
+        const payload = {
+          success: true,
+          feed: 'category',
+          category,
+          sort,
+          items: result.items ?? [],
+          total: result.total ?? (result.items ?? []).length,
+        };
+        setCached(cacheKey, payload);
+        return respondWithCache(payload, false);
+      }
+
+      if (sort === 'latest') {
+        if (offset >= RECENT_COHORT_CAP) {
+          const payload = {
+            success: true,
+            feed: 'category',
+            category,
+            sort,
+            items: [],
+            total: RECENT_COHORT_CAP,
+          };
+          setCached(cacheKey, payload);
+          return respondWithCache(payload, false);
+        }
+
+        const effectiveLimit = Math.min(limit, RECENT_COHORT_CAP - offset);
+        const result = await getAgentsByCategory(category, {
+          limit: effectiveLimit,
+          offset,
+          sortBy: 'created_at',
+          sortOrder: 'desc',
+        });
+        const items = (result.items ?? []).slice(0, effectiveLimit);
+        const total = Math.min(result.total ?? items.length, RECENT_COHORT_CAP);
+        const payload = {
+          success: true,
+          feed: 'category',
+          category,
+          sort,
+          items,
+          total,
+        };
+        setCached(cacheKey, payload);
+        return respondWithCache(payload, false);
+      }
+
+      // Default category sort: total_score desc (leaderboard / trending / featured)
+      const result = await getAgentsByCategory(category, {
+        limit,
+        offset,
+        sortBy: 'total_score',
+        sortOrder: 'desc',
+      });
       const payload = {
         success: true,
         feed: 'category',
         category,
+        sort,
         items: result.items ?? [],
         total: result.total ?? (result.items ?? []).length,
       };
@@ -144,12 +215,13 @@ export async function GET(request: Request) {
       return respondWithCache(payload, false);
     }
 
-    // 5. Curated feed filters
-    if (feed === 'leaderboard') {
+    // 5. Global registry feeds (when no specific category is active)
+    if (sort === 'leaderboard') {
       const result = await getLeaderboard(limit, 56, { offset });
       const payload = {
         success: true,
         feed: 'leaderboard',
+        sort,
         items: result.items ?? [],
         total: result.total ?? (result.items ?? []).length,
       };
@@ -157,11 +229,12 @@ export async function GET(request: Request) {
       return respondWithCache(payload, false);
     }
 
-    if (feed === 'trending') {
+    if (sort === 'trending') {
       const result = await getTrendingAgents(limit, 56, { offset });
       const payload = {
         success: true,
         feed: 'trending',
+        sort,
         items: result.items ?? [],
         total: result.total ?? (result.items ?? []).length,
       };
@@ -169,11 +242,12 @@ export async function GET(request: Request) {
       return respondWithCache(payload, false);
     }
 
-    if (feed === 'featured') {
+    if (sort === 'featured') {
       const result = await getFeaturedAgents(limit, 56, { offset });
       const payload = {
         success: true,
         feed: 'featured',
+        sort,
         items: result.items ?? [],
         total: result.total ?? (result.items ?? []).length,
       };
@@ -181,11 +255,39 @@ export async function GET(request: Request) {
       return respondWithCache(payload, false);
     }
 
-    if (feed === 'latest') {
-      const result = await getLatestAgents(limit, offset);
+    if (sort === 'latest') {
+      if (offset >= RECENT_COHORT_CAP) {
+        const payload = {
+          success: true,
+          feed: 'latest',
+          sort,
+          items: [],
+          total: RECENT_COHORT_CAP,
+        };
+        setCached(cacheKey, payload);
+        return respondWithCache(payload, false);
+      }
+
+      const effectiveLimit = Math.min(limit, RECENT_COHORT_CAP - offset);
+      const result = await getLatestAgents(effectiveLimit, offset);
+      const items = (result.items ?? []).slice(0, effectiveLimit);
       const payload = {
         success: true,
         feed: 'latest',
+        sort,
+        items,
+        total: RECENT_COHORT_CAP,
+      };
+      setCached(cacheKey, payload);
+      return respondWithCache(payload, false);
+    }
+
+    if (sort === 'newest') {
+      const result = await getLatestAgents(limit, offset);
+      const payload = {
+        success: true,
+        feed: 'newest',
+        sort,
         items: result.items ?? [],
         total: result.total ?? (result.items ?? []).length,
       };
@@ -198,6 +300,7 @@ export async function GET(request: Request) {
     const payload = {
       success: true,
       feed: 'all',
+      sort,
       items: result.items ?? [],
       total: result.total ?? 310000,
     };
@@ -220,13 +323,27 @@ export async function GET(request: Request) {
       );
     }
 
-    const sliced = filtered.slice(offset, offset + limit);
+    let total = filtered.length;
+    let sliced = filtered.slice(offset, offset + limit);
+
+    if (sort === 'latest') {
+      const RECENT_COHORT_CAP = 120;
+      total = Math.min(filtered.length, RECENT_COHORT_CAP);
+      if (offset >= RECENT_COHORT_CAP) {
+        sliced = [];
+      } else {
+        sliced = sliced.slice(0, RECENT_COHORT_CAP - offset);
+      }
+    }
+
     const payload = {
       success: true,
       fallback: true,
-      feed,
+      feed: rawFeed,
+      sort,
+      category: category ?? undefined,
       items: sliced,
-      total: filtered.length,
+      total,
     };
 
     return respondWithCache(payload, false);
