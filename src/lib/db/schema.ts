@@ -4,6 +4,7 @@ import type {
   ExecutedToolCall,
   AgentExecutionStep,
 } from '@/agent';
+import type { HiredAgentRecord } from '@/lib/types';
 
 export interface ConversationRecord {
   id: string;
@@ -33,11 +34,13 @@ export const ONE_HOUR_MS = 60 * 60 * 1000;
 export const DEFAULT_CONVERSATION_TITLE = APP_CONTENT.chat.defaultSessionTitle;
 
 /**
- * Institutional Dexie IndexedDB Database for Argus multi-session chat history.
+ * Institutional Dexie IndexedDB Database for Argus multi-session chat history
+ * and autonomous hired agents registry.
  */
 export class ArgusDatabase extends Dexie {
   conversations!: EntityTable<ConversationRecord, 'id'>;
   messages!: EntityTable<ChatMessageRecord, 'id'>;
+  hiredAgents!: EntityTable<HiredAgentRecord, 'id'>;
 
   constructor() {
     super('ArgusDatabase');
@@ -67,6 +70,13 @@ export class ArgusDatabase extends Dexie {
     this.version(3).stores({
       conversations: 'id, createdAt, updatedAt',
       messages: 'id, conversationId, timestamp, role, status',
+    });
+
+    // Schema v4: Hired autonomous agents registry & task logs
+    this.version(4).stores({
+      conversations: 'id, createdAt, updatedAt',
+      messages: 'id, conversationId, timestamp, role, status',
+      hiredAgents: 'id, agentTokenId, status, hiredAt, lastActiveAt, categoryKey',
     });
   }
 }

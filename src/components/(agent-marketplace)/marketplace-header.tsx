@@ -1,7 +1,7 @@
 'use client';
 
 import React, { memo, useState, useCallback } from 'react';
-import { RotateCw, Menu } from 'lucide-react';
+import { RotateCw, Menu, Bot } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { APP_CONTENT } from '@/constants/content';
 import { tapScalePill } from '@/constants/animation';
@@ -11,6 +11,9 @@ export interface MarketplaceHeaderProps {
   onToggleMobileSidebar: () => void;
   totalCount: number;
   isFetching: boolean;
+  isHiredPanelOpen?: boolean;
+  onToggleHiredPanel?: () => void;
+  hiredCount?: number;
 }
 
 export const MarketplaceHeader = memo(function MarketplaceHeader({
@@ -18,6 +21,9 @@ export const MarketplaceHeader = memo(function MarketplaceHeader({
   onToggleMobileSidebar,
   totalCount,
   isFetching,
+  isHiredPanelOpen,
+  onToggleHiredPanel,
+  hiredCount = 0,
 }: MarketplaceHeaderProps) {
   const [isPending, setIsPending] = useState(false);
 
@@ -65,8 +71,40 @@ export const MarketplaceHeader = memo(function MarketplaceHeader({
         </div>
       </div>
 
-      {/* 2. Right: Refresh Action with Label and Loading State */}
+      {/* 2. Right: Refresh Action & Hired Agents Toggle */}
       <div className="flex items-center gap-2 shrink-0">
+        {onToggleHiredPanel && (
+          <motion.button
+            type="button"
+            whileTap={tapScalePill}
+            onClick={onToggleHiredPanel}
+            title={
+              isHiredPanelOpen
+                ? APP_CONTENT.hiredAgents.panel.collapseTooltip
+                : APP_CONTENT.hiredAgents.panel.expandTooltip
+            }
+            className={`h-8 px-2.5 sm:px-3 rounded-lg flex items-center gap-1.5 text-xs font-semibold border transition-all cursor-pointer select-none ${
+              isHiredPanelOpen
+                ? 'bg-theme-brand-binance text-theme-bg-overlay border-theme-brand-binance shadow-2xs'
+                : 'bg-theme-bg-elevated/60 border-theme-border-subtle hover:border-theme-brand-binance/50 hover:bg-theme-bg-elevated text-theme-text-secondary hover:text-theme-text-primary'
+            }`}
+          >
+            <Bot className="size-3.5" />
+            <span className="hidden sm:inline">{APP_CONTENT.hiredAgents.panel.title}</span>
+            {hiredCount > 0 && (
+              <span
+                className={`text-3xs font-extrabold px-1.5 py-0.2 rounded-full font-mono ${
+                  isHiredPanelOpen
+                    ? 'bg-theme-bg-overlay text-theme-brand-binance'
+                    : 'bg-theme-brand-binance/20 text-theme-brand-binance'
+                }`}
+              >
+                {hiredCount}
+              </span>
+            )}
+          </motion.button>
+        )}
+
         <motion.button
           type="button"
           whileTap={isLoadingState ? undefined : tapScalePill}

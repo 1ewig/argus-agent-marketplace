@@ -26,12 +26,14 @@ export interface AgentDetailModalProps {
   agent: ScanAgentItem | null;
   onClose: () => void;
   onAnalyzeInChat: (prompt: string) => void;
+  onHireAgent?: (agent: ScanAgentItem) => void;
 }
 
 export const AgentDetailModal = memo(function AgentDetailModal({
   agent,
   onClose,
   onAnalyzeInChat,
+  onHireAgent,
 }: AgentDetailModalProps) {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
@@ -303,16 +305,30 @@ export const AgentDetailModal = memo(function AgentDetailModal({
               </a>
             </div>
 
-            {/* Launch in Chat Reasoner */}
-            <motion.button
-              type="button"
-              whileTap={tapScalePill}
-              onClick={handleStartAnalysis}
-              className="h-9.5 px-4 rounded-xl bg-theme-brand-binance text-theme-bg-overlay text-xs font-bold flex items-center justify-center gap-2 cursor-pointer shadow-2xs hover:opacity-95 transition-opacity"
-            >
-              <MessageSquare className="size-3.5" />
-              <span>{APP_CONTENT.marketplace.modal.chatPromptAction}</span>
-            </motion.button>
+            {/* Actions: Analyze & Hire */}
+            <div className="flex items-center gap-2">
+              <motion.button
+                type="button"
+                whileTap={tapScalePill}
+                onClick={handleStartAnalysis}
+                className="h-9.5 px-3.5 rounded-xl bg-theme-bg-elevated hover:bg-theme-bg-elevated/80 border border-theme-border-subtle text-theme-text-secondary hover:text-theme-text-primary text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+              >
+                <MessageSquare className="size-3.5 text-theme-text-muted" />
+                <span>{APP_CONTENT.marketplace.modal.chatPromptAction}</span>
+              </motion.button>
+
+              {onHireAgent && (
+                <motion.button
+                  type="button"
+                  whileTap={tapScalePill}
+                  onClick={() => onHireAgent(agent)}
+                  className="h-9.5 px-4 rounded-xl bg-theme-brand-binance text-theme-bg-overlay text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs hover:opacity-95 transition-opacity"
+                >
+                  <Zap className="size-3.5" />
+                  <span>Hire Agent</span>
+                </motion.button>
+              )}
+            </div>
           </div>
         </motion.div>
       </div>
