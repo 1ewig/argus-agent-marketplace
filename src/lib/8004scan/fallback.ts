@@ -87,7 +87,7 @@ export async function resolveFallbackMarketplace(
   const fallbackItems = await loadFallbackData();
   let filtered = [...fallbackItems];
 
-  // 1. Filter by free-text search
+  // 1. Filter by free-text search (Global registry search)
   if (search) {
     const lower = search.toLowerCase();
     filtered = filtered.filter(
@@ -97,10 +97,8 @@ export async function resolveFallbackMarketplace(
         a.owner_address.toLowerCase().includes(lower) ||
         a.token_id.includes(lower),
     );
-  }
-
-  // 2. Filter by category
-  if (category && CATEGORY_DISCOVERY_CONFIG[category]) {
+  } else if (category && CATEGORY_DISCOVERY_CONFIG[category]) {
+    // 2. Filter by category (when no search query is active)
     const terms = CATEGORY_DISCOVERY_CONFIG[category].searchTerms.map((t: string) => t.toLowerCase());
     filtered = filtered.filter((a) => {
       const text = `${a.name || ''} ${a.description || ''}`.toLowerCase();
