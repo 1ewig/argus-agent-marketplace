@@ -63,23 +63,6 @@ export type DiscoveryCategory =
 
 export type CategoryKey = DiscoveryCategory | 'all';
 
-export type SecondaryTagKey =
-  | 'x402'
-  | 'mcp'
-  | 'a2a'
-  | 'verified'
-  | 'venus'
-  | 'pancakeswap'
-  | 'reputation';
-
-export interface SecondaryTagConfig {
-  key: SecondaryTagKey;
-  label: string;
-  icon: string;
-  description: string;
-  variant: SemanticThemeVariant;
-}
-
 export type SemanticThemeVariant =
   | 'brand'
   | 'success'

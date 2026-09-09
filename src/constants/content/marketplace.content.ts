@@ -50,18 +50,6 @@ export const marketplaceContent = {
       filterPlaceholder: 'Filter categories...',
       noMatch: 'No matching category',
     },
-    tags: {
-      all: 'All Capabilities',
-      x402: 'x402 Pay',
-      mcp: 'MCP Protocol',
-      a2a: 'A2A Protocol',
-      verified: 'Verified Only',
-      venus: 'Venus',
-      pancakeswap: 'PancakeSwap',
-      reputation: 'High Reputation',
-      filterByCapability: 'Capabilities',
-      clearAllTags: 'Reset Tags',
-    },
     card: {
       verified: 'Verified',
       unverified: 'Unverified',

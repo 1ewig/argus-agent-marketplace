@@ -2,9 +2,6 @@ import type {
   CategoryConfig,
   CategoryKey,
   DiscoveryCategory,
-  ScanAgentItem,
-  SecondaryTagConfig,
-  SecondaryTagKey,
 } from './types';
 
 // ──────────────────────────────────────────────
@@ -106,61 +103,6 @@ export const PRIMARY_PILLARS: CategoryConfig[] = [
     priority: 99,
     isMandatory: false,
     defaultSort: 'score',
-  },
-];
-
-// ──────────────────────────────────────────────
-// 2. Secondary Capability & Ecosystem Tags
-// ──────────────────────────────────────────────
-export const SECONDARY_TAGS: SecondaryTagConfig[] = [
-  {
-    key: 'x402',
-    label: 'x402 Pay',
-    icon: 'Zap',
-    description: 'Pay-per-request & micropayment support',
-    variant: 'brand',
-  },
-  {
-    key: 'mcp',
-    label: 'MCP Protocol',
-    icon: 'Bot',
-    description: 'Model Context Protocol multi-agent support',
-    variant: 'success',
-  },
-  {
-    key: 'a2a',
-    label: 'A2A Protocol',
-    icon: 'Bot',
-    description: 'Agent-to-Agent protocol support',
-    variant: 'info',
-  },
-  {
-    key: 'verified',
-    label: 'Verified',
-    icon: 'CheckCircle2',
-    description: 'On-chain verified contracts',
-    variant: 'success',
-  },
-  {
-    key: 'venus',
-    label: 'Venus',
-    icon: 'Coins',
-    description: 'Venus Protocol liquidity & lending',
-    variant: 'warning',
-  },
-  {
-    key: 'pancakeswap',
-    label: 'PancakeSwap',
-    icon: 'RefreshCcw',
-    description: 'PancakeSwap liquidity & swap routing',
-    variant: 'brand',
-  },
-  {
-    key: 'reputation',
-    label: 'High Reputation',
-    icon: 'Star',
-    description: 'Top-ranked agents with high feedback and scores',
-    variant: 'brand',
   },
 ];
 
@@ -369,47 +311,6 @@ export function getSearchQuery(categoryKey: CategoryKey): string {
   return category.searchTerms[0] || '';
 }
 
-/**
- * Filter agents against multi-select secondary capability tags
- */
-export function matchAgentSecondaryTags(
-  agent: ScanAgentItem,
-  tags: SecondaryTagKey[],
-): boolean {
-  if (!tags || tags.length === 0) return true;
-  return tags.every((tag) => {
-    switch (tag) {
-      case 'x402':
-        return agent.x402_supported === true;
-      case 'mcp':
-        return Boolean(
-          agent.supported_protocols?.some((p) => p.toUpperCase().includes('MCP')),
-        );
-      case 'a2a':
-        return Boolean(
-          agent.supported_protocols?.some((p) => p.toUpperCase().includes('A2A')),
-        );
-      case 'verified':
-        return agent.is_verified === true;
-      case 'venus': {
-        const text = `${agent.name || ''} ${agent.description || ''}`.toLowerCase();
-        return text.includes('venus');
-      }
-      case 'pancakeswap': {
-        const text = `${agent.name || ''} ${agent.description || ''}`.toLowerCase();
-        return text.includes('pancake');
-      }
-      case 'reputation': {
-        const score = agent.total_score ?? 0;
-        const rank = agent.rank ?? 0;
-        const avgScore = agent.average_score ?? 0;
-        return score >= 75 || (rank > 0 && rank <= 50) || avgScore >= 4.0;
-      }
-      default:
-        return true;
-    }
-  });
-}
 
 /**
  * Returns optimized search params + chain filter for 8004scan

@@ -32,15 +32,13 @@ import {
   Wrench,
   Star,
   CheckCircle2,
-  SlidersHorizontal,
 } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
-import { CATEGORIES, PRIMARY_PILLARS, SECONDARY_TAGS, isDiscoveryCategory } from '@/lib/8004scan/categories';
+import { CATEGORIES, PRIMARY_PILLARS, isDiscoveryCategory } from '@/lib/8004scan/categories';
 import type {
   CategoryKey,
   MarketplaceSortKey,
   MarketplaceTab,
-  SecondaryTagKey,
 } from '@/lib/8004scan/types';
 
 export interface MarketplaceFilterBarProps {
@@ -53,9 +51,6 @@ export interface MarketplaceFilterBarProps {
   onSelectSort?: (sort: MarketplaceSortKey) => void;
   selectedTab?: MarketplaceTab;
   onSelectTab?: (tab: MarketplaceTab) => void;
-  selectedTags?: SecondaryTagKey[];
-  onToggleTag?: (tag: SecondaryTagKey) => void;
-  onClearTags?: () => void;
 }
 
 interface SortOption {
@@ -89,15 +84,6 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   CheckCircle2,
 };
 
-const TAG_ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
-  Zap,
-  Bot,
-  CheckCircle2,
-  Coins,
-  RefreshCcw,
-  Star,
-};
-
 const SORT_OPTIONS: SortOption[] = [
   { id: 'leaderboard', label: APP_CONTENT.marketplace.tabs.leaderboard, icon: Trophy },
   { id: 'trending', label: APP_CONTENT.marketplace.tabs.trending, icon: Flame },
@@ -116,9 +102,6 @@ export const MarketplaceFilterBar = memo(function MarketplaceFilterBar({
   onSelectSort,
   selectedTab,
   onSelectTab,
-  selectedTags = [],
-  onToggleTag,
-  onClearTags,
 }: MarketplaceFilterBarProps) {
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
@@ -241,8 +224,8 @@ export const MarketplaceFilterBar = memo(function MarketplaceFilterBar({
   };
 
   return (
-    <div className="w-full bg-theme-bg-surface/50 border-b border-theme-border-subtle/80 px-4 sm:px-6 py-2.5 flex flex-col gap-2">
-      {/* Row 1: Search + Category Dropdown + Sort Dropdown */}
+    <div className="w-full bg-theme-bg-surface/50 border-b border-theme-border-subtle/80 px-4 sm:px-6 py-2.5">
+      {/* Search + Category Dropdown + Sort Dropdown */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2">
         {/* 1. Global Search */}
         <div className="relative w-full max-w-xs sm:max-w-sm">
@@ -556,47 +539,6 @@ export const MarketplaceFilterBar = memo(function MarketplaceFilterBar({
             </div>
           )}
         </div>
-      </div>
-
-      {/* Row 2: Secondary Capability Tags */}
-      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-1 border-t border-theme-border-subtle/40">
-        <span className="text-3xs uppercase tracking-wider font-semibold text-theme-text-muted shrink-0 flex items-center gap-1 mr-1">
-          <SlidersHorizontal className="size-3 text-theme-text-muted" />
-          {APP_CONTENT.marketplace.tags.filterByCapability}:
-        </span>
-
-        {SECONDARY_TAGS.map((tag) => {
-          const isSelected = selectedTags.includes(tag.key);
-          const TagIcon = TAG_ICON_MAP[tag.icon] ?? Zap;
-          const label = APP_CONTENT.marketplace.tags[tag.key] || tag.label;
-
-          return (
-            <button
-              key={tag.key}
-              type="button"
-              onClick={() => onToggleTag?.(tag.key)}
-              className={`h-6 px-2 rounded-md text-3xs sm:text-2xs font-medium flex items-center gap-1 shrink-0 cursor-pointer transition-all border ${
-                isSelected
-                  ? 'bg-theme-brand-binance/15 text-theme-brand-binance border-theme-brand-binance/40 font-semibold'
-                  : 'bg-theme-bg-elevated/30 text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-elevated/60 border-theme-border-subtle'
-              }`}
-            >
-              <TagIcon className="size-2.5 shrink-0" />
-              <span>{label}</span>
-            </button>
-          );
-        })}
-
-        {selectedTags.length > 0 && onClearTags && (
-          <button
-            type="button"
-            onClick={onClearTags}
-            className="h-6 px-2 rounded-md text-3xs text-theme-text-muted hover:text-theme-semantic-danger hover:bg-theme-semantic-danger/10 border border-transparent hover:border-theme-semantic-danger/20 shrink-0 cursor-pointer transition-colors flex items-center gap-1 ml-auto sm:ml-1"
-          >
-            <X className="size-2.5" />
-            <span>{APP_CONTENT.marketplace.tags.clearAllTags}</span>
-          </button>
-        )}
       </div>
     </div>
   );
