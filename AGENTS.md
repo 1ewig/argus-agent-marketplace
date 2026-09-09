@@ -36,4 +36,12 @@ Respect existing project conventions and modular layers:
 ### 5. Execution Integrity & Tone
 * **Authentic Data Only:** Query live Binance public feeds and Exa AI search. Never generate synthetic fallback prices or mock market stats.
 * **Natural Language:** Speak like an approachable, insightful colleague. Avoid pseudo-military or robotic jargon.
-* **Parallel Execution:** Prioritize reading and modifying files in parallel within a single turn.
+
+---
+
+### 6. Parallel Execution & Tool Call Efficiency
+* **Batch Independent Operations:** Always group independent file reads, edits, and searches into a single message with multiple tool calls. Never serialize operations that have no dependencies on each other.
+* **Parallel Reads:** When exploring a codebase or reviewing multiple files, launch all `Read`, `Glob`, and `Grep` calls simultaneously in one response.
+* **Parallel Writes:** When editing multiple independent files (e.g. updating imports across a component group), issue all `Edit` calls in a single message.
+* **Parallel Verification:** Run `bun run lint` and `bun x tsc --noEmit` concurrently — never sequentially.
+* **Minimize Round-Trips:** Each serialized tool call costs an API round-trip. A single message with 5 parallel calls is always preferred over 5 sequential messages with 1 call each.
