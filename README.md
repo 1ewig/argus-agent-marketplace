@@ -39,68 +39,11 @@ Traders can explore the entire ERC-8004 registry by core reference pillars (Yiel
 
 ## Key Platform Surfaces
 
-### 1. ERC-8004 Agent Marketplace (`/marketplace` & `/agents`)
-
-The primary discovery engine built specifically for BNB Chain's autonomous agent ecosystem:
-
-![Argus Agent Marketplace](public/images/argus-agent-marketplace.webp)
-
-* **4 Mandatory Hackathon Pillars:** Top-level core pillars surfaced with primary distinction:
-  * 🌾 **Yield & Staking:** Multi-protocol APR routing, liquid staking (slisBNB), and yield aggregators.
-  * 📊 **Grid Trading:** Automated order book bands, market making, and volatility harvesters.
-  * 🛡️ **Health Factor Monitoring:** Lending position surveillance & Venus liquidation sentinels.
-  * ⚖️ **Portfolio Rebalancing:** Concentrated liquidity auto-resetting and automated LP range managers.
-* **Specialized Sub-Domain Explorer:** Granular categorization into Liquid Staking (Lista DAO), Portfolio Rebalancers, DePIN / Greenfield storage, DAO Governance, Four.meme fair-launch bots, and Cross-Chain bridges.
-* **Composable Sorting System:** Independent sort selection that composes cleanly across categories:
-  * 🏆 **Leaderboard:** Highest total score and proven reputation.
-  * 🔥 **Trending:** Active community feedback and engagement.
-  * ✨ **Featured:** Curated spotlight selections (e.g. Hevo Sentinel, 4LPHA).
-  * ⏱️ **Recently Added:** Capped cohort of the latest 120 verified registrations.
-  * ⏳ **Newest First:** Uncapped chronological ordering exploring all 310,000+ on-chain agents.
-* **On-Card Protocol Telemetry:** Visual status badges identifying on-chain verified contracts, HTTP 402 (`x402`) micropayment readiness, Model Context Protocol (`MCP`) swarms, and Agent-to-Agent (`A2A`) communication interfaces.
-* **Instant Keyboard-Navigable Search (`/`):** Real-time search across agent names, descriptions, protocols, and token IDs.
-
----
-
-### 2. On-Chain Registry Diagnostics & 1-Click Analysis Handoff
-
-Clicking any agent card opens the comprehensive ERC-8004 diagnostic suite:
-
-* **On-Chain Identity & Ownership:** Verified contract address, deployer ENS/address, registration timestamp, and IPFS/Arweave decentralized avatar resolution.
-* **Registry Performance Metrics:** Total score, health factor %, average user rating (5.0 scale), and total feedback count.
-* **Protocol & Interface Badges:** Direct visibility into supported communication protocols (MCP, A2A, x402).
-* **Direct Verification Links:** Quick-access links to verify contracts on **BscScan** and view canonical profile pages on **8004scan.io** (`/agents/bsc/{tokenId}`).
-* **1-Click Analyze in Trading Desk:** From the agent detail inspector modal, instantly provision a new conversation session, pre-populate the diagnostic prompt, and navigate directly to the AI Trading Desk with focused inputs.
-* **Hire Agent Action:** Direct entry point into the autonomous hiring and task delegation pipeline.
-
----
-
-### 3. Autonomous Agent Hiring & Execution Workspace (ERC-8183 & x402)
-
-Argus pioneers the hiring and delegation workflow for autonomous on-chain agents, allowing users to contract agents with verifiable task agreements and zero real capital risk:
-
-* **3-Step Guided Hiring Wizard:**
-  * **1. Mission & Strategy Selection:** Pre-configured operational templates covering all 4 core hackathon pillars:
-    * ⚖️ **PancakeSwap v3 LP Rebalancer:** Automated concentrated liquidity range re-centering with configurable drift floor (`±1%` to `±10%`).
-    * 📊 **PancakeSwap Grid Trading:** Banded limit order grid market making across volatile BSC pairs.
-    * 🛡️ **Venus Lending Liquidation Sentinel:** 24/7 collateral ratio and health factor surveillance with automated protective alerts.
-    * 🌾 **Lista DAO slisBNB Yield Optimizer:** Automated BNB staking and yield compounding routing.
-    * 🎯 **Custom Directives:** Free-form autonomous mission mandate.
-  * **2. Risk Ceilings & Escrow Budget:** Allocate virtual `simBNB` into local escrow with granular loop cadence controls (5m, 15m, 1h) and parameter thresholds (e.g. LP drift floor, grid count).
-  * **3. Task Agreement Review:** Multi-standard verification binding the agent's ERC-8004 identity with **ERC-8183 task interfaces** and **x402 HTTP micropayment execution rails**.
-* **Slide-Over Hired Agents Overlay Drawer:** Instant-access slide-out panel accessible anywhere on the marketplace with active agent count badges, quick pause/resume controls, and budget consumption meters.
-* **Background Auto-Execution Heartbeat:** An automated periodic heartbeat ticker (15s cadence) that autonomously steps active agents through simulated execution cycles, re-centering LP tick ranges, harvesting fees, rebalancing grids, compounding yield, or inspecting Venus collateral ratios without user intervention.
-* **Dedicated Hired Agent Workspace (`/marketplace/hired/[id]`):**
-  * **6 Real-Time Telemetry Cards:** Escrow Allocated, Micro-Fees & Gas Spent, Simulated PnL / Yield Generated, Health Score, Lifecycle Actions Count, and Deployment Date.
-  * **Interactive Activity Timeline:** Detailed audit trail of autonomous actions, status alerts, gas receipts, and simulated BscScan transaction hashes.
-  * **Mission Mandate & Risk Bounds:** Full inspection of strategy parameters, contract addresses, deployer ENS, and external explorers.
-  * **Raw Telemetry & Receipts:** Copyable JSON telemetry snapshot for on-chain state verification.
-
----
-
-### 4. Conversational AI Trading Desk (`/`)
+### 1. Conversational AI Trading Desk (`/`)
 
 A grounded crypto intelligence assistant paired with live Binance exchange endpoints, Exa AI search, and on-chain ERC-8004 telemetry:
+
+![Conversational AI Trading Desk](public/images/home-landing-page.webp)
 
 * **Focused 10-Tool AI SDK Suite:**
   * 📈 **Market Data (Binance):** `get_ticker_price`, `get_order_book`, `get_klines`, `get_24h_stats`, `get_funding_rate`, `get_open_interest`, `get_top_long_short_ratio`.
@@ -114,13 +57,85 @@ A grounded crypto intelligence assistant paired with live Binance exchange endpo
 
 ---
 
-### 5. Interactive Candlestick Stage & Live Telemetry Deck
+### 2. Interactive Candlestick Stage & Live Telemetry Deck
 
 * **Lightweight Charts Canvas:** High-performance, GPU-accelerated candlestick rendering with multi-timeframe controls (`15m`, `1h`, `4h`, `1D`, `7D`, `30D`).
 * **Real-Time Spot Ticker:** Sub-second directional price tick flashes with micro-sparklines and 24h range bars.
 * **Perpetual Futures Sentinel:** Spot-futures basis spread, annualized funding APR, and settlement countdown timer.
 * **20-Level Depth Imbalance:** Real-time buyer vs. seller bid/ask volume distribution.
 * **Smart Sleep Mode:** WebSockets automatically hibernate on tab defocus to conserve network and CPU resources.
+
+---
+
+### 3. ERC-8004 Agent Marketplace (`/marketplace` & `/agents`)
+
+The primary discovery engine built specifically for BNB Chain's autonomous agent ecosystem:
+
+![Argus Agent Marketplace](public/images/agent-marketplace-listing.webp)
+
+* **4 Mandatory Hackathon Pillars:** Top-level core pillars surfaced with primary distinction:
+  * 🌾 **Yield & Staking:** Multi-protocol APR routing, liquid staking (slisBNB), and yield aggregators.
+  * 📊 **Grid Trading:** Automated order book bands, market making, and volatility harvesters.
+  * 🛡️ **Health Factor Monitoring:** Lending position surveillance & Venus liquidation sentinels.
+  * ⚖️ **Portfolio Rebalancing:** Concentrated liquidity auto-resetting and automated LP range managers.
+* **Specialized Sub-Domain Explorer:** Granular categorization into Liquid Staking (Lista DAO), Portfolio Rebalancers, DePIN / Greenfield storage, DAO Governance, Four.meme fair-launch bots, and Cross-Chain bridges.
+* **Composable Sorting System:** Independent sort selection that composes cleanly across categories, defaulted to **Newest First** to immediately showcase the freshest on-chain cohorts:
+  * ⏳ **Newest First (Default):** Chronological ordering exploring all 310,000+ on-chain agents and latest deployments.
+  * 🏆 **Leaderboard:** Highest total score and proven reputation.
+  * 🔥 **Trending:** Active community feedback and engagement.
+  * ✨ **Featured:** Curated spotlight selections (e.g. Hevo Sentinel, 4LPHA).
+  * ⏱️ **Recently Added:** Capped cohort of the latest 120 verified registrations.
+* **On-Card Protocol Telemetry & Canonical Avatars:** Visual status badges identifying verified contracts, HTTP 402 (`x402`) micropayments, Model Context Protocol (`MCP`) swarms, and Agent-to-Agent (`A2A`) communication interfaces, paired with edge-cached media resolution from 8004scan.
+* **Global Marketplace Search (`/`):** Instant keyboard-navigable search across all 310,000+ on-chain agents by name, description, supported protocols, contract addresses, and token IDs without category boundary restrictions.
+
+---
+
+### 4. On-Chain Registry Diagnostics & 1-Click Analysis Handoff
+
+Clicking any agent card opens the comprehensive ERC-8004 diagnostic suite:
+
+![On-Chain Registry Diagnostics Modal](public/images/agent-detail-modal.webp)
+
+* **On-Chain Identity & Canonical Media Resolution:** Verified contract address, deployer ENS/address, registration timestamp, and multi-tier decentralized avatar resolution (canonical `api.8004scan.io/api/v1/media/agents/56/{tokenId}/image` 307-redirect pipeline, IPFS, Arweave, with graceful fallback).
+* **Registry Performance Metrics:** Total score, health factor %, average user rating (5.0 scale), and total feedback count.
+* **Protocol & Interface Badges:** Direct visibility into supported communication protocols (MCP, A2A, x402).
+* **Direct Verification Links:** Quick-access links to verify contracts on **BscScan** and view canonical profile pages on **8004scan.io** (`/agents/bsc/{tokenId}`).
+* **1-Click Analyze in Trading Desk:** From the agent detail inspector modal, instantly provision a new conversation session, pre-populate the diagnostic prompt, and navigate directly to the AI Trading Desk with focused inputs.
+* **Hire Agent Action:** Direct entry point into the autonomous hiring and task delegation pipeline.
+
+---
+
+### 5. Autonomous Agent Hiring & Execution Workspace (ERC-8183 & x402)
+
+Argus pioneers the hiring and delegation workflow for autonomous on-chain agents, allowing users to contract agents with verifiable task agreements and zero real capital risk:
+
+![Hire Agent Simulation Wizard](public/images/hire-agent-simulation.webp)
+
+* **3-Step Guided Hiring Wizard:**
+  * **1. Mission & Strategy Selection:** Pre-configured operational templates covering all 4 core hackathon pillars:
+    * ⚖️ **PancakeSwap v3 LP Rebalancer:** Automated concentrated liquidity range re-centering with configurable drift floor (`±1%` to `±10%`).
+    * 📊 **PancakeSwap Grid Trading:** Banded limit order grid market making across volatile BSC pairs.
+    * 🛡️ **Venus Lending Liquidation Sentinel:** 24/7 collateral ratio and health factor surveillance with automated protective alerts.
+    * 🌾 **Lista DAO slisBNB Yield Optimizer:** Automated BNB staking and yield compounding routing.
+    * 🎯 **Custom Directives:** Free-form autonomous mission mandate.
+  * **2. Risk Ceilings & Escrow Budget:** Allocate virtual `simBNB` into local escrow with granular loop cadence controls (5m, 15m, 1h) and parameter thresholds (e.g. LP drift floor, grid count).
+  * **3. Task Agreement Review:** Multi-standard verification binding the agent's ERC-8004 identity with **ERC-8183 task interfaces** and **x402 HTTP micropayment execution rails**.
+* **Slide-Over Hired Agents Overlay Drawer:** Instant-access slide-out panel accessible anywhere on the marketplace with active agent count badges, quick pause/resume controls, and budget consumption meters.
+
+![Hired Agents Panel Drawer](public/images/hired-agents-panel.webp)
+
+* **Full 2-Stage Lifecycle Management:**
+  * **Active $\to$ Paused $\to$ Terminated:** Pause missions at any time or initiate contract termination with confirmation modals to prevent accidental cancellations.
+  * **2nd-Stage Record Purge:** Terminated agent records can be permanently deleted from Dexie IndexedDB with one-time first-launch seeding protection (preventing unwanted auto-reseeding).
+* **Background Auto-Execution Heartbeat:** An automated periodic heartbeat ticker (15s cadence) that autonomously steps active agents through simulated execution cycles, re-centering LP tick ranges, harvesting fees, rebalancing grids, compounding yield, or inspecting Venus collateral ratios without user intervention.
+* **Dedicated Hired Agent Workspace (`/marketplace/hired/[id]`):**
+
+![Hired Agent Execution Workspace & Activity Timeline](public/images/agent-execution-activity.webp)
+
+  * **6 Real-Time Telemetry Cards:** Escrow Allocated, Micro-Fees & Gas Spent, Simulated PnL / Yield Generated, Health Score, Lifecycle Actions Count, and Deployment Date.
+  * **Interactive Activity Timeline:** Detailed audit trail of autonomous actions, status alerts, gas receipts, and simulated BscScan transaction hashes.
+  * **Mission Mandate & Risk Bounds:** Full inspection of strategy parameters, contract addresses, deployer ENS, and external explorers.
+  * **Raw Telemetry & Receipts:** Copyable JSON telemetry snapshot for on-chain state verification.
 
 ---
 
@@ -152,8 +167,10 @@ A grounded crypto intelligence assistant paired with live Binance exchange endpo
 
 * **Strict Token Architecture:** Zero raw hex or magic pixel values in JSX; 100% semantic design tokens in `src/app/globals.css`.
 * **Centralized Copy:** All user-facing labels, headings, error states, and tooltips are centralized in `src/constants/content/` (Rule 1 of `AGENTS.md`).
+* **Canonical 8004scan Media Pipeline:** Multi-tier image resolution targeting `api.8004scan.io/api/v1/media/agents/56/{tokenId}/image` (307 redirect to WebP CDN) with automatic protocol fallback for IPFS/Arweave and resilient UI handling on 404s.
 * **Multi-Cluster API Failover:** Binance REST client cycles through a multi-cluster pool (`api.binance.com`, `data-api.binance.vision`, `api1/2/3.binance.com`, `api-gcp.binance.com`) with automatic fallback on rate limits.
 * **Frankfurt (`fra1`) Edge Routing:** Serverless API endpoints pin the `fra1` region to eliminate HTTP 451 geo-restrictions on serverless ranges.
+* **Lifecycle Integrity & Local-First Escrow:** Deterministic IndexedDB persistence preserving hired agent mandates, heartbeats, and audit trails without external server dependencies.
 
 ---
 
@@ -213,10 +230,10 @@ bun run lint
 | Hackathon Requirement | Argus Implementation |
 | :--- | :--- |
 | **4 Core Hackathon Tracks** | Equal depth across **Yield & Staking**, **Grid Trading**, **Health Factor Monitoring**, and **Portfolio Rebalancing** in both marketplace discovery and autonomous execution |
-| **ERC-8004 Discoverability** | Filter by primary pillars and specialized sub-domains, instant search, and composable sorting across 310,000+ BSC agents |
+| **ERC-8004 Discoverability** | Filter by 4 primary pillars and specialized sub-domains, global search across 310,000+ BSC agents, default Newest First sorting, and canonical 8004scan WebP media resolution |
 | **Legible On-Chain Data** | Visualizes total scores, health factors, user feedback, ratings, deployer ENS, and verified contract addresses |
 | **Agent Capability Rails** | Dedicated on-card telemetry and inspector diagnostics for `x402` micropayments, `MCP` swarms, and `A2A` protocols |
-| **Autonomous Agent Hiring** | Multi-step task delegation wizard supporting **ERC-8183 task mandates**, simulation escrow, and autonomous background execution cycles (including LP range rebalancing) |
+| **Autonomous Agent Hiring** | Multi-step task delegation wizard supporting **ERC-8183 task mandates**, simulation escrow, 2-stage lifecycle termination/purge, and autonomous background execution cycles |
 | **1-Click AI Handoff & Tools** | 1-Click handoff from marketplace cards directly into the AI Trading Desk, powered by native AI SDK tools (`get_agent_telemetry`, `search_agent_marketplace`) and custom UI widgets |
 | **Production Readiness** | 100% strict TypeScript 7, Oxlint compliance, Turbopack builds, multi-cluster REST failovers, and local-first Dexie storage |
 
