@@ -75,9 +75,15 @@ export const ChatEmptyState = memo(function ChatEmptyState({
               <ArgusIcon className="size-5 text-theme-brand-binance" />
             </div>
 
-            <h3 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-theme-text-primary tracking-tight font-sans leading-tight">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-theme-text-primary tracking-tight font-sans leading-tight">
               {APP_CONTENT.chat.emptyTitle}
-            </h3>
+            </h2>
+
+            {APP_CONTENT.chat.emptySubtitle && (
+              <p className="text-xs sm:text-sm text-theme-text-secondary mt-2 max-w-lg leading-relaxed font-normal">
+                {APP_CONTENT.chat.emptySubtitle}
+              </p>
+            )}
           </motion.div>
 
           {/* Hero Input */}
