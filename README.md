@@ -66,11 +66,11 @@ The primary discovery engine built specifically for BNB Chain's autonomous agent
 
 Clicking any agent card opens the comprehensive ERC-8004 diagnostic suite:
 
-* **On-Chain Identity & Ownership:** Verified contract address, deployer ENS/address, and registration timestamp.
+* **On-Chain Identity & Ownership:** Verified contract address, deployer ENS/address, registration timestamp, and IPFS/Arweave decentralized avatar resolution.
 * **Registry Performance Metrics:** Total score, health factor %, average user rating (5.0 scale), and total feedback count.
 * **Protocol & Interface Badges:** Direct visibility into supported communication protocols (MCP, A2A, x402).
 * **Direct Verification Links:** Quick-access links to verify contracts on **BscScan** and view canonical profile pages on **8004scan.io** (`/agents/bsc/{tokenId}`).
-* **1-Click Analyze in Trading Desk:** Instantly provisions a brand new chat session thread, pre-fills the diagnostic prompt into the chat input, auto-sizes the textarea, and focuses the cursor — user just presses Enter or clicks Send. (Also accessible via the quick-action chat button directly on every card).
+* **1-Click Analyze in Trading Desk:** From the agent detail inspector modal, instantly provision a new conversation session, pre-populate the diagnostic prompt, and navigate directly to the AI Trading Desk with focused inputs.
 * **Hire Agent Action:** Direct entry point into the autonomous hiring and task delegation pipeline.
 
 ---

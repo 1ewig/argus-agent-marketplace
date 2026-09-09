@@ -14,10 +14,11 @@ export const hiredAgentsContent = {
       viewAllAction: 'Inspect Workspace',
       pauseTooltip: 'Pause autonomous loop',
       resumeTooltip: 'Resume autonomous loop',
+      deleteTooltip: 'Delete Agent Record',
       statusActive: 'Active',
       statusPaused: 'Paused',
       statusCompleted: 'Done',
-      statusTerminated: 'Ended',
+      statusTerminated: 'Terminated',
       spentLabel: 'Spent',
       pnlLabel: 'PnL',
       actionsCount: (count: number) => `${count} cycles`,
@@ -25,6 +26,15 @@ export const hiredAgentsContent = {
       autoCycleActive: 'Auto-Tick Active (15s)',
       autoCycleInactive: 'Auto-Tick Off',
       autoCycleTooltip: 'Automatically triggers simulated execution cycles for active agents periodically',
+      deleteDialog: {
+        title: 'Delete Agent Record',
+        description: (name?: string) =>
+          name
+            ? `Are you sure you want to permanently delete "${name}" and all associated logs from your workspace?`
+            : 'Are you sure you want to permanently delete this agent and all associated logs from your workspace?',
+        confirm: 'Delete Record',
+        cancel: 'Cancel',
+      },
     },
     modal: {
       title: 'Hire Autonomous Agent',
@@ -130,7 +140,26 @@ export const hiredAgentsContent = {
         pauseAgent: 'Pause Agent',
         resumeAgent: 'Resume Agent',
         terminateAgent: 'Terminate & Release Escrow',
+        deleteAgent: 'Delete Agent Record',
         backToMarketplace: 'Back to Marketplace',
+      },
+      terminateDialog: {
+        title: 'Terminate Autonomous Contract',
+        description: (name?: string) =>
+          name
+            ? `Are you sure you want to terminate the autonomous contract for "${name}"? Unspent simulation escrow balance will be returned to your wallet.`
+            : 'Are you sure you want to terminate this autonomous contract? Unspent simulation escrow balance will be returned to your wallet.',
+        confirm: 'Terminate Agent',
+        cancel: 'Cancel',
+      },
+      deleteDialog: {
+        title: 'Delete Agent Record',
+        description: (name?: string) =>
+          name
+            ? `Are you sure you want to permanently delete "${name}" and all historical execution logs from your workspace? This action cannot be undone.`
+            : 'Are you sure you want to permanently delete this agent and all historical execution logs from your workspace? This action cannot be undone.',
+        confirm: 'Delete Record',
+        cancel: 'Cancel',
       },
       logs: {
         emptyTitle: 'No Execution Logs Recorded',

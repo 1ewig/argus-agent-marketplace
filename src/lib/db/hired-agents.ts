@@ -135,6 +135,13 @@ export async function terminateHiredAgent(id: string): Promise<void> {
 }
 
 /**
+ * Deletes a hired agent record permanently from Dexie IndexedDB.
+ */
+export async function deleteHiredAgent(id: string): Promise<void> {
+  await db.hiredAgents.delete(id);
+}
+
+/**
  * Simulates an authentic execution cycle for a hired agent.
  */
 export async function triggerAgentExecutionCycle(id: string): Promise<void> {

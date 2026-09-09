@@ -5,10 +5,13 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { ChevronLeft, Bot, AlertTriangle } from 'lucide-react';
+import { ConfirmDialog } from '@/components/common';
+import { APP_CONTENT } from '@/constants/content';
 import {
   db,
   updateHiredAgentStatus,
   terminateHiredAgent,
+  deleteHiredAgent,
   triggerAgentExecutionCycle,
 } from '@/lib/db';
 import {
@@ -33,6 +36,10 @@ export const HiredAgentDetailClient = memo(function HiredAgentDetailClient({
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<WorkspaceTabKey>('timeline');
   const [isCycling, setIsCycling] = useState(false);
+  const [isTerminateDialogOpen, setIsTerminateDialogOpen] = useState(false);
+  const [isTerminating, setIsTerminating] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Live reactive query for this specific agent
   const agent = useLiveQuery(async () => {
@@ -70,14 +77,50 @@ export const HiredAgentDetailClient = memo(function HiredAgentDetailClient({
     }
   }, [agent, isCycling]);
 
-  const handleTerminate = useCallback(async () => {
+  const handleOpenTerminateDialog = useCallback(() => {
+    setIsTerminateDialogOpen(true);
+  }, []);
+
+  const handleCloseTerminateDialog = useCallback(() => {
+    if (!isTerminating) {
+      setIsTerminateDialogOpen(false);
+    }
+  }, [isTerminating]);
+
+  const handleConfirmTerminate = useCallback(async () => {
     if (!agent) return;
-    const confirmed = window.confirm(
-      'Are you sure you want to terminate this autonomous contract? Unspent simulation escrow will be released.',
-    );
-    if (confirmed) {
+    setIsTerminating(true);
+    try {
       await terminateHiredAgent(agent.id);
+      setIsTerminateDialogOpen(false);
+    } catch (err) {
+      console.error('[Workspace] Failed to terminate agent:', err);
+    } finally {
+      setIsTerminating(false);
+    }
+  }, [agent]);
+
+  const handleOpenDeleteDialog = useCallback(() => {
+    setIsDeleteDialogOpen(true);
+  }, []);
+
+  const handleCloseDeleteDialog = useCallback(() => {
+    if (!isDeleting) {
+      setIsDeleteDialogOpen(false);
+    }
+  }, [isDeleting]);
+
+  const handleConfirmDelete = useCallback(async () => {
+    if (!agent) return;
+    setIsDeleting(true);
+    try {
+      await deleteHiredAgent(agent.id);
+      setIsDeleteDialogOpen(false);
       router.push('/marketplace');
+    } catch (err) {
+      console.error('[Workspace] Failed to delete agent:', err);
+    } finally {
+      setIsDeleting(false);
     }
   }, [agent, router]);
 
@@ -123,9 +166,11 @@ export const HiredAgentDetailClient = memo(function HiredAgentDetailClient({
         agentTokenId={agent.agentTokenId}
         isActive={isActive}
         isCycling={isCycling}
+        status={agent.status}
         onTriggerCycle={handleTriggerCycle}
         onToggleStatus={handleToggleStatus}
-        onTerminate={handleTerminate}
+        onTerminate={handleOpenTerminateDialog}
+        onDelete={handleOpenDeleteDialog}
       />
 
       {/* 2. Scrollable Workspace Body */}
@@ -180,6 +225,32 @@ export const HiredAgentDetailClient = memo(function HiredAgentDetailClient({
         )}
         </div>
       </div>
+
+      {/* Terminate Agent Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={isTerminateDialogOpen}
+        title={APP_CONTENT.hiredAgents.workspace.terminateDialog.title}
+        description={APP_CONTENT.hiredAgents.workspace.terminateDialog.description(agent.name)}
+        confirmLabel={APP_CONTENT.hiredAgents.workspace.terminateDialog.confirm}
+        cancelLabel={APP_CONTENT.hiredAgents.workspace.terminateDialog.cancel}
+        variant="danger"
+        isLoading={isTerminating}
+        onConfirm={handleConfirmTerminate}
+        onCancel={handleCloseTerminateDialog}
+      />
+
+      {/* Delete Agent Record Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={isDeleteDialogOpen}
+        title={APP_CONTENT.hiredAgents.workspace.deleteDialog.title}
+        description={APP_CONTENT.hiredAgents.workspace.deleteDialog.description(agent.name)}
+        confirmLabel={APP_CONTENT.hiredAgents.workspace.deleteDialog.confirm}
+        cancelLabel={APP_CONTENT.hiredAgents.workspace.deleteDialog.cancel}
+        variant="danger"
+        isLoading={isDeleting}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCloseDeleteDialog}
+      />
     </div>
   );
 });

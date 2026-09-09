@@ -15,7 +15,9 @@ import {
   Activity,
   Layers,
   Sparkles,
+  Trash2,
 } from 'lucide-react';
+import { ConfirmDialog } from '@/components/common';
 import { APP_CONTENT } from '@/constants/content';
 import { tapScalePill } from '@/constants/animation';
 import { useAutoExecutionTicker } from '@/hooks/agents';
@@ -23,6 +25,7 @@ import {
   db,
   seedInitialHiredAgents,
   updateHiredAgentStatus,
+  deleteHiredAgent,
   triggerAgentExecutionCycle,
 } from '@/lib/db';
 import type { HiredAgentRecord } from '@/lib/types';
@@ -41,6 +44,8 @@ export const HiredAgentsPanel = memo(function HiredAgentsPanel({
 }: HiredAgentsPanelProps) {
   const router = useRouter();
   const [cyclingAgentId, setCyclingAgentId] = useState<string | null>(null);
+  const [agentToDelete, setAgentToDelete] = useState<HiredAgentRecord | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Auto-execution heartbeat hook (periodically cycles active agents)
   const { isEnabled: isAutoTickerActive, toggleTicker: toggleAutoTicker } =
@@ -95,6 +100,33 @@ export const HiredAgentsPanel = memo(function HiredAgentsPanel({
     },
     [],
   );
+
+  const handleOpenDeleteDialog = useCallback(
+    (agent: HiredAgentRecord, e: React.MouseEvent) => {
+      e.stopPropagation();
+      setAgentToDelete(agent);
+    },
+    [],
+  );
+
+  const handleCloseDeleteDialog = useCallback(() => {
+    if (!isDeleting) {
+      setAgentToDelete(null);
+    }
+  }, [isDeleting]);
+
+  const handleConfirmDelete = useCallback(async () => {
+    if (!agentToDelete) return;
+    setIsDeleting(true);
+    try {
+      await deleteHiredAgent(agentToDelete.id);
+      setAgentToDelete(null);
+    } catch (err) {
+      console.error('[HiredPanel] Failed to delete agent record:', err);
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [agentToDelete]);
 
   const handleNavigateToAgent = useCallback(
     (agentId: string) => {
@@ -222,6 +254,8 @@ export const HiredAgentsPanel = memo(function HiredAgentsPanel({
                   <div className="flex flex-col gap-2.5">
                     {hiredAgents?.map((agent) => {
                       const isActive = agent.status === 'active';
+                      const isPaused = agent.status === 'paused';
+                      const isTerminated = agent.status === 'terminated';
                       const isCycling = cyclingAgentId === agent.id;
                       const resolvedImageUrl = resolveAgentImageUrl(agent.imageUrl);
 
@@ -229,10 +263,13 @@ export const HiredAgentsPanel = memo(function HiredAgentsPanel({
                         <div
                           key={agent.id}
                           onClick={() => handleNavigateToAgent(agent.id)}
-                          className={`bg-theme-bg-surface hover:bg-theme-bg-elevated/40 border rounded-xl p-3.5 flex flex-col gap-2.5 cursor-pointer transition-all shadow-2xs group relative select-none ${isActive
+                          className={`bg-theme-bg-surface hover:bg-theme-bg-elevated/40 border rounded-xl p-3.5 flex flex-col gap-2.5 cursor-pointer transition-all shadow-2xs group relative select-none ${
+                            isActive
                               ? 'border-theme-status-success/30 hover:border-theme-brand-binance/50 ring-1 ring-theme-status-success/15'
-                              : 'border-theme-border-subtle hover:border-theme-border-subtle/80 opacity-75'
-                            }`}
+                              : isTerminated
+                                ? 'border-theme-status-danger/30 hover:border-theme-border-subtle opacity-70'
+                                : 'border-theme-border-subtle hover:border-theme-border-subtle/80 opacity-75'
+                          }`}
                         >
                           {/* Top: Identity & Status Pill */}
                           <div className="flex items-start justify-between gap-2">
@@ -270,20 +307,28 @@ export const HiredAgentsPanel = memo(function HiredAgentsPanel({
                             {/* Status Indicator */}
                             <div className="flex items-center gap-1.5 shrink-0 pt-0.5">
                               <span
-                                className={`size-1.5 rounded-full ${isActive
+                                className={`size-1.5 rounded-full ${
+                                  isActive
                                     ? 'bg-theme-status-success animate-pulse'
-                                    : 'bg-theme-status-warning'
-                                  }`}
+                                    : isPaused
+                                      ? 'bg-theme-status-warning'
+                                      : 'bg-theme-status-danger'
+                                }`}
                               />
                               <span
-                                className={`text-2xs font-medium uppercase tracking-wider ${isActive
+                                className={`text-2xs font-medium uppercase tracking-wider ${
+                                  isActive
                                     ? 'text-theme-status-success'
-                                    : 'text-theme-status-warning'
-                                  }`}
+                                    : isPaused
+                                      ? 'text-theme-status-warning'
+                                      : 'text-theme-status-danger'
+                                }`}
                               >
                                 {isActive
                                   ? APP_CONTENT.hiredAgents.panel.statusActive
-                                  : APP_CONTENT.hiredAgents.panel.statusPaused}
+                                  : isPaused
+                                    ? APP_CONTENT.hiredAgents.panel.statusPaused
+                                    : APP_CONTENT.hiredAgents.panel.statusTerminated}
                               </span>
                             </div>
                           </div>
@@ -336,28 +381,40 @@ export const HiredAgentsPanel = memo(function HiredAgentsPanel({
                                 className="size-6 rounded-md bg-theme-bg-elevated hover:bg-theme-brand-binance hover:text-theme-bg-overlay border border-theme-border-subtle text-theme-text-muted flex items-center justify-center cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                               >
                                 <Zap
-                                  className={`size-3 ${isCycling ? 'animate-spin text-theme-brand-binance' : ''
-                                    }`}
+                                  className={`size-3 ${
+                                    isCycling ? 'animate-spin text-theme-brand-binance' : ''
+                                  }`}
                                 />
                               </button>
 
-                              {/* Play / Pause Toggle */}
-                              <button
-                                type="button"
-                                title={
-                                  isActive
-                                    ? APP_CONTENT.hiredAgents.panel.pauseTooltip
-                                    : APP_CONTENT.hiredAgents.panel.resumeTooltip
-                                }
-                                onClick={(e) => handleToggleStatus(agent, e)}
-                                className="size-6 rounded-md bg-theme-bg-elevated hover:bg-theme-bg-elevated/80 border border-theme-border-subtle text-theme-text-muted hover:text-theme-text-primary flex items-center justify-center cursor-pointer transition-colors"
-                              >
-                                {isActive ? (
-                                  <Pause className="size-3" />
-                                ) : (
-                                  <Play className="size-3 text-theme-status-success" />
-                                )}
-                              </button>
+                              {/* Play / Pause Toggle or Delete Action */}
+                              {isTerminated ? (
+                                <button
+                                  type="button"
+                                  title={APP_CONTENT.hiredAgents.panel.deleteTooltip}
+                                  onClick={(e) => handleOpenDeleteDialog(agent, e)}
+                                  className="size-6 rounded-md bg-theme-bg-elevated hover:bg-theme-status-danger/15 border border-theme-border-subtle hover:border-theme-status-danger/40 text-theme-text-muted hover:text-theme-status-danger flex items-center justify-center cursor-pointer transition-colors"
+                                >
+                                  <Trash2 className="size-3" />
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  title={
+                                    isActive
+                                      ? APP_CONTENT.hiredAgents.panel.pauseTooltip
+                                      : APP_CONTENT.hiredAgents.panel.resumeTooltip
+                                  }
+                                  onClick={(e) => handleToggleStatus(agent, e)}
+                                  className="size-6 rounded-md bg-theme-bg-elevated hover:bg-theme-bg-elevated/80 border border-theme-border-subtle text-theme-text-muted hover:text-theme-text-primary flex items-center justify-center cursor-pointer transition-colors"
+                                >
+                                  {isActive ? (
+                                    <Pause className="size-3" />
+                                  ) : (
+                                    <Play className="size-3 text-theme-status-success" />
+                                  )}
+                                </button>
+                              )}
 
                               {/* Deep Link to Workspace */}
                               <div className="size-6 rounded-md bg-theme-bg-elevated group-hover:bg-theme-brand-binance group-hover:text-theme-bg-overlay border border-theme-border-subtle flex items-center justify-center text-theme-text-muted transition-colors">
@@ -373,6 +430,19 @@ export const HiredAgentsPanel = memo(function HiredAgentsPanel({
               </div>
             </motion.aside>
           </div>
+
+          {/* Delete Agent Record Confirmation Dialog */}
+          <ConfirmDialog
+            isOpen={Boolean(agentToDelete)}
+            title={APP_CONTENT.hiredAgents.panel.deleteDialog.title}
+            description={APP_CONTENT.hiredAgents.panel.deleteDialog.description(agentToDelete?.name)}
+            confirmLabel={APP_CONTENT.hiredAgents.panel.deleteDialog.confirm}
+            cancelLabel={APP_CONTENT.hiredAgents.panel.deleteDialog.cancel}
+            variant="danger"
+            isLoading={isDeleting}
+            onConfirm={handleConfirmDelete}
+            onCancel={handleCloseDeleteDialog}
+          />
         </div>
       )}
     </AnimatePresence>
