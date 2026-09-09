@@ -133,6 +133,7 @@ export const HireAgentModal = memo(function HireAgentModal({
           <HireModalHeader
             name={displayName}
             tokenId={agent.token_id}
+            chainId={agent.chain_id}
             imageUrl={agent.image_url}
             onClose={onClose}
           />

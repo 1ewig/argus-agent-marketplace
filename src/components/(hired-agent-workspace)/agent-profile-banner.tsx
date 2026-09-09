@@ -8,6 +8,7 @@ import type { HiringStatus } from '@/lib/types';
 export interface AgentProfileBannerProps {
   name: string;
   agentTokenId: string;
+  chainId?: number;
   imageUrl?: string | null;
   missionTitle: string;
   targetProtocol: string;
@@ -17,6 +18,7 @@ export interface AgentProfileBannerProps {
 export const AgentProfileBanner = memo(function AgentProfileBanner({
   name,
   agentTokenId,
+  chainId = 56,
   imageUrl,
   missionTitle,
   targetProtocol,
@@ -24,7 +26,7 @@ export const AgentProfileBanner = memo(function AgentProfileBanner({
 }: AgentProfileBannerProps) {
   const isActive = status === 'active';
   const isPaused = status === 'paused';
-  const resolvedImageUrl = resolveAgentImageUrl(imageUrl);
+  const resolvedImageUrl = resolveAgentImageUrl(imageUrl, chainId, agentTokenId);
 
   return (
     <div className="bg-theme-bg-surface border border-theme-border-subtle rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-2xs">

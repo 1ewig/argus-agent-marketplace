@@ -10,6 +10,7 @@ import { resolveAgentImageUrl } from '@/lib/utils';
 export interface HireModalHeaderProps {
   name: string;
   tokenId: string;
+  chainId?: number;
   imageUrl?: string | null;
   onClose: () => void;
 }
@@ -17,10 +18,11 @@ export interface HireModalHeaderProps {
 export const HireModalHeader = memo(function HireModalHeader({
   name,
   tokenId,
+  chainId = 56,
   imageUrl,
   onClose,
 }: HireModalHeaderProps) {
-  const resolvedImageUrl = resolveAgentImageUrl(imageUrl);
+  const resolvedImageUrl = resolveAgentImageUrl(imageUrl, chainId, tokenId);
 
   return (
     <div className="p-4 sm:p-5 border-b border-theme-border-subtle flex items-start justify-between gap-4 bg-theme-bg-surface shrink-0">

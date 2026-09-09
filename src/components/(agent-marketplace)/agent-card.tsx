@@ -45,7 +45,11 @@ export const AgentCard = memo(function AgentCard({
     agent.description?.trim() || APP_CONTENT.marketplace.card.defaultDescription;
   const ownerDisplay = agent.owner_ens || truncateAddress(agent.owner_address);
   const avatarStyle = getAvatarGradient(agent.token_id);
-  const resolvedImageUrl = resolveAgentImageUrl(agent.image_url);
+  const resolvedImageUrl = resolveAgentImageUrl(
+    agent.image_url,
+    agent.chain_id,
+    agent.token_id,
+  );
 
   // Check protocols
   const isMCP = agent.supported_protocols?.some((p) => p.toUpperCase().includes('MCP'));

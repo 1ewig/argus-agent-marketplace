@@ -50,7 +50,11 @@ export const AgentDetailModal = memo(function AgentDetailModal({
     agent.description?.trim() || APP_CONTENT.marketplace.card.defaultDescription;
   const bscScanUrl = `https://bscscan.com/token/${agent.contract_address}?a=${agent.token_id}`;
   const scan8004Url = get8004ScanAgentUrl(agent.chain_id, agent.token_id);
-  const resolvedImageUrl = resolveAgentImageUrl(agent.image_url);
+  const resolvedImageUrl = resolveAgentImageUrl(
+    agent.image_url,
+    agent.chain_id,
+    agent.token_id,
+  );
 
   const handleStartAnalysis = () => {
     const prompt = APP_CONTENT.marketplace.modal.chatPromptText(

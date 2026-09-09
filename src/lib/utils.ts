@@ -72,38 +72,50 @@ export function truncateAddress(
 
 /**
  * Resolves raw agent image URLs, handling IPFS and Arweave URI protocols,
- * and stripping malformed/empty targets to ensure clean browser rendering.
+ * and falling back to 8004scan canonical media endpoint when tokenId is present.
  */
-export function resolveAgentImageUrl(url?: string | null): string | null {
-  if (!url || typeof url !== 'string') return null;
-  const trimmed = url.trim();
-  if (!trimmed) return null;
+export function resolveAgentImageUrl(
+  url?: string | null,
+  chainId: number = 56,
+  tokenId?: string | number | null,
+): string | null {
+  if (url && typeof url === 'string') {
+    const trimmed = url.trim();
+    if (trimmed) {
+      // Handle IPFS URIs (ipfs://<cid> or ipfs://ipfs/<cid>)
+      if (trimmed.startsWith('ipfs://')) {
+        const ipfsPath = trimmed.replace(/^ipfs:\/\/(ipfs\/)?/, '');
+        return `https://ipfs.io/ipfs/${ipfsPath}`;
+      }
 
-  // Handle IPFS URIs (ipfs://<cid> or ipfs://ipfs/<cid>)
-  if (trimmed.startsWith('ipfs://')) {
-    const ipfsPath = trimmed.replace(/^ipfs:\/\/(ipfs\/)?/, '');
-    return `https://ipfs.io/ipfs/${ipfsPath}`;
+      // Handle Arweave URIs (ar://<txId>)
+      if (trimmed.startsWith('ar://')) {
+        const arweavePath = trimmed.replace(/^ar:\/\//, '');
+        return `https://arweave.net/${arweavePath}`;
+      }
+
+      // Handle protocol-relative URLs (//example.com/img.png)
+      if (trimmed.startsWith('//')) {
+        return `https:${trimmed}`;
+      }
+
+      // Ensure valid HTTP/HTTPS or data URL
+      if (
+        trimmed.startsWith('http://') ||
+        trimmed.startsWith('https://') ||
+        trimmed.startsWith('data:image/')
+      ) {
+        return trimmed;
+      }
+    }
   }
 
-  // Handle Arweave URIs (ar://<txId>)
-  if (trimmed.startsWith('ar://')) {
-    const arweavePath = trimmed.replace(/^ar:\/\//, '');
-    return `https://arweave.net/${arweavePath}`;
-  }
-
-  // Handle protocol-relative URLs (//example.com/img.png)
-  if (trimmed.startsWith('//')) {
-    return `https:${trimmed}`;
-  }
-
-  // Ensure valid HTTP/HTTPS or data URL
-  if (
-    trimmed.startsWith('http://') ||
-    trimmed.startsWith('https://') ||
-    trimmed.startsWith('data:image/')
-  ) {
-    return trimmed;
+  // Fallback to 8004scan canonical media endpoint if tokenId is available
+  if (tokenId !== undefined && tokenId !== null && String(tokenId).trim() !== '') {
+    const validChainId = chainId || 56;
+    return `https://api.8004scan.io/api/v1/media/agents/${validChainId}/${String(tokenId).trim()}/image`;
   }
 
   return null;
 }
+

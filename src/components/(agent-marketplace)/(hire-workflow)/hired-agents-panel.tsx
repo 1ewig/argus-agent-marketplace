@@ -257,7 +257,11 @@ export const HiredAgentsPanel = memo(function HiredAgentsPanel({
                       const isPaused = agent.status === 'paused';
                       const isTerminated = agent.status === 'terminated';
                       const isCycling = cyclingAgentId === agent.id;
-                      const resolvedImageUrl = resolveAgentImageUrl(agent.imageUrl);
+                      const resolvedImageUrl = resolveAgentImageUrl(
+                        agent.imageUrl,
+                        56,
+                        agent.agentTokenId,
+                      );
 
                       return (
                         <div
