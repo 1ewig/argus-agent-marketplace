@@ -108,12 +108,18 @@ export const AgentCard = memo(function AgentCard({
           </div>
         </div>
 
-        {/* Actions: Spotlight, Quick Hire, Inspect */}
+        {/* Actions: Health Score, Inspect */}
         <div className="flex items-center gap-1.5 shrink-0">
-          {isSpotlight && (
-            <span className="text-2xs font-extrabold px-1 py-px rounded-full bg-theme-brand-binance/15 text-theme-brand-binance border border-theme-brand-binance/30 uppercase tracking-wider">
-              {APP_CONTENT.marketplace.card.spotlightTag}
-            </span>
+          {agent.health_score != null && agent.health_score > 0 ? (
+            <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-theme-bg-elevated/70 border border-theme-border-subtle/80 text-theme-status-success font-semibold text-2xs">
+              <Activity className="size-3" />
+              <span>{agent.health_score.toFixed(0)}%</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-theme-bg-elevated/70 border border-theme-border-subtle/80 text-theme-status-success font-medium text-2xs">
+              <span className="size-1.5 rounded-full bg-theme-status-success" />
+              <span>{APP_CONTENT.marketplace.card.activeStatus}</span>
+            </div>
           )}
 
           <div className="size-7 rounded-lg bg-theme-bg-elevated/70 group-hover:bg-theme-brand-binance group-hover:text-theme-bg-overlay flex items-center justify-center text-theme-text-muted transition-colors duration-150 shrink-0">
@@ -171,20 +177,12 @@ export const AgentCard = memo(function AgentCard({
           </strong>
         </div>
 
-        {/* Health Factor Badge */}
-        <div className="flex items-center gap-1.5 text-theme-text-muted">
-          {agent.health_score != null && agent.health_score > 0 ? (
-            <div className="flex items-center gap-1 text-theme-status-success font-semibold">
-              <Activity className="size-3" />
-              <span>{agent.health_score.toFixed(0)}%</span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-1 text-theme-status-success font-medium">
-              <span className="size-1.5 rounded-full bg-theme-status-success" />
-              <span>{APP_CONTENT.marketplace.card.activeStatus}</span>
-            </div>
-          )}
-        </div>
+        {/* Spotlight Badge */}
+        {isSpotlight && (
+          <span className="px-2 py-0.5 rounded-md bg-theme-bg-elevated/70 border border-theme-brand-binance/30 text-theme-brand-binance font-extrabold text-2xs uppercase tracking-wider">
+            {APP_CONTENT.marketplace.card.spotlightTag}
+          </span>
+        )}
       </div>
     </motion.div>
   );
