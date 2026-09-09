@@ -19,6 +19,7 @@ import {
 import { APP_CONTENT } from '@/constants/content';
 import { tapScalePill } from '@/constants/animation';
 import { truncateAddress } from '@/lib/utils';
+import { get8004ScanAgentUrl } from '@/lib/8004scan/categories';
 import type { ScanAgentItem } from '@/lib/8004scan/types';
 
 export interface AgentDetailModalProps {
@@ -46,7 +47,7 @@ export const AgentDetailModal = memo(function AgentDetailModal({
   const displayDescription =
     agent.description?.trim() || APP_CONTENT.marketplace.card.defaultDescription;
   const bscScanUrl = `https://bscscan.com/token/${agent.contract_address}?a=${agent.token_id}`;
-  const scan8004Url = `https://8004scan.io/agents/${agent.chain_id}/${agent.token_id}`;
+  const scan8004Url = get8004ScanAgentUrl(agent.chain_id, agent.token_id);
 
   const handleStartAnalysis = () => {
     const prompt = APP_CONTENT.marketplace.modal.chatPromptText(

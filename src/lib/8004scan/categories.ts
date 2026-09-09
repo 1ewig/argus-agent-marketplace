@@ -336,3 +336,40 @@ export function buildCategoryParams(
 
   return params;
 }
+
+/**
+ * Maps EVM Chain ID to 8004scan URL chain slug.
+ * e.g. 56 -> 'bsc', 360 -> 'shape', 1 -> 'ethereum'
+ */
+export function get8004ScanChainSlug(chainId: number | string): string {
+  const numericId = typeof chainId === 'string' ? parseInt(chainId, 10) : chainId;
+  switch (numericId) {
+    case 56:
+      return 'bsc';
+    case 97:
+      return 'bsc-testnet';
+    case 1:
+      return 'ethereum';
+    case 8453:
+      return 'base';
+    case 42161:
+      return 'arbitrum';
+    case 10:
+      return 'optimism';
+    case 137:
+      return 'polygon';
+    case 360:
+      return 'shape';
+    default:
+      return 'bsc';
+  }
+}
+
+/**
+ * Builds canonical 8004scan agent profile URL.
+ * e.g. https://8004scan.io/agents/bsc/340533
+ */
+export function get8004ScanAgentUrl(chainId: number | string, tokenId: string): string {
+  const chainSlug = get8004ScanChainSlug(chainId);
+  return `https://8004scan.io/agents/${chainSlug}/${tokenId}`;
+}

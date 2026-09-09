@@ -14,7 +14,7 @@
 </p>
 
 > **Built for the BNB Chain "Build the Era" Hackathon**  
-> The definitive on-chain marketplace and intelligent trading companion for discovering, inspecting, benchmarking, and interacting with **200,000+ autonomous AI agents** registered under the **ERC-8004 specification** on BNB Smart Chain (BSC - Chain ID 56).
+> The definitive on-chain marketplace and intelligent trading companion for discovering, inspecting, benchmarking, and interacting with **310,000+ autonomous AI agents** registered under the **ERC-8004 specification** on BNB Smart Chain (BSC - Chain ID 56).
 >
 > 🌐 **Live Web Terminal & Marketplace:** [https://argus-ai-agent-hackathon.vercel.app](https://argus-ai-agent-hackathon.vercel.app)  
 > 📦 **GitHub Repository:** [https://github.com/1ewig/argus-agent-marketplace](https://github.com/1ewig/argus-agent-marketplace)
@@ -23,17 +23,17 @@
 
 ## The Problem: The On-Chain Agent Discoverability Gap
 
-Over **200,000 autonomous AI agents** are registered on BNB Smart Chain under the ERC-8004 standard. However, the ecosystem faces a critical discoverability gap:
+Over **310,000 autonomous AI agents** are registered on BNB Smart Chain under the ERC-8004 standard. However, the ecosystem faces a critical discoverability gap:
 
 * **No Legible Agent Telemetry:** Existing raw block explorers only display contract addresses and bytecodes, leaving traders blind to an agent's actual capabilities, health score, total score, and user reputation.
-* **Fragmented Capability Standards:** Agents supporting cutting-edge rails like **x402 pay-per-request micropayments**, **Model Context Protocol (MCP)**, and **Agent-to-Agent (A2A)** collaboration are buried without unified filtering.
+* **Fragmented Capability Standards:** Agents supporting cutting-edge rails like **x402 pay-per-request micropayments**, **Model Context Protocol (MCP)**, and **Agent-to-Agent (A2A)** collaboration are buried in raw bytecode without structured discovery.
 * **Disjointed Execution Workflows:** Traders are forced to jump between discovery explorers, charting websites, Telegram bots, and exchange interfaces to evaluate and utilize agent intelligence.
 
 ### The Solution: Argus
 
 **Argus bridges this gap by unifying discovery, on-chain diagnostics, live market feeds, and conversational AI into a singular, high-performance terminal.**
 
-Traders can explore the entire ERC-8004 registry by core reference pillars (Yield, Trading, Risk & Health, Monitoring, Research, Infrastructure), multi-filter by capability tags (`x402`, `MCP`, `A2A`, `Verified`, `Venus`, `PancakeSwap`), inspect on-chain telemetry, and hand off any agent directly into the Argus Trading Desk with one click.
+Traders can explore the entire ERC-8004 registry by core reference pillars (Yield & Staking, Grid Trading, Health Factor Monitoring, Portfolio Rebalancing, Trading & Execution, Risk & Safety), sort composably across leaderboard rank or newest on-chain cohorts, inspect on-chain telemetry, and hand off any agent directly into the Argus Trading Desk with one click.
 
 ---
 
@@ -47,16 +47,14 @@ The primary discovery engine built specifically for BNB Chain's autonomous agent
 
 * **6 Core Reference Pillars:** Structured navigation across **Yield & Staking**, **Trading & Market Making**, **Risk & Health Factor**, **Monitoring & Alerts**, **Research & Intelligence**, and **Infrastructure & Tools**.
 * **Specialized Sub-Domain Explorer:** Deep categorization into Liquid Staking (Lista DAO slisBNB), Portfolio Rebalancers, DePIN / Greenfield storage, DAO Governance, Four.meme fair-launch bots, and Cross-Chain bridges.
-* **Secondary Capability Multi-Tagging:** Instant multi-select filtering for:
-  * ⚡ **x402 Pay:** HTTP 402 pay-per-request micropayment agents.
-  * 🤖 **MCP Protocol:** Model Context Protocol multi-agent support.
-  * 🔄 **A2A Protocol:** Autonomous Agent-to-Agent communication.
-  * ✅ **Verified Contracts:** On-chain verified agent contracts.
-  * 🪙 **Venus Protocol:** Venus lending & liquidity optimizers.
-  * 🥞 **PancakeSwap:** PancakeSwap swap routing and LP rebalancing.
-  * ⭐ **High Reputation:** Top-ranked agents with high feedback and score thresholds.
+* **Composable Sorting System:** Independent sort selection that composes cleanly across categories:
+  * 🏆 **Leaderboard:** Highest total score and proven reputation.
+  * 🔥 **Trending:** Active community feedback and engagement.
+  * ✨ **Featured:** Curated spotlight selections (e.g. Hevo Sentinel, 4LPHA).
+  * ⏱️ **Recently Added:** Capped cohort of the latest 120 verified registrations.
+  * ⏳ **Newest First:** Uncapped chronological ordering exploring all 310,000+ on-chain agents.
+* **On-Card Protocol Telemetry:** Visual status badges identifying on-chain verified contracts, HTTP 402 (`x402`) micropayment readiness, Model Context Protocol (`MCP`) swarms, and Agent-to-Agent (`A2A`) communication interfaces.
 * **Instant Keyboard-Navigable Search (`/`):** Real-time search across agent names, descriptions, protocols, and token IDs.
-* **Curated Feed Sorting:** Sort by Top Ranked (Leaderboard), Trending, Featured, and Recently Added agents with smooth pagination windows.
 
 ---
 
@@ -67,7 +65,7 @@ Clicking any agent card opens the comprehensive ERC-8004 diagnostic suite:
 * **On-Chain Identity & Ownership:** Verified contract address, deployer ENS/address, and registration timestamp.
 * **Registry Performance Metrics:** Total score, health factor %, average user rating (5.0 scale), and total feedback count.
 * **Protocol & Interface Badges:** Direct visibility into supported communication protocols (MCP, A2A, x402).
-* **Direct Verification Links:** Quick-access links to verify transactions on **BscScan** and view registry metadata on **8004scan.io**.
+* **Direct Verification Links:** Quick-access links to verify contracts on **BscScan** and view canonical profile pages on **8004scan.io** (`/agents/bsc/{tokenId}`).
 * **Analyze in Trading Desk:** 1-Click action that pre-populates a specialized diagnostic prompt and hands off the agent directly to the Argus AI Reasoning Desk.
 
 ---
@@ -180,9 +178,9 @@ bun run lint
 
 | Hackathon Requirement | Argus Implementation |
 | :--- | :--- |
-| **ERC-8004 Discoverability** | Hierarchical 6-pillar explorer, instant search, and secondary capability filtering across 200,000+ BSC agents |
+| **ERC-8004 Discoverability** | Hierarchical 6-pillar explorer, instant search, and composable sorting across 310,000+ BSC agents |
 | **Legible On-Chain Data** | Visualizes total scores, health factors, user feedback, ratings, deployer ENS, and contract addresses |
-| **Agent Capability Rails** | Dedicated badges and filters for `x402` micropayments, `MCP` swarms, and `A2A` protocols |
+| **Agent Capability Rails** | Dedicated on-card telemetry and inspector diagnostics for `x402` micropayments, `MCP` swarms, and `A2A` protocols |
 | **Actionable Usability** | 1-Click handoff from marketplace cards directly into the AI Trading Desk for conversational diagnostics |
 | **Production Readiness** | 100% strict TypeScript, Oxlint compliance, multi-cluster REST failovers, and local-first Dexie storage |
 
