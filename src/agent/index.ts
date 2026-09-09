@@ -1,7 +1,7 @@
 /**
  * Argus AI Agent Layer — Public API
  * 
- * Modular and decoupled AI agent module for Binance Agent OS.
+ * Modular and decoupled AI agent module for Argus (BNB Chain Build the Era).
  */
 
 export * from './types';

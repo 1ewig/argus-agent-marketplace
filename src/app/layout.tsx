@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Argus — Trading Assistant | Binance Agent OS",
-  description: "Smart, human-centered trading assistant powered by Binance Agent OS",
+  title: "Argus — AI Agent Marketplace & Trading Desk | BNB Chain",
+  description: "Autonomous AI agent discovery marketplace and intelligent trading companion for BNB Chain (ERC-8004 specification).",
   icons: {
     icon: "/icon.svg",
   },

@@ -3,7 +3,7 @@
 import { useAppStore } from '@/stores/app-store';
 
 /**
- * Custom hook to manage or access the Binance Agent OS execution mode (paper trading sandbox).
+ * Custom hook to manage or access the Argus execution mode (paper trading sandbox).
  * Backed by the global Zustand app store to guarantee zero re-render flashes or state loss.
  * 
  * @returns Execution mode state and state modifier functions

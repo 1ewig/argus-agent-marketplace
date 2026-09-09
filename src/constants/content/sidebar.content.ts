@@ -5,8 +5,8 @@
 export const sidebarContent = {
   sidebar: {
     brand: 'Argus',
-    subtitle: 'Binance Agent OS',
-    badge: 'Track A',
+    subtitle: 'BNB Chain',
+    badge: 'Build the Era',
     newChat: 'New Chat',
     newChatDisabled: 'Current chat is already new',
     viewsTitle: 'Workspace Views',
@@ -35,11 +35,11 @@ export const sidebarContent = {
     deleteDialogCancel: 'Cancel',
   },
   header: {
-    brand: 'ARGUS // BINANCE AGENT OS',
+    brand: 'ARGUS // BNB CHAIN',
     title: 'Argus',
-    subtitle: 'Trading assistant powered by Binance Agent OS',
-    badge: 'Binance Agent OS',
-    hackathonTrack: 'Track A',
+    subtitle: 'Autonomous AI Agent Marketplace & Trading Desk for BNB Chain',
+    badge: 'Build the Era',
+    hackathonTrack: 'Build the Era',
     publicFeedsActive: 'Live Binance Feeds',
     inferenceActive: 'AI Online',
   },
