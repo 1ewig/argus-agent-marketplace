@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { agentsQuery } from '@/lib/queries/agents.query';
 import { isDiscoveryCategory } from '@/lib/8004scan/categories';
+import { useAppStore } from '@/stores/app-store';
 import type {
   CategoryKey,
   MarketplaceSortKey,
@@ -46,8 +47,11 @@ export interface UseAgentMarketplaceReturn {
 const PAGE_SIZE = 24;
 
 export function useAgentMarketplace(): UseAgentMarketplaceReturn {
-  const [selectedCategory, setSelectedCategoryState] = useState<CategoryKey>('all');
-  const [selectedSort, setSelectedSortState] = useState<MarketplaceSortKey>('leaderboard');
+  const selectedCategory = useAppStore((state) => state.marketplaceCategory);
+  const setMarketplaceCategory = useAppStore((state) => state.setMarketplaceCategory);
+  const selectedSort = useAppStore((state) => state.marketplaceSort);
+  const setMarketplaceSort = useAppStore((state) => state.setMarketplaceSort);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedAgent, setSelectedAgent] = useState<ScanAgentItem | null>(null);
@@ -62,15 +66,21 @@ export function useAgentMarketplace(): UseAgentMarketplaceReturn {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  const setSelectedCategory = useCallback((category: CategoryKey) => {
-    setSelectedCategoryState(category);
-    setPage(0);
-  }, []);
+  const setSelectedCategory = useCallback(
+    (category: CategoryKey) => {
+      setMarketplaceCategory(category);
+      setPage(0);
+    },
+    [setMarketplaceCategory],
+  );
 
-  const setSelectedSort = useCallback((sort: MarketplaceSortKey) => {
-    setSelectedSortState(sort);
-    setPage(0);
-  }, []);
+  const setSelectedSort = useCallback(
+    (sort: MarketplaceSortKey) => {
+      setMarketplaceSort(sort);
+      setPage(0);
+    },
+    [setMarketplaceSort],
+  );
 
   // Backwards-compatible tab setter
   const setSelectedTab = useCallback(

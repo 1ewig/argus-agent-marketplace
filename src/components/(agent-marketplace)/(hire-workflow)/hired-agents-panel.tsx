@@ -224,11 +224,8 @@ export const HiredAgentsPanel = memo(function HiredAgentsPanel({
                       const isCycling = cyclingAgentId === agent.id;
 
                       return (
-                        <motion.div
+                        <div
                           key={agent.id}
-                          initial={{ opacity: 0, y: 6 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -6 }}
                           onClick={() => handleNavigateToAgent(agent.id)}
                           className={`bg-theme-bg-surface hover:bg-theme-bg-elevated/40 border rounded-xl p-3.5 flex flex-col gap-2.5 cursor-pointer transition-all shadow-2xs group relative select-none ${isActive
                               ? 'border-theme-status-success/30 hover:border-theme-brand-binance/50 ring-1 ring-theme-status-success/15'
@@ -364,7 +361,7 @@ export const HiredAgentsPanel = memo(function HiredAgentsPanel({
                               </div>
                             </div>
                           </div>
-                        </motion.div>
+                        </div>
                       );
                     })}
                   </div>

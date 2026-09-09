@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import type { ExecutionMode, RightPanelTab } from '@/lib/types';
 import type { ChatMessageRecord } from '@/lib/db';
 import { DEFAULT_CONVERSATION_ID } from '@/lib/db';
+import type { CategoryKey, MarketplaceSortKey } from '@/lib/8004scan/types';
 
 export interface AppState {
   executionMode: ExecutionMode;
@@ -35,6 +36,11 @@ export interface AppState {
 
   rightPanelTab: RightPanelTab;
   setRightPanelTab: (tab: RightPanelTab) => void;
+
+  marketplaceCategory: CategoryKey;
+  setMarketplaceCategory: (category: CategoryKey) => void;
+  marketplaceSort: MarketplaceSortKey;
+  setMarketplaceSort: (sort: MarketplaceSortKey) => void;
 
   _hasHydrated: boolean;
   setHasHydrated: (hasHydrated: boolean) => void;
@@ -75,6 +81,11 @@ export const useAppStore = create<AppState>()(
       rightPanelTab: 'overview',
       setRightPanelTab: (rightPanelTab) => set({ rightPanelTab }),
 
+      marketplaceCategory: 'all',
+      setMarketplaceCategory: (marketplaceCategory) => set({ marketplaceCategory }),
+      marketplaceSort: 'leaderboard',
+      setMarketplaceSort: (marketplaceSort) => set({ marketplaceSort }),
+
       _hasHydrated: false,
       setHasHydrated: (_hasHydrated) => set({ _hasHydrated }),
     }),
@@ -87,6 +98,8 @@ export const useAppStore = create<AppState>()(
         activeConversationId: state.activeConversationId,
         isSidebarCollapsed: state.isSidebarCollapsed,
         rightPanelTab: state.rightPanelTab,
+        marketplaceCategory: state.marketplaceCategory,
+        marketplaceSort: state.marketplaceSort,
       }),
     }
   )
