@@ -6,6 +6,7 @@ import {
   Shield,
   CandlestickChart,
   Coins,
+  RefreshCcw,
   Eye,
   Bot,
 } from 'lucide-react';
@@ -47,6 +48,14 @@ export const STRATEGY_OPTIONS: StrategyOption[] = [
     icon: Coins,
   },
   {
+    type: 'rebalancing',
+    label: APP_CONTENT.hiredAgents.modal.strategies.rebalancing.label,
+    desc: APP_CONTENT.hiredAgents.modal.strategies.rebalancing.desc,
+    defaultTitle: 'PancakeSwap v3 LP Rebalancer',
+    defaultTarget: 'CAKE/BNB 0.25% (PancakeSwap)',
+    icon: RefreshCcw,
+  },
+  {
     type: 'monitoring',
     label: APP_CONTENT.hiredAgents.modal.strategies.monitoring.label,
     desc: APP_CONTENT.hiredAgents.modal.strategies.monitoring.desc,
@@ -79,6 +88,8 @@ export interface HireStepStrategyProps {
   onGridUpperChange: (val: number) => void;
   gridLower: number;
   onGridLowerChange: (val: number) => void;
+  rebalanceThreshold: number;
+  onRebalanceThresholdChange: (val: number) => void;
   customPrompt: string;
   onCustomPromptChange: (val: string) => void;
 }
@@ -98,6 +109,8 @@ export const HireStepStrategy = memo(function HireStepStrategy({
   onGridUpperChange,
   gridLower,
   onGridLowerChange,
+  rebalanceThreshold,
+  onRebalanceThresholdChange,
   customPrompt,
   onCustomPromptChange,
 }: HireStepStrategyProps) {
@@ -226,6 +239,28 @@ export const HireStepStrategy = memo(function HireStepStrategy({
               className="h-8.5 px-3 rounded-lg bg-theme-bg-elevated border border-theme-border-subtle text-xs text-theme-text-primary outline-none"
             />
           </div>
+        </div>
+      )}
+
+      {selectedStrategy === 'rebalancing' && (
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center justify-between text-2xs">
+            <span className="font-bold uppercase tracking-wider text-theme-text-muted">
+              {APP_CONTENT.hiredAgents.modal.fields.rebalanceThresholdLabel}
+            </span>
+            <span className="font-mono font-bold text-theme-brand-binance">
+              ±{rebalanceThreshold}%
+            </span>
+          </div>
+          <input
+            type="range"
+            min={1}
+            max={10}
+            step={0.5}
+            value={rebalanceThreshold}
+            onChange={(e) => onRebalanceThresholdChange(Number(e.target.value))}
+            className="w-full accent-theme-brand-binance cursor-pointer"
+          />
         </div>
       )}
 

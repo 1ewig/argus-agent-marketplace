@@ -1,5 +1,3 @@
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
 import type {
   AgentsApiResponse,
   DiscoveryCategory,
@@ -30,6 +28,9 @@ type FallbackAgent = Pick<
 
 export async function loadFallbackData(): Promise<ScanAgentItem[]> {
   try {
+    if (typeof window !== 'undefined') return [];
+    const { readFile } = await import('node:fs/promises');
+    const { join } = await import('node:path');
     const filePath = join(process.cwd(), 'scripts', 'data', 'agents-bsc.json');
     const raw = await readFile(filePath, 'utf-8');
     const parsed: FallbackAgent[] = JSON.parse(raw);

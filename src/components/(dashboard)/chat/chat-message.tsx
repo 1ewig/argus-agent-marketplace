@@ -16,11 +16,8 @@ import { AgentWorkGroup } from './agent-work-group';
 import { AgentProcessTimeline } from './agent-process-timeline';
 import { normalizeMessageSteps } from '@/lib/db';
 import { useActiveTimer } from '@/hooks';
-import {
-  stripIntermediateTextPrefix,
-  type ExecutedToolCall,
-  type AgentExecutionStep,
-} from '@/agent';
+import { stripIntermediateTextPrefix } from '@/agent/transforms';
+import type { ExecutedToolCall, AgentExecutionStep } from '@/agent/types';
 
 export interface ChatMessageData {
   id: string;

@@ -10,6 +10,8 @@ import {
   Globe,
   Users,
   Crown,
+  Bot,
+  Search,
 } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
 import type { ToolDisplayInfo } from './types';
@@ -94,6 +96,24 @@ export function getToolDisplayInfo(
         icon: Globe,
         symbol,
       };
+    case 'get_agent_telemetry': {
+      const tokenId = typeof toolArgs?.tokenId === 'string' ? toolArgs.tokenId : undefined;
+      const name = typeof toolArgs?.name === 'string' ? toolArgs.name : undefined;
+      return {
+        title: labels.get_agent_telemetry(tokenId, name),
+        icon: Bot,
+        symbol: tokenId ? `#${tokenId}` : undefined,
+      };
+    }
+    case 'search_agent_marketplace': {
+      const query = typeof toolArgs?.query === 'string' ? toolArgs.query : undefined;
+      const category = typeof toolArgs?.category === 'string' ? toolArgs.category : undefined;
+      return {
+        title: labels.search_agent_marketplace(query, category),
+        icon: Search,
+        symbol: query || category,
+      };
+    }
     default:
       return {
         title: labels.default(normalizedName || 'tool'),

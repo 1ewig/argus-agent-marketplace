@@ -6,7 +6,7 @@ import { ChevronDown, CheckCircle2 } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
 import { accordionVariants, tapScaleAccordion } from '@/constants/animation';
 import { useAccordionOpenState } from '@/hooks';
-import type { AgentExecutionStep } from '@/agent';
+import type { AgentExecutionStep } from '@/agent/types';
 
 interface AgentWorkGroupProps {
   children: React.ReactNode;

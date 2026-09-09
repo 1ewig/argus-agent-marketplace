@@ -51,6 +51,10 @@ export const hiredAgentsContent = {
           label: 'Lista DAO slisBNB Optimizer',
           desc: 'Auto-harvests rewards and rebalances capital into the highest yield staking pools.',
         },
+        rebalancing: {
+          label: 'PancakeSwap LP Rebalancer',
+          desc: 'Dynamically rebalances concentrated liquidity ranges and auto-compounds trading fees on PancakeSwap v3.',
+        },
         monitoring: {
           label: 'Whale & Telemetry Sentinel',
           desc: 'Tracks large volume movements and order book depth imbalances in real-time.',
@@ -73,6 +77,7 @@ export const hiredAgentsContent = {
         healthThresholdLabel: 'Health Factor Alert Floor (%)',
         gridUpperLabel: 'Grid Upper Band ($)',
         gridLowerLabel: 'Grid Lower Band ($)',
+        rebalanceThresholdLabel: 'LP Drift Rebalance Floor (±%)',
         customPromptLabel: 'Custom Directive Prompt',
         customPromptPlaceholder:
           'Describe specific conditions, triggers, or portfolio boundaries for this agent...',

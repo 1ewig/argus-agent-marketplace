@@ -12,7 +12,7 @@ import { AgentThoughtAccordion } from './agent-thought-accordion';
 import { MarkdownView } from '../markdown-view';
 import { APP_CONTENT } from '@/constants/content';
 import { accordionVariants, tapScaleAccordion } from '@/constants/animation';
-import type { AgentExecutionStep } from '@/agent';
+import type { AgentExecutionStep } from '@/agent/types';
 
 export interface AgentProcessTimelineProps {
   steps: AgentExecutionStep[];

@@ -379,6 +379,11 @@ export const MarketplaceFilterBar = memo(function MarketplaceFilterBar({
                             }`}
                           />
                           <span className="flex-1 truncate">{label}</span>
+                          {cat.isMandatory && (
+                            <span className="text-3xs font-medium px-1.5 py-0.2 rounded bg-theme-brand-binance/15 text-theme-brand-binance shrink-0">
+                              {APP_CONTENT.marketplace.tabs.coreTracksBadge}
+                            </span>
+                          )}
                           {isCurrent && (
                             <Check className="size-3.5 text-theme-brand-binance shrink-0" />
                           )}

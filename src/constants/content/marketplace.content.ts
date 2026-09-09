@@ -47,6 +47,7 @@ export const marketplaceContent = {
       newest: 'Newest First',
       primaryPillarsHeader: 'Core Pillars',
       subCategoriesHeader: 'Specialized Domains',
+      coreTracksBadge: 'Primary',
       filterPlaceholder: 'Filter categories...',
       noMatch: 'No matching category',
     },

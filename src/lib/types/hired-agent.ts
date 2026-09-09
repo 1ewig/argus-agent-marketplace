@@ -6,6 +6,7 @@ export type StrategyType =
   | 'health_factor'
   | 'grid_trading'
   | 'yield_staking'
+  | 'rebalancing'
   | 'monitoring'
   | 'custom';
 
@@ -33,6 +34,7 @@ export interface AgentMissionConfig {
   healthFactorThreshold?: number;
   gridUpperPrice?: number;
   gridLowerPrice?: number;
+  rebalanceThresholdPct?: number;
   customPrompt?: string;
 }
 

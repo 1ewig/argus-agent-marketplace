@@ -18,9 +18,8 @@ import {
   stripIntermediateTextPrefix,
   isDefaultSessionTitle,
   generateFallbackSessionTitle,
-  type AgentResult,
-  type AgentExecutionStep,
-} from '@/agent';
+} from '@/agent/transforms';
+import type { AgentResult, AgentExecutionStep } from '@/agent/types';
 import type { ExecutionMode } from '@/lib/types';
 import { useChatSessions } from './use-chat-sessions';
 import { useChatScroll } from './use-chat-scroll';

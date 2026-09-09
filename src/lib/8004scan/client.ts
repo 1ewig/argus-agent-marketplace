@@ -4,7 +4,13 @@ import type {
   ScanAgentItem,
   ScanAgentListResponse,
 } from './types';
-import { CATEGORY_DISCOVERY_CONFIG } from './categories';
+import {
+  CATEGORY_DISCOVERY_CONFIG,
+  get8004ScanAgentUrl,
+  get8004ScanChainSlug,
+} from './categories';
+
+export { get8004ScanAgentUrl, get8004ScanChainSlug };
 
 const BASE_URL = 'https://api.8004scan.io/api/v1';
 const BSC_CHAIN_ID = 56;

@@ -1,4 +1,4 @@
-import type { AgentStreamEvent, AgentResult } from '@/agent';
+import type { AgentStreamEvent, AgentResult } from '@/agent/types';
 import type { ExecutionMode } from '@/lib/types';
 import type { ChatHistoryMessage } from './chat-history';
 import { APP_CONTENT } from '@/constants/content';

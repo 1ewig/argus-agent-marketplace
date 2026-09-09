@@ -193,6 +193,21 @@ export async function triggerAgentExecutionCycle(id: string): Promise<void> {
       };
       break;
     }
+    case 'rebalancing': {
+      pnlDelta = 2.85;
+      log = {
+        id: `log-${now}-rebal`,
+        timestamp: now,
+        type: 'action',
+        title: 'PancakeSwap v3 LP Range Rebalanced',
+        detail: `Adjusted concentrated liquidity tick range on ${agent.mission.targetPairOrProtocol}. Harvested trading fees and recentered active band within ±${agent.mission.rebalanceThresholdPct ?? 3}% tolerance.`,
+        txHash: randomTx,
+        status: 'success',
+        gasUsedEth: '0.00062 BNB',
+        costSimBnb: 0.0006,
+      };
+      break;
+    }
     default: {
       log = {
         id: `log-${now}-mon`,
@@ -323,6 +338,45 @@ export async function seedInitialHiredAgents(): Promise<void> {
           title: 'Mission Initialized',
           detail: 'Allocated 5.0 simBNB for auto-compounding liquid staking yield.',
           status: 'success',
+        },
+      ],
+    },
+    {
+      id: 'demo-hired-lp-rebalancer',
+      agentTokenId: '341400',
+      name: 'PancakeSwap Liquidity Sentinel',
+      imageUrl: null,
+      categoryKey: 'rebalancing',
+      contractAddress: '0x8004A169FB45df524Ca5a6D0a501a3F4c1481b7a',
+      ownerAddress: '0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640',
+      status: 'active',
+      executionMode: 'simulation',
+      mission: {
+        strategyType: 'rebalancing',
+        missionTitle: 'PancakeSwap v3 LP Rebalancer',
+        targetPairOrProtocol: 'CAKE/BNB 0.25%',
+        executionIntervalMinutes: 15,
+        rebalanceThresholdPct: 3,
+      },
+      allocatedBudget: 3.0,
+      spentBudget: 0.0195,
+      budgetAsset: 'simBNB',
+      simulatedPnlUsd: 22.8,
+      healthScore: 99,
+      actionsCount: 31,
+      hiredAt: now - 3600 * 1000 * 8,
+      lastActiveAt: now - 60 * 1000 * 5,
+      executionLogs: [
+        {
+          id: 'log-rebal-1',
+          timestamp: now - 60 * 1000 * 5,
+          type: 'action',
+          title: 'LP Concentrated Range Rebalanced',
+          detail: 'Price drifted near boundary. Re-centered CAKE/BNB tick range and auto-compounded 0.042 CAKE fee rewards.',
+          txHash: '0x3a9b1c7e5f2d4a6b8c0d1e3f5a7b9c1d3e5f7a9b1c3d5e7f9a1b3c5d7e9f1a3b',
+          status: 'success',
+          gasUsedEth: '0.00061 BNB',
+          costSimBnb: 0.0006,
         },
       ],
     },

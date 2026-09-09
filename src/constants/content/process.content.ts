@@ -58,6 +58,18 @@ export const processContent = {
         symbol ? `Checking ${symbol} top trader position ratio` : 'Checking top trader position ratio',
       search_crypto_news: (symbol?: string) =>
         symbol ? `Searching latest ${symbol} news & catalysts` : 'Searching crypto news & catalysts',
+      get_agent_telemetry: (tokenId?: string, name?: string) =>
+        name && tokenId
+          ? `Inspecting ${name} (#${tokenId}) telemetry`
+          : tokenId
+          ? `Inspecting ERC-8004 agent #${tokenId} telemetry`
+          : 'Inspecting ERC-8004 agent telemetry',
+      search_agent_marketplace: (query?: string, category?: string) =>
+        query
+          ? `Searching ERC-8004 agents for "${query}"`
+          : category && category !== 'all'
+          ? `Searching ${category} agents on BNB Chain`
+          : 'Searching ERC-8004 agent marketplace',
       default: (name: string) => name.replace(/_/g, ' '),
     },
     results: {
@@ -113,6 +125,21 @@ export const processContent = {
       emptyResult: 'No details available',
       priceHeader: 'Price',
       sizeHeader: 'Amount',
+      agentTelemetryHeader: 'ERC-8004 Agent Telemetry',
+      agentSearchHeader: 'ERC-8004 Agent Registry Search',
+      agentScore: 'Score',
+      agentHealth: 'Health',
+      agentRating: 'Rating',
+      agentBscScan: 'BscScan',
+      agent8004Scan: '8004scan',
+      noAgentsFound: 'No matching agents found in registry',
+      agentNotFound: 'Agent not found in ERC-8004 registry',
+      verifiedAgent: 'ERC-8004 Verified',
+      x402Badge: 'x402 Agentic Payments',
+      protocolsLabel: 'Protocols',
+      contractLabel: 'Contract',
+      ownerLabel: 'Owner',
+      agentsFound: 'agents found',
     },
     toolNames: {
       get_ticker_price: 'get_ticker_price',
@@ -126,6 +153,8 @@ export const processContent = {
       get_global_long_short_ratio: 'get_global_long_short_ratio',
       get_top_long_short_ratio: 'get_top_long_short_ratio',
       search_crypto_news: 'search_crypto_news',
+      get_agent_telemetry: 'get_agent_telemetry',
+      search_agent_marketplace: 'search_agent_marketplace',
     } as Record<string, string>,
   },
 } as const;

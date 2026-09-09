@@ -7,13 +7,22 @@ import {
   getKlines,
   get24hStats,
   getFundingRate,
-  getAveragePrice,
-  getRecentTrades,
   getOpenInterest,
-  getGlobalLongShortAccountRatio,
   getTopLongShortPositionRatio,
 } from '@/lib/binance-mcp';
 import { searchExa, ExaSearchInputSchema } from '@/lib/exa';
+import {
+  getAgentDetail,
+  searchAgents,
+} from '@/lib/8004scan/client';
+import { get8004ScanAgentUrl } from '@/lib/8004scan/categories';
+import { loadFallbackData } from '@/lib/8004scan/fallback';
+import { resolveMarketplaceAgents } from '@/lib/8004scan/service';
+import type {
+  DiscoveryCategory,
+  MarketplaceSortKey,
+  ScanAgentItem,
+} from '@/lib/8004scan/types';
 import { AGENT_TOOL_DESCRIPTIONS } from '../prompts/descriptions';
 import { symbolSchema, safeToolExecute } from './helpers';
 
@@ -145,53 +154,6 @@ export function buildAgentTools() {
         }, 'Failed to retrieve funding rate'),
     }),
 
-    get_average_price: tool({
-      description: AGENT_TOOL_DESCRIPTIONS.getAveragePrice,
-      inputSchema: z.object({
-        symbol: symbolSchema.describe('Trading pair symbol in uppercase (e.g. BTCUSDT, SOLUSDT)'),
-      }),
-      execute: async ({ symbol }) =>
-        safeToolExecute(async () => {
-          const result = await getAveragePrice(symbol.toUpperCase());
-          return { data: result };
-        }, 'Failed to retrieve average price'),
-    }),
-
-    get_recent_trades: tool({
-      description: AGENT_TOOL_DESCRIPTIONS.getRecentTrades,
-      inputSchema: z.object({
-        symbol: symbolSchema.describe('Trading pair symbol in uppercase (e.g. BTCUSDT, SOLUSDT)'),
-        limit: z
-          .coerce
-          .number({ message: 'Trades limit must be a number' })
-          .int('Trades limit must be an integer')
-          .min(1, 'Trades limit must be at least 1')
-          .max(100, 'Trades limit cannot exceed 100')
-          .default(15)
-          .describe('Number of recent trades to fetch (1-100, default 15)'),
-      }),
-      execute: async ({ symbol, limit }) =>
-        safeToolExecute(async () => {
-          const trades = await getRecentTrades(symbol.toUpperCase(), limit);
-          const totalVolume = trades.reduce((sum, t) => sum + t.qty, 0);
-          const buyerMakerVolume = trades.filter((t) => t.isBuyerMaker).reduce((sum, t) => sum + t.qty, 0);
-          const takerBuyVolume = +(totalVolume - buyerMakerVolume).toFixed(4);
-          const takerSellVolume = +buyerMakerVolume.toFixed(4);
-
-          return {
-            symbol: symbol.toUpperCase(),
-            summary: {
-              tradeCount: trades.length,
-              totalVolume: +totalVolume.toFixed(4),
-              takerBuyVolume,
-              takerSellVolume,
-              buyRatio: totalVolume > 0 ? +((takerBuyVolume / totalVolume) * 100).toFixed(1) : 50,
-            },
-            trades,
-          };
-        }, 'Failed to retrieve recent trades'),
-    }),
-
     get_open_interest: tool({
       description: AGENT_TOOL_DESCRIPTIONS.getOpenInterest,
       inputSchema: z.object({
@@ -202,50 +164,6 @@ export function buildAgentTools() {
           const result = await getOpenInterest(symbol.toUpperCase());
           return { data: result };
         }, 'Failed to retrieve open interest'),
-    }),
-
-    get_global_long_short_ratio: tool({
-      description: AGENT_TOOL_DESCRIPTIONS.getGlobalLongShortRatio,
-      inputSchema: z.object({
-        symbol: symbolSchema.describe('Perpetual contract symbol in uppercase (e.g. BTCUSDT, ETHUSDT, SOLUSDT)'),
-        period: z
-          .enum(['5m', '15m', '30m', '1h', '2h', '4h', '6h', '12h', '1d'])
-          .default('5m')
-          .describe('Granularity timeframe interval (default: 5m)'),
-        limit: z
-          .coerce
-          .number({ message: 'Limit must be a number' })
-          .int('Limit must be an integer')
-          .min(1, 'Limit must be at least 1')
-          .max(100, 'Limit cannot exceed 100')
-          .default(30)
-          .describe('Number of historical ratio points to fetch (1-100, default 30)'),
-      }),
-      execute: async ({ symbol, period, limit }) =>
-        safeToolExecute(async () => {
-          const history = await getGlobalLongShortAccountRatio(symbol.toUpperCase(), period, limit);
-          const latest = history[history.length - 1];
-          const rawLong = latest ? latest.longAccount * 100 : 50;
-          const rawShort = latest ? latest.shortAccount * 100 : 50;
-          const rawRatio = latest ? latest.longShortRatio : 1.0;
-          const longPercent = Number.isFinite(rawLong) ? +rawLong.toFixed(1) : 50;
-          const shortPercent = Number.isFinite(rawShort) ? +rawShort.toFixed(1) : 50;
-          const ratio = Number.isFinite(rawRatio) ? +rawRatio.toFixed(2) : 1.0;
-          const sentiment = ratio > 1.1 ? 'bullish' : ratio < 0.9 ? 'bearish' : 'neutral';
-
-          return {
-            symbol: symbol.toUpperCase(),
-            period,
-            summary: {
-              longPercent,
-              shortPercent,
-              longShortRatio: ratio,
-              sentiment,
-              latestTimestamp: latest?.timestamp ?? Date.now(),
-            },
-            history: history.slice(-5),
-          };
-        }, 'Failed to retrieve global long/short account ratio'),
     }),
 
     get_top_long_short_ratio: tool({
@@ -349,6 +267,165 @@ export function buildAgentTools() {
             })),
           };
         }, 'Failed to execute web search'),
+    }),
+
+    get_agent_telemetry: tool({
+      description: AGENT_TOOL_DESCRIPTIONS.getAgentTelemetry,
+      inputSchema: z.object({
+        tokenId: z
+          .string()
+          .describe('ERC-8004 Token ID (e.g. "340533", "341092")'),
+        name: z
+          .string()
+          .optional()
+          .describe('Optional name of the agent (e.g. "Hevo Sentinel", "4LPHA")'),
+      }),
+      execute: async ({ tokenId, name }) =>
+        safeToolExecute(async () => {
+          let agent: ScanAgentItem | null = null;
+          const cleanTokenId = tokenId.replace(/[^0-9]/g, '').trim();
+
+          if (cleanTokenId) {
+            try {
+              agent = await getAgentDetail(cleanTokenId);
+            } catch {
+              const fallbackItems = await loadFallbackData();
+              agent = fallbackItems.find((a) => a.token_id === cleanTokenId) ?? null;
+            }
+          }
+
+          if (!agent && name) {
+            try {
+              const searchRes = await searchAgents(name, { limit: 1 });
+              agent = searchRes.items?.[0] ?? null;
+            } catch {
+              const fallbackItems = await loadFallbackData();
+              agent =
+                fallbackItems.find(
+                  (a) => a.name?.toLowerCase() === name.toLowerCase(),
+                ) ?? null;
+            }
+          }
+
+          if (!agent) {
+            return {
+              found: false,
+              tokenId: cleanTokenId || tokenId,
+              name: name ?? null,
+              message: `No registered ERC-8004 agent found on BNB Chain matching Token ID #${cleanTokenId || tokenId}.`,
+            };
+          }
+
+          return {
+            found: true,
+            tokenId: agent.token_id,
+            name: agent.name || `Agent #${agent.token_id}`,
+            description: agent.description,
+            contractAddress: agent.contract_address,
+            ownerAddress: agent.owner_address,
+            ownerEns: agent.owner_ens,
+            isVerified: agent.is_verified ?? true,
+            totalScore: agent.total_score ?? 0,
+            healthScore: agent.health_score ?? 100,
+            rank: agent.rank ?? null,
+            averageScore: agent.average_score ?? 0,
+            totalFeedbacks: agent.total_feedbacks ?? 0,
+            starCount: agent.star_count ?? 0,
+            supportedProtocols: agent.supported_protocols ?? [],
+            x402Supported: agent.x402_supported ?? false,
+            createdAt: agent.created_at,
+            updatedAt: agent.updated_at,
+            network: 'BNB Smart Chain (BSC - Chain ID 56)',
+            standard: 'ERC-8004 On-Chain Agent Registry',
+            bscScanUrl: `https://bscscan.com/token/${agent.contract_address}?a=${agent.token_id}`,
+            scan8004Url: get8004ScanAgentUrl(agent.chain_id || 56, agent.token_id),
+          };
+        }, 'Failed to retrieve ERC-8004 agent telemetry'),
+    }),
+
+    search_agent_marketplace: tool({
+      description: AGENT_TOOL_DESCRIPTIONS.searchAgentMarketplace,
+      inputSchema: z.object({
+        query: z
+          .string()
+          .default('')
+          .describe('Search query keyword, name, or protocol to search (e.g. "Venus", "yield", "grid", "rebalancer", "PancakeSwap")'),
+        category: z
+          .enum([
+            'all',
+            'yield',
+            'grid',
+            'health',
+            'rebalancing',
+            'trading',
+            'risk',
+            'monitoring',
+            'research',
+            'infrastructure',
+            'derivatives',
+            'liquid_staking',
+            'analytics',
+            'payments',
+            'cross_agent',
+            'cross_chain',
+            'depin_storage',
+            'meme_social',
+            'governance',
+          ])
+          .default('all')
+          .describe('Filter by ecosystem category / track (e.g. yield, grid, health, rebalancing)'),
+        sortBy: z
+          .enum(['leaderboard', 'trending', 'featured', 'latest', 'newest'])
+          .default('leaderboard')
+          .describe('Sort order for agents (e.g. leaderboard, trending, newest)'),
+        limit: z
+          .coerce
+          .number()
+          .min(1)
+          .max(20)
+          .default(6)
+          .describe('Maximum number of agents to return (1-20, default 6)'),
+      }),
+      execute: async ({ query, category, sortBy, limit }) =>
+        safeToolExecute(async () => {
+          const res = await resolveMarketplaceAgents({
+            rawFeed: category !== 'all' ? 'category' : 'all',
+            category: category !== 'all' ? (category as DiscoveryCategory) : null,
+            sort: sortBy as MarketplaceSortKey,
+            search: query.trim(),
+            limit,
+            offset: 0,
+            cacheKey: `tool:${query}:${category}:${sortBy}:${limit}`,
+          });
+
+          const agents = (res.items || []).slice(0, limit).map((a) => ({
+            tokenId: a.token_id,
+            name: a.name || `Agent #${a.token_id}`,
+            description: a.description,
+            contractAddress: a.contract_address,
+            ownerAddress: a.owner_address,
+            ownerEns: a.owner_ens,
+            totalScore: a.total_score ?? 0,
+            healthScore: a.health_score ?? 100,
+            rank: a.rank ?? null,
+            averageScore: a.average_score ?? 0,
+            totalFeedbacks: a.total_feedbacks ?? 0,
+            supportedProtocols: a.supported_protocols ?? [],
+            x402Supported: a.x402_supported ?? false,
+            bscScanUrl: `https://bscscan.com/token/${a.contract_address}?a=${a.token_id}`,
+            scan8004Url: get8004ScanAgentUrl(a.chain_id || 56, a.token_id),
+          }));
+
+          return {
+            query: query || undefined,
+            category: category !== 'all' ? category : undefined,
+            sortBy,
+            totalFound: res.total,
+            returnedCount: agents.length,
+            network: 'BNB Smart Chain (Chain ID 56)',
+            agents,
+          };
+        }, 'Failed to search ERC-8004 agent marketplace'),
     }),
   };
 }

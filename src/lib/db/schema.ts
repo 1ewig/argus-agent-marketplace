@@ -3,7 +3,7 @@ import { APP_CONTENT } from '@/constants/content';
 import type {
   ExecutedToolCall,
   AgentExecutionStep,
-} from '@/agent';
+} from '@/agent/types';
 import type { HiredAgentRecord } from '@/lib/types';
 
 export interface ConversationRecord {

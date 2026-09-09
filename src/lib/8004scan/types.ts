@@ -40,6 +40,9 @@ export interface ScanAgentListResponse {
 
 export type PrimaryPillarKey =
   | 'yield'
+  | 'grid'
+  | 'health'
+  | 'rebalancing'
   | 'trading'
   | 'risk'
   | 'monitoring'
@@ -48,9 +51,6 @@ export type PrimaryPillarKey =
 
 export type DiscoveryCategory =
   | PrimaryPillarKey
-  | 'grid'
-  | 'health'
-  | 'rebalancing'
   | 'derivatives'
   | 'liquid_staking'
   | 'analytics'

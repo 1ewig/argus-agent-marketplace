@@ -17,6 +17,8 @@ import {
   OpenInterestCard,
   LongShortRatioCard,
   CryptoNewsCard,
+  AgentTelemetryCard,
+  AgentSearchCard,
 } from './tool-results';
 
 export type { ToolDisplayInfo, ToolResultCardProps };
@@ -78,6 +80,10 @@ export const ToolResultCard = React.memo(function ToolResultCard({
         return <LongShortRatioCard resultObj={resultObj} />;
       case 'search_crypto_news':
         return <CryptoNewsCard resultObj={resultObj} />;
+      case 'get_agent_telemetry':
+        return <AgentTelemetryCard resultObj={resultObj} />;
+      case 'search_agent_marketplace':
+        return <AgentSearchCard resultObj={resultObj} />;
       default:
         return (
           <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-theme-bg-elevated/40 border border-theme-border-subtle/80 text-xs text-theme-text-secondary">

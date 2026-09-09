@@ -11,3 +11,5 @@ export * from './cards/recent-trades-card';
 export * from './cards/open-interest-card';
 export * from './cards/long-short-ratio-card';
 export * from './cards/crypto-news-card';
+export * from './cards/agent-telemetry-card';
+export * from './cards/agent-search-card';

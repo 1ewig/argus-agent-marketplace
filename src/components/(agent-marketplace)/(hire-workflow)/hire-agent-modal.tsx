@@ -36,6 +36,7 @@ export const HireAgentModal = memo(function HireAgentModal({
   const [healthThreshold, setHealthThreshold] = useState<number>(80);
   const [gridUpper, setGridUpper] = useState<number>(640);
   const [gridLower, setGridLower] = useState<number>(580);
+  const [rebalanceThreshold, setRebalanceThreshold] = useState<number>(3);
   const [customPrompt, setCustomPrompt] = useState<string>('');
   const [budgetBnb, setBudgetBnb] = useState<number>(2.0);
   const [isDeploying, setIsDeploying] = useState<boolean>(false);
@@ -71,6 +72,7 @@ export const HireAgentModal = memo(function HireAgentModal({
           healthFactorThreshold: selectedStrategy === 'health_factor' ? healthThreshold : undefined,
           gridUpperPrice: selectedStrategy === 'grid_trading' ? gridUpper : undefined,
           gridLowerPrice: selectedStrategy === 'grid_trading' ? gridLower : undefined,
+          rebalanceThresholdPct: selectedStrategy === 'rebalancing' ? rebalanceThreshold : undefined,
           customPrompt: selectedStrategy === 'custom' ? customPrompt : undefined,
         },
       });
@@ -97,6 +99,7 @@ export const HireAgentModal = memo(function HireAgentModal({
     healthThreshold,
     gridUpper,
     gridLower,
+    rebalanceThreshold,
     customPrompt,
     onClose,
     onSuccess,
@@ -158,6 +161,8 @@ export const HireAgentModal = memo(function HireAgentModal({
                 onGridUpperChange={setGridUpper}
                 gridLower={gridLower}
                 onGridLowerChange={setGridLower}
+                rebalanceThreshold={rebalanceThreshold}
+                onRebalanceThresholdChange={setRebalanceThreshold}
                 customPrompt={customPrompt}
                 onCustomPromptChange={setCustomPrompt}
               />

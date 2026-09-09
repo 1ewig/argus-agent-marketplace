@@ -1,4 +1,4 @@
-import type { AgentExecutionStep } from '@/agent';
+import type { AgentExecutionStep } from '@/agent/types';
 import {
   DEFAULT_CONVERSATION_ID,
   DEFAULT_CONVERSATION_TITLE,

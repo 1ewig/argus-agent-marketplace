@@ -88,6 +88,15 @@ export const MissionMandateCard = memo(function MissionMandateCard({
           </div>
         )}
 
+        {mission.rebalanceThresholdPct && (
+          <div className="flex items-center justify-between text-xs py-2 border-b border-theme-border-subtle/50">
+            <span className="text-theme-text-secondary">Rebalance Drift Threshold</span>
+            <span className="font-mono font-semibold text-theme-brand-binance">
+              ±{mission.rebalanceThresholdPct}%
+            </span>
+          </div>
+        )}
+
         {mission.customPrompt && (
           <div className="flex flex-col gap-1.5 pt-1.5">
             <span className="text-2xs font-semibold text-theme-text-muted uppercase tracking-wider">

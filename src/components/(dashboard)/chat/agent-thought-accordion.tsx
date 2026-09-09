@@ -8,7 +8,7 @@ import { APP_CONTENT } from '@/constants/content';
 import { accordionVariants, tapScaleAccordion } from '@/constants/animation';
 import { useActiveTimer, useAccordionOpenState } from '@/hooks';
 import { MarkdownView } from '../markdown-view';
-import type { AgentExecutionStep } from '@/agent';
+import type { AgentExecutionStep } from '@/agent/types';
 
 interface AgentThoughtAccordionProps {
   step: AgentExecutionStep;
