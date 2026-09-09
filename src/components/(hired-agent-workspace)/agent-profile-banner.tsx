@@ -2,6 +2,7 @@
 
 import React, { memo } from 'react';
 import { APP_CONTENT } from '@/constants/content';
+import { resolveAgentImageUrl } from '@/lib/utils';
 import type { HiringStatus } from '@/lib/types';
 
 export interface AgentProfileBannerProps {
@@ -23,17 +24,24 @@ export const AgentProfileBanner = memo(function AgentProfileBanner({
 }: AgentProfileBannerProps) {
   const isActive = status === 'active';
   const isPaused = status === 'paused';
+  const resolvedImageUrl = resolveAgentImageUrl(imageUrl);
 
   return (
     <div className="bg-theme-bg-surface border border-theme-border-subtle rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-2xs">
       <div className="flex items-center gap-3.5 min-w-0">
-        <div className="size-14 rounded-xl bg-theme-bg-elevated border border-theme-border-subtle flex items-center justify-center font-bold text-sm text-theme-brand-binance shrink-0 overflow-hidden">
-          {imageUrl ? (
+        <div className="size-14 rounded-xl bg-theme-bg-elevated border border-theme-border-subtle flex items-center justify-center font-bold text-sm text-theme-brand-binance shrink-0 overflow-hidden relative">
+          {resolvedImageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={imageUrl} alt={name} className="size-full object-cover" />
-          ) : (
-            <span>{name.slice(0, 2).toUpperCase()}</span>
-          )}
+            <img
+              src={resolvedImageUrl}
+              alt={name}
+              className="size-full object-cover absolute inset-0 z-1"
+              onError={(e) => {
+                (e.target as HTMLElement).style.display = 'none';
+              }}
+            />
+          ) : null}
+          <span>{name.slice(0, 2).toUpperCase()}</span>
         </div>
 
         <div className="flex flex-col min-w-0">

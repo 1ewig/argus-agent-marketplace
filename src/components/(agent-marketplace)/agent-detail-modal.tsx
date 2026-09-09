@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
 import { tapScalePill } from '@/constants/animation';
-import { truncateAddress } from '@/lib/utils';
+import { truncateAddress, resolveAgentImageUrl } from '@/lib/utils';
 import { get8004ScanAgentUrl } from '@/lib/8004scan/categories';
 import type { ScanAgentItem } from '@/lib/8004scan/types';
 
@@ -50,6 +50,7 @@ export const AgentDetailModal = memo(function AgentDetailModal({
     agent.description?.trim() || APP_CONTENT.marketplace.card.defaultDescription;
   const bscScanUrl = `https://bscscan.com/token/${agent.contract_address}?a=${agent.token_id}`;
   const scan8004Url = get8004ScanAgentUrl(agent.chain_id, agent.token_id);
+  const resolvedImageUrl = resolveAgentImageUrl(agent.image_url);
 
   const handleStartAnalysis = () => {
     const prompt = APP_CONTENT.marketplace.modal.chatPromptText(
@@ -82,17 +83,19 @@ export const AgentDetailModal = memo(function AgentDetailModal({
           {/* 1. Modal Header */}
           <div className="p-4 sm:p-5 border-b border-theme-border-subtle flex items-start justify-between gap-4 bg-theme-bg-surface shrink-0">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="size-12 rounded-xl bg-theme-bg-elevated border border-theme-border-subtle flex items-center justify-center font-bold text-sm text-theme-brand-binance shrink-0 overflow-hidden">
-                {agent.image_url ? (
+              <div className="size-12 rounded-xl bg-theme-bg-elevated border border-theme-border-subtle flex items-center justify-center font-bold text-sm text-theme-brand-binance shrink-0 overflow-hidden relative">
+                {resolvedImageUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={agent.image_url}
+                    src={resolvedImageUrl}
                     alt={displayName}
-                    className="size-full object-cover"
+                    className="size-full object-cover absolute inset-0 z-1"
+                    onError={(e) => {
+                      (e.target as HTMLElement).style.display = 'none';
+                    }}
                   />
-                ) : (
-                  <span>{displayName.slice(0, 2).toUpperCase()}</span>
-                )}
+                ) : null}
+                <span>{displayName.slice(0, 2).toUpperCase()}</span>
               </div>
 
               <div className="flex flex-col min-w-0">

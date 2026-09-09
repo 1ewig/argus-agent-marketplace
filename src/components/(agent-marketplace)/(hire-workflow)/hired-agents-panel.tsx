@@ -26,6 +26,7 @@ import {
   triggerAgentExecutionCycle,
 } from '@/lib/db';
 import type { HiredAgentRecord } from '@/lib/types';
+import { resolveAgentImageUrl } from '@/lib/utils';
 
 export interface HiredAgentsPanelProps {
   isOpen: boolean;
@@ -222,6 +223,7 @@ export const HiredAgentsPanel = memo(function HiredAgentsPanel({
                     {hiredAgents?.map((agent) => {
                       const isActive = agent.status === 'active';
                       const isCycling = cyclingAgentId === agent.id;
+                      const resolvedImageUrl = resolveAgentImageUrl(agent.imageUrl);
 
                       return (
                         <div
@@ -235,17 +237,19 @@ export const HiredAgentsPanel = memo(function HiredAgentsPanel({
                           {/* Top: Identity & Status Pill */}
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex items-center gap-2.5 min-w-0">
-                              <div className="size-9 rounded-lg bg-theme-bg-elevated border border-theme-border-subtle flex items-center justify-center font-extrabold text-xs text-theme-brand-binance shrink-0 overflow-hidden">
-                                {agent.imageUrl ? (
+                              <div className="size-9 rounded-lg bg-theme-bg-elevated border border-theme-border-subtle flex items-center justify-center font-extrabold text-xs text-theme-brand-binance shrink-0 overflow-hidden relative">
+                                {resolvedImageUrl ? (
                                   // eslint-disable-next-line @next/next/no-img-element
                                   <img
-                                    src={agent.imageUrl}
+                                    src={resolvedImageUrl}
                                     alt={agent.name}
-                                    className="size-full object-cover"
+                                    className="size-full object-cover absolute inset-0 z-1"
+                                    onError={(e) => {
+                                      (e.target as HTMLElement).style.display = 'none';
+                                    }}
                                   />
-                                ) : (
-                                  <span>{agent.name.slice(0, 2).toUpperCase()}</span>
-                                )}
+                                ) : null}
+                                <span>{agent.name.slice(0, 2).toUpperCase()}</span>
                               </div>
 
                               <div className="flex flex-col min-w-0">

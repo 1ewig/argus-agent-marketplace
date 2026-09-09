@@ -13,15 +13,12 @@ import {
 } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
 import { hoverLiftCard, tapScaleCard } from '@/constants/animation';
-import { truncateAddress } from '@/lib/utils';
+import { truncateAddress, resolveAgentImageUrl } from '@/lib/utils';
 import type { ScanAgentItem } from '@/lib/8004scan/types';
-
-import { MessageSquare } from 'lucide-react';
 
 export interface AgentCardProps {
   agent: ScanAgentItem;
   onSelect: (agent: ScanAgentItem) => void;
-  onAnalyze?: (agent: ScanAgentItem) => void;
   isSpotlight?: boolean;
 }
 
@@ -41,7 +38,6 @@ function getAvatarGradient(seed: string): string {
 export const AgentCard = memo(function AgentCard({
   agent,
   onSelect,
-  onAnalyze,
   isSpotlight,
 }: AgentCardProps) {
   const displayName = agent.name?.trim() || `Agent #${agent.token_id}`;
@@ -49,6 +45,7 @@ export const AgentCard = memo(function AgentCard({
     agent.description?.trim() || APP_CONTENT.marketplace.card.defaultDescription;
   const ownerDisplay = agent.owner_ens || truncateAddress(agent.owner_address);
   const avatarStyle = getAvatarGradient(agent.token_id);
+  const resolvedImageUrl = resolveAgentImageUrl(agent.image_url);
 
   // Check protocols
   const isMCP = agent.supported_protocols?.some((p) => p.toUpperCase().includes('MCP'));
@@ -83,23 +80,21 @@ export const AgentCard = memo(function AgentCard({
         <div className="flex items-center gap-3 min-w-0">
           {/* Avatar Icon */}
           <div
-            className={`size-11 rounded-xl bg-gradient-to-br border flex items-center justify-center font-extrabold text-xs shrink-0 overflow-hidden group-hover:border-theme-brand-binance/50 transition-colors duration-150 ${avatarStyle}`}
+            className={`size-11 rounded-xl bg-gradient-to-br border flex items-center justify-center font-extrabold text-xs shrink-0 overflow-hidden group-hover:border-theme-brand-binance/50 transition-colors duration-150 relative ${avatarStyle}`}
           >
-            {agent.image_url ? (
+            {resolvedImageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={agent.image_url}
+                src={resolvedImageUrl}
                 alt={displayName}
-                className="size-full object-cover"
+                className="size-full object-cover absolute inset-0 z-1"
                 loading="lazy"
                 onError={(e) => {
-                  // Fallback to text initials on image 404
                   (e.target as HTMLElement).style.display = 'none';
                 }}
               />
-            ) : (
-              <span>{displayName.slice(0, 2).toUpperCase()}</span>
-            )}
+            ) : null}
+            <span>{displayName.slice(0, 2).toUpperCase()}</span>
           </div>
 
           {/* Name, Token ID & Owner */}
@@ -125,23 +120,9 @@ export const AgentCard = memo(function AgentCard({
           </div>
         </div>
 
-        {/* Actions: Health Score, Quick Analyze & Inspect */}
+        {/* Actions: Health Score & Inspect */}
         <div className="flex items-center gap-1.5 shrink-0">
           {isSpotlight && healthOrActiveBadge}
-
-          {onAnalyze && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onAnalyze(agent);
-              }}
-              title={APP_CONTENT.marketplace.modal.chatPromptAction}
-              className="size-7 rounded-lg bg-theme-bg-elevated/70 hover:bg-theme-brand-binance hover:text-theme-bg-overlay flex items-center justify-center text-theme-text-muted hover:text-theme-bg-overlay transition-colors duration-150 shrink-0 cursor-pointer"
-            >
-              <MessageSquare className="size-3.5" />
-            </button>
-          )}
 
           <div className="size-7 rounded-lg bg-theme-bg-elevated/70 group-hover:bg-theme-brand-binance group-hover:text-theme-bg-overlay flex items-center justify-center text-theme-text-muted transition-colors duration-150 shrink-0">
             <ArrowUpRight className="size-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-150" />

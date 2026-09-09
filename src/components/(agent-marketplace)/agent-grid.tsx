@@ -23,7 +23,6 @@ export interface AgentGridProps {
   isLoading: boolean;
   isError: boolean;
   onSelectAgent: (agent: ScanAgentItem) => void;
-  onAnalyzeAgent?: (agent: ScanAgentItem) => void;
   onRetry: () => void;
   onResetFilters: () => void;
   page: number;
@@ -71,7 +70,6 @@ export const AgentGrid = memo(function AgentGrid({
   isLoading,
   isError,
   onSelectAgent,
-  onAnalyzeAgent,
   onRetry,
   onResetFilters,
   page,
@@ -189,7 +187,6 @@ export const AgentGrid = memo(function AgentGrid({
             key={`spotlight-${agent.chain_id}-${agent.token_id}`}
             agent={agent}
             onSelect={onSelectAgent}
-            onAnalyze={onAnalyzeAgent}
             isSpotlight={true}
           />
         ))}
@@ -199,7 +196,6 @@ export const AgentGrid = memo(function AgentGrid({
             key={`${agent.chain_id}-${agent.token_id}`}
             agent={agent}
             onSelect={onSelectAgent}
-            onAnalyze={onAnalyzeAgent}
           />
         ))}
       </div>

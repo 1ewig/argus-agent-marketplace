@@ -6,7 +6,6 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useAgentMarketplace } from '@/hooks/agents';
 import { useAppStore } from '@/stores/app-store';
 import { db, createConversation } from '@/lib/db';
-import { APP_CONTENT } from '@/constants/content';
 import { MarketplaceHeader } from './marketplace-header';
 import { MarketplaceFilterBar } from './marketplace-filter-bar';
 import { AgentGrid } from './agent-grid';
@@ -101,18 +100,6 @@ export function AgentMarketplaceClient() {
     [router, setInput, setSelectedAgent, setActiveConversationId],
   );
 
-  const handleAnalyzeAgentFromCard = useCallback(
-    (agent: ScanAgentItem) => {
-      const displayName = agent.name?.trim() || `Agent #${agent.token_id}`;
-      const prompt = APP_CONTENT.marketplace.modal.chatPromptText(
-        displayName,
-        agent.token_id,
-      );
-      void handleAnalyzeInChat(prompt, displayName);
-    },
-    [handleAnalyzeInChat],
-  );
-
   const handleResetFilters = useCallback(() => {
     clearSearch();
     setSelectedCategory('all');
@@ -159,7 +146,6 @@ export function AgentMarketplaceClient() {
           isLoading={isLoading}
           isError={isError}
           onSelectAgent={handleSelectAgent}
-          onAnalyzeAgent={handleAnalyzeAgentFromCard}
           onRetry={refetch}
           onResetFilters={handleResetFilters}
           page={page}

@@ -69,3 +69,41 @@ export function truncateAddress(
   if (address.length <= startChars + endChars) return address;
   return `${address.slice(0, startChars)}...${address.slice(-endChars)}`;
 }
+
+/**
+ * Resolves raw agent image URLs, handling IPFS and Arweave URI protocols,
+ * and stripping malformed/empty targets to ensure clean browser rendering.
+ */
+export function resolveAgentImageUrl(url?: string | null): string | null {
+  if (!url || typeof url !== 'string') return null;
+  const trimmed = url.trim();
+  if (!trimmed) return null;
+
+  // Handle IPFS URIs (ipfs://<cid> or ipfs://ipfs/<cid>)
+  if (trimmed.startsWith('ipfs://')) {
+    const ipfsPath = trimmed.replace(/^ipfs:\/\/(ipfs\/)?/, '');
+    return `https://ipfs.io/ipfs/${ipfsPath}`;
+  }
+
+  // Handle Arweave URIs (ar://<txId>)
+  if (trimmed.startsWith('ar://')) {
+    const arweavePath = trimmed.replace(/^ar:\/\//, '');
+    return `https://arweave.net/${arweavePath}`;
+  }
+
+  // Handle protocol-relative URLs (//example.com/img.png)
+  if (trimmed.startsWith('//')) {
+    return `https:${trimmed}`;
+  }
+
+  // Ensure valid HTTP/HTTPS or data URL
+  if (
+    trimmed.startsWith('http://') ||
+    trimmed.startsWith('https://') ||
+    trimmed.startsWith('data:image/')
+  ) {
+    return trimmed;
+  }
+
+  return null;
+}

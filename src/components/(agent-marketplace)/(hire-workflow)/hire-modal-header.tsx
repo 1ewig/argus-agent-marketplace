@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
 import { tapScalePill } from '@/constants/animation';
+import { resolveAgentImageUrl } from '@/lib/utils';
 
 export interface HireModalHeaderProps {
   name: string;
@@ -19,16 +20,24 @@ export const HireModalHeader = memo(function HireModalHeader({
   imageUrl,
   onClose,
 }: HireModalHeaderProps) {
+  const resolvedImageUrl = resolveAgentImageUrl(imageUrl);
+
   return (
     <div className="p-4 sm:p-5 border-b border-theme-border-subtle flex items-start justify-between gap-4 bg-theme-bg-surface shrink-0">
       <div className="flex items-center gap-3 min-w-0">
-        <div className="size-11 rounded-xl bg-theme-bg-elevated border border-theme-border-subtle flex items-center justify-center font-bold text-xs text-theme-brand-binance shrink-0 overflow-hidden">
-          {imageUrl ? (
+        <div className="size-11 rounded-xl bg-theme-bg-elevated border border-theme-border-subtle flex items-center justify-center font-bold text-xs text-theme-brand-binance shrink-0 overflow-hidden relative">
+          {resolvedImageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={imageUrl} alt={name} className="size-full object-cover" />
-          ) : (
-            <span>{name.slice(0, 2).toUpperCase()}</span>
-          )}
+            <img
+              src={resolvedImageUrl}
+              alt={name}
+              className="size-full object-cover absolute inset-0 z-1"
+              onError={(e) => {
+                (e.target as HTMLElement).style.display = 'none';
+              }}
+            />
+          ) : null}
+          <span>{name.slice(0, 2).toUpperCase()}</span>
         </div>
 
         <div className="flex flex-col min-w-0">
