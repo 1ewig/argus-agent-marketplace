@@ -57,11 +57,13 @@ export const ChatInput = memo(
     },
     ref
   ) {
+    const activeConversationId = useAppStore((state) => state.activeConversationId);
     const storeInput = useAppStore((state) => state.input);
     const setStoreInput = useAppStore((state) => state.setInput);
 
     const [text, setText] = useState(storeInput || '');
     const prevStoreInputRef = useRef(storeInput);
+    const prevConvIdRef = useRef(activeConversationId);
     const [isFocused, setIsFocused] = useState(false);
     const [isComposing, setIsComposing] = useState(false);
     const [isMultiLine, setIsMultiLine] = useState(false);
@@ -96,22 +98,29 @@ export const ChatInput = memo(
       return () => window.removeEventListener('resize', handleResize);
     }, [resizeTextarea]);
 
-    // Sync external storeInput changes (e.g. from 1-Click Agent Analysis handoff)
+    // Sync external storeInput changes or conversation session switches
     useEffect(() => {
-      if (storeInput && storeInput !== prevStoreInputRef.current) {
-        prevStoreInputRef.current = storeInput;
-        setText(storeInput);
+      const isSessionChanged = activeConversationId !== prevConvIdRef.current;
+      const isInputChanged = storeInput !== prevStoreInputRef.current;
+
+      if (isSessionChanged || isInputChanged) {
+        prevConvIdRef.current = activeConversationId;
+        const nextText = storeInput || '';
+        prevStoreInputRef.current = nextText;
+        setText(nextText);
         const target = textareaRef.current;
         if (target) {
-          target.value = storeInput;
-          requestAnimationFrame(() => {
-            resizeTextarea();
-            target.focus();
-            target.setSelectionRange(storeInput.length, storeInput.length);
-          });
+          target.value = nextText;
         }
+        requestAnimationFrame(() => {
+          resizeTextarea();
+          if (nextText && target) {
+            target.focus();
+            target.setSelectionRange(nextText.length, nextText.length);
+          }
+        });
       }
-    }, [storeInput, resizeTextarea]);
+    }, [activeConversationId, storeInput, resizeTextarea]);
 
     // Imperative handle for parent orchestration
     useImperativeHandle(

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { APP_CONTENT } from '@/constants/content';
 import { useAppStore } from '@/stores/app-store';
 import {
@@ -23,8 +24,12 @@ let isSessionInitStarted = false;
  * inline renaming, deletion, and persistence.
  */
 export function useChatSessions() {
+  const router = useRouter();
+  const pathname = usePathname();
+
   const activeConversationId = useAppStore((state) => state.activeConversationId);
   const setActiveConversationId = useAppStore((state) => state.setActiveConversationId);
+  const setInput = useAppStore((state) => state.setInput);
   const isStreamingActive = useAppStore((state) => state.activeStreamMessage !== null);
   const setActiveStreamMessage = useAppStore((state) => state.setActiveStreamMessage);
   const setErrorNotice = useAppStore((state) => state.setErrorNotice);
@@ -114,12 +119,16 @@ export function useChatSessions() {
     setIsMenuOpen(false);
     setEditingId(null);
     setActiveStreamMessage(null);
+    setInput('');
 
     // Check if current active conversation is empty
     const currentActive = conversations.find((c) => c.id === activeConversationId);
     if (currentActive) {
       const activeCount = await getConversationMessageCount(currentActive.id);
       if (activeCount === 0 && !isStreamingActive) {
+        if (pathname !== '/') {
+          router.push('/');
+        }
         return;
       }
     }
@@ -130,6 +139,9 @@ export function useChatSessions() {
       const count = await getConversationMessageCount(conv.id);
       if (count === 0) {
         setActiveConversationId(conv.id);
+        if (pathname !== '/') {
+          router.push('/');
+        }
         return;
       }
     }
@@ -137,6 +149,9 @@ export function useChatSessions() {
     // Create a new conversation
     const newConv = await createConversation();
     setActiveConversationId(newConv.id);
+    if (pathname !== '/') {
+      router.push('/');
+    }
   }, [
     activeConversationId,
     conversations,
@@ -144,17 +159,24 @@ export function useChatSessions() {
     setErrorNotice,
     setActiveStreamMessage,
     setActiveConversationId,
+    setInput,
+    pathname,
+    router,
   ]);
 
   // Switch session
   const handleSelectSession = useCallback(
     (id: string) => {
       setActiveConversationId(id);
+      setInput('');
       setIsMenuOpen(false);
       setEditingId(null);
       setActiveStreamMessage(null);
+      if (pathname !== '/') {
+        router.push('/');
+      }
     },
-    [setActiveConversationId, setActiveStreamMessage]
+    [setActiveConversationId, setInput, setActiveStreamMessage, pathname, router]
   );
 
   // Start renaming session
@@ -193,6 +215,7 @@ export function useChatSessions() {
       let freshConvs = await listConversations();
 
       if (activeConversationId === id) {
+        setInput('');
         if (freshConvs.length > 0) {
           setActiveConversationId(freshConvs[0].id);
         } else {
@@ -201,7 +224,7 @@ export function useChatSessions() {
         }
       }
     },
-    [activeConversationId, setActiveConversationId]
+    [activeConversationId, setActiveConversationId, setInput]
   );
 
   return {
