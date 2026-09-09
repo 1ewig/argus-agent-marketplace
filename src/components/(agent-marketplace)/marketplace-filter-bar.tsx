@@ -224,7 +224,7 @@ export const MarketplaceFilterBar = memo(function MarketplaceFilterBar({
   };
 
   return (
-    <div className="w-full bg-theme-bg-surface/50 border-b border-theme-border-subtle/80 px-4 sm:px-6 py-2.5">
+    <div className="w-full shrink-0 z-10 bg-theme-bg-surface/90 backdrop-blur-md border-b border-theme-border-subtle/80 px-4 sm:px-6 py-2.5 shadow-2xs">
       {/* Search + Category Dropdown + Sort Dropdown */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2">
         {/* 1. Global Search */}

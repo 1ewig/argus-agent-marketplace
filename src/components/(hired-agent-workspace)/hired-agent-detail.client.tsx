@@ -116,8 +116,8 @@ export const HiredAgentDetailClient = memo(function HiredAgentDetailClient({
   const isActive = agent.status === 'active';
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 overflow-y-auto bg-theme-bg-base select-none">
-      {/* 1. Header Toolbar */}
+    <div className="flex-1 flex flex-col h-full w-full min-h-0 bg-theme-bg-base overflow-hidden select-none">
+      {/* 1. Fixed Header Toolbar */}
       <WorkspaceHeader
         name={agent.name}
         agentTokenId={agent.agentTokenId}
@@ -128,8 +128,9 @@ export const HiredAgentDetailClient = memo(function HiredAgentDetailClient({
         onTerminate={handleTerminate}
       />
 
-      {/* 2. Workspace Body */}
-      <div className="w-full max-w-7xl mx-auto p-4 sm:p-6 flex flex-col gap-5">
+      {/* 2. Scrollable Workspace Body */}
+      <div className="flex-1 overflow-y-auto flex flex-col">
+        <div className="w-full max-w-7xl mx-auto p-4 sm:p-6 flex flex-col gap-5">
         {/* Agent Profile & Live Status Ribbon */}
         <AgentProfileBanner
           name={agent.name}
@@ -177,6 +178,7 @@ export const HiredAgentDetailClient = memo(function HiredAgentDetailClient({
         {activeTab === 'telemetry' && (
           <RawTelemetryView data={agent} />
         )}
+        </div>
       </div>
     </div>
   );

@@ -119,21 +119,21 @@ export function AgentMarketplaceClient() {
         hiredCount={activeHiredCount}
       />
 
-      {/* 2. Main Scrollable Marketplace Area */}
-      <div className="flex-1 overflow-y-auto flex flex-col">
-        {/* Categories & Curated Feeds Filter Tabs */}
-        <MarketplaceFilterBar
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          onClearSearch={clearSearch}
-          selectedCategory={selectedCategory}
-          onSelectCategory={setSelectedCategory}
-          selectedSort={selectedSort}
-          onSelectSort={setSelectedSort}
-          selectedTab={selectedTab}
-          onSelectTab={setSelectedTab}
-        />
+      {/* 2. Fixed Categories & Curated Feeds Filter Tabs */}
+      <MarketplaceFilterBar
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        onClearSearch={clearSearch}
+        selectedCategory={selectedCategory}
+        onSelectCategory={setSelectedCategory}
+        selectedSort={selectedSort}
+        onSelectSort={setSelectedSort}
+        selectedTab={selectedTab}
+        onSelectTab={setSelectedTab}
+      />
 
+      {/* 3. Main Scrollable Marketplace Area */}
+      <div className="flex-1 overflow-y-auto flex flex-col">
         {/* Agents Grid & Pagination */}
         <AgentGrid
           agents={agents}
