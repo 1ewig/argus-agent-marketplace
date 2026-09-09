@@ -21,6 +21,10 @@ export const hiredAgentsContent = {
       spentLabel: 'Spent',
       pnlLabel: 'PnL',
       actionsCount: (count: number) => `${count} cycles`,
+      autoCycleLabel: 'Auto-Execution Heartbeat',
+      autoCycleActive: 'Auto-Tick Active (15s)',
+      autoCycleInactive: 'Auto-Tick Off',
+      autoCycleTooltip: 'Automatically triggers simulated execution cycles for active agents periodically',
     },
     modal: {
       title: 'Hire Autonomous Agent',

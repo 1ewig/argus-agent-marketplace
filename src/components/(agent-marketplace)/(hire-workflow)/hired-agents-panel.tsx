@@ -14,9 +14,11 @@ import {
   TrendingUp,
   Activity,
   Layers,
+  Sparkles,
 } from 'lucide-react';
 import { APP_CONTENT } from '@/constants/content';
 import { tapScalePill } from '@/constants/animation';
+import { useAutoExecutionTicker } from '@/hooks/agents';
 import {
   db,
   seedInitialHiredAgents,
@@ -38,6 +40,13 @@ export const HiredAgentsPanel = memo(function HiredAgentsPanel({
 }: HiredAgentsPanelProps) {
   const router = useRouter();
   const [cyclingAgentId, setCyclingAgentId] = useState<string | null>(null);
+
+  // Auto-execution heartbeat hook (periodically cycles active agents)
+  const { isEnabled: isAutoTickerActive, toggleTicker: toggleAutoTicker } =
+    useAutoExecutionTicker({
+      intervalMs: 15000,
+      initialEnabled: true,
+    });
 
   // Auto-seed demo agents on first launch
   useEffect(() => {
@@ -157,6 +166,42 @@ export const HiredAgentsPanel = memo(function HiredAgentsPanel({
                   <X className="size-4" />
                 </motion.button>
               </div>
+
+              {/* Auto-Execution Heartbeat Ribbon */}
+              {totalAgentsCount > 0 && (
+                <div className="px-4 py-2 bg-theme-bg-elevated/50 border-b border-theme-border-subtle/70 flex items-center justify-between gap-2 shrink-0 select-none">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span
+                      className={`size-2 rounded-full shrink-0 ${
+                        isAutoTickerActive
+                          ? 'bg-theme-status-success animate-pulse'
+                          : 'bg-theme-text-muted/40'
+                      }`}
+                    />
+                    <div className="flex items-center gap-1.5 truncate">
+                      <Sparkles className="size-3 text-theme-brand-binance shrink-0" />
+                      <span className="text-2xs font-semibold text-theme-text-primary truncate">
+                        {isAutoTickerActive
+                          ? APP_CONTENT.hiredAgents.panel.autoCycleActive
+                          : APP_CONTENT.hiredAgents.panel.autoCycleInactive}
+                      </span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={toggleAutoTicker}
+                    title={APP_CONTENT.hiredAgents.panel.autoCycleTooltip}
+                    className={`h-6 px-2.5 rounded-full text-3xs font-bold tracking-wide uppercase transition-all cursor-pointer border flex items-center gap-1 ${
+                      isAutoTickerActive
+                        ? 'bg-theme-brand-binance text-theme-bg-overlay border-theme-brand-binance shadow-2xs'
+                        : 'bg-theme-bg-elevated border-theme-border-subtle text-theme-text-muted hover:text-theme-text-primary'
+                    }`}
+                  >
+                    <span>{isAutoTickerActive ? 'Auto ON' : 'Auto OFF'}</span>
+                  </button>
+                </div>
+              )}
 
               {/* Scrollable Agents List */}
               <div className="flex-1 overflow-y-auto p-3 sm:p-4 flex flex-col gap-3">

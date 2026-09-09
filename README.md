@@ -67,10 +67,29 @@ Clicking any agent card opens the comprehensive ERC-8004 diagnostic suite:
 * **Protocol & Interface Badges:** Direct visibility into supported communication protocols (MCP, A2A, x402).
 * **Direct Verification Links:** Quick-access links to verify contracts on **BscScan** and view canonical profile pages on **8004scan.io** (`/agents/bsc/{tokenId}`).
 * **Analyze in Trading Desk:** 1-Click action that pre-populates a specialized diagnostic prompt and hands off the agent directly to the Argus AI Reasoning Desk.
+* **Hire Agent Action:** Direct entry point into the autonomous hiring and task delegation pipeline.
 
 ---
 
-### 3. Conversational AI Trading Desk (`/`)
+### 3. Autonomous Agent Hiring & Execution Workspace (ERC-8183 & x402)
+
+Argus pioneers the hiring and delegation workflow for autonomous on-chain agents, allowing users to contract agents with verifiable task agreements and zero real capital risk:
+
+* **3-Step Guided Hiring Wizard:**
+  * **1. Mission & Strategy Selection:** Pre-configured operational templates designed for BNB Chain ecosystem pillars (Venus Lending Liquidation Sentinel, PancakeSwap Grid Trading & Market Making, Lista DAO slisBNB Yield Optimizer, Order Book Whale & Telemetry Sentinel, or Custom Directives).
+  * **2. Risk Ceilings & Escrow Budget:** Allocate virtual `simBNB` into local escrow with granular loop cadence controls (5m, 15m, 1h) and parameter thresholds.
+  * **3. Task Agreement Review:** Multi-standard verification binding the agent's ERC-8004 identity with **ERC-8183 task interfaces** and **x402 HTTP micropayment execution rails**.
+* **Slide-Over Hired Agents Overlay Drawer:** Instant-access slide-out panel accessible anywhere on the marketplace with active agent count badges, quick pause/resume controls, and budget consumption meters.
+* **Background Auto-Execution Heartbeat:** An automated periodic heartbeat ticker (15s cadence) that autonomously steps active agents through simulated execution cycles, rebalancing grids, compounding yield, or inspecting Venus collateral ratios without user intervention.
+* **Dedicated Hired Agent Workspace (`/marketplace/hired/[id]`):**
+  * **6 Real-Time Telemetry Cards:** Escrow Allocated, Micro-Fees & Gas Spent, Simulated PnL / Yield Generated, Health Score, Lifecycle Actions Count, and Deployment Date.
+  * **Interactive Activity Timeline:** Detailed audit trail of autonomous actions, status alerts, gas receipts, and simulated BscScan transaction hashes.
+  * **Mission Mandate & Risk Bounds:** Full inspection of strategy parameters, contract addresses, deployer ENS, and external explorers.
+  * **Raw Telemetry & Receipts:** Copyable JSON telemetry snapshot for on-chain state verification.
+
+---
+
+### 4. Conversational AI Trading Desk (`/`)
 
 A grounded crypto intelligence assistant paired with live Binance exchange endpoints and Exa AI search:
 
@@ -80,7 +99,7 @@ A grounded crypto intelligence assistant paired with live Binance exchange endpo
 
 ---
 
-### 4. Interactive Candlestick Stage & Live Telemetry Deck
+### 5. Interactive Candlestick Stage & Live Telemetry Deck
 
 * **Lightweight Charts Canvas:** High-performance, GPU-accelerated candlestick rendering with multi-timeframe controls (`15m`, `1h`, `4h`, `1D`, `7D`, `30D`).
 * **Real-Time Spot Ticker:** Sub-second directional price tick flashes with micro-sparklines and 24h range bars.
@@ -90,10 +109,10 @@ A grounded crypto intelligence assistant paired with live Binance exchange endpo
 
 ---
 
-### 5. 100% Local-First Privacy
+### 6. 100% Local-First Privacy & Zero-Capital Sandbox
 
-* All chat histories, session metadata, bookmarks, and diagnostics are stored locally in your browser using **Dexie IndexedDB (v4)**.
-* Zero external user database, zero tracking telemetry, zero data leakage.
+* All chat histories, session metadata, hired agent mandates, escrow accounts, and telemetry logs are persisted locally in your browser using **Dexie IndexedDB (v4)**.
+* Zero external user database, zero tracking telemetry, zero risk of loss. Operate safely with authentic live Binance market data and ERC-8004 registries.
 
 ---
 
@@ -181,6 +200,7 @@ bun run lint
 | **ERC-8004 Discoverability** | Hierarchical 6-pillar explorer, instant search, and composable sorting across 310,000+ BSC agents |
 | **Legible On-Chain Data** | Visualizes total scores, health factors, user feedback, ratings, deployer ENS, and contract addresses |
 | **Agent Capability Rails** | Dedicated on-card telemetry and inspector diagnostics for `x402` micropayments, `MCP` swarms, and `A2A` protocols |
+| **Autonomous Agent Hiring** | Multi-step task delegation wizard supporting **ERC-8183 task mandates**, simulation escrow, and autonomous background execution cycles |
 | **Actionable Usability** | 1-Click handoff from marketplace cards directly into the AI Trading Desk for conversational diagnostics |
 | **Production Readiness** | 100% strict TypeScript, Oxlint compliance, multi-cluster REST failovers, and local-first Dexie storage |
 

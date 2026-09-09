@@ -39,6 +39,21 @@ export const HiredAgentDetailClient = memo(function HiredAgentDetailClient({
     return await db.hiredAgents.get(id);
   }, [id]) as HiredAgentRecord | undefined;
 
+  const agentId = agent?.id;
+  const agentStatus = agent?.status;
+
+  // Background auto-execution ticker when viewing an active agent
+  React.useEffect(() => {
+    if (!agentId || agentStatus !== 'active') return;
+    const interval = setInterval(() => {
+      triggerAgentExecutionCycle(agentId).catch((e) =>
+        console.error('[Workspace] Background cycle failed:', e),
+      );
+    }, 20000); // Cycle every 20 seconds while in workspace
+
+    return () => clearInterval(interval);
+  }, [agentId, agentStatus]);
+
   const handleToggleStatus = useCallback(async () => {
     if (!agent) return;
     const nextStatus = agent.status === 'active' ? 'paused' : 'active';
