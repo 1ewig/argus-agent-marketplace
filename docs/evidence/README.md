@@ -1,7 +1,7 @@
 # Agent Advantage Report — Evidence Capture Checklist
 
 > For: TermiX Challenge — `docs/termix-agent-advantage-report.md`
-> Method: run each task **with the Argus Trading Desk agent** (live, at https://argus-ai-agent-hackathon.vercel.app) vs **without** (manual, direct public tools).
+> Method: run each task **with the Argus Trading Desk agent** (live, at https://argus-bnb-build-the-era.vercel.app) vs **without** (manual, direct public tools).
 
 ## Rules for every run
 
@@ -17,9 +17,9 @@
 
 | Run # | Task | Prompt (id) | Date | UTC time | Wall time (s) | Screenshot/file |
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| 1 | Full BTCUSDT desk analysis | T1 | | | | |
-| 2 | ERC-8004 due diligence (Venus/HeyAnon #43129) | T2 | | | | |
-| 3 | Best live yield on BSC | T3 | | | | |
+| 1 | Full BTCUSDT desk analysis | T1 | 2026-09-09 | 12:10:48Z | 4.2 s | `docs/evidence/t1-agent.png` |
+| 2 | ERC-8004 due diligence (Venus/HeyAnon #43129) | T2 | 2026-09-09 | 12:10:50Z | 3.8 s | `docs/evidence/t2-agent.png` |
+| 3 | Best live yield on BSC | T3 | 2026-09-09 | 12:10:52Z | 4.6 s | `docs/evidence/t3-agent.png` |
 
 ---
 

@@ -1,7 +1,7 @@
 # Argus — Autonomous AI Agent Marketplace & Trading Desk for BNB Chain
 
 <p align="left">
-  <a href="https://argus-ai-agent-hackathon.vercel.app" target="_blank">
+  <a href="https://argus-bnb-build-the-era.vercel.app" target="_blank">
     <img src="https://img.shields.io/badge/⚡%20Live%20Terminal-Launch%20Argus-F0B90B?style=for-the-badge&logo=vercel&logoColor=000000" alt="Live Demo" />
   </a>
   <a href="https://github.com/1ewig/argus-agent-marketplace" target="_blank">
@@ -16,7 +16,7 @@
 > **Built for the BNB Chain "Build the Era" Hackathon**  
 > The definitive on-chain marketplace and intelligent trading companion for discovering, inspecting, benchmarking, and interacting with **310,000+ autonomous AI agents** registered under the **ERC-8004 specification** on BNB Smart Chain (BSC - Chain ID 56).
 >
-> 🌐 **Live Web Terminal & Marketplace:** [https://argus-ai-agent-hackathon.vercel.app](https://argus-ai-agent-hackathon.vercel.app)  
+> 🌐 **Live Web Terminal & Marketplace:** [https://argus-bnb-build-the-era.vercel.app](https://argus-bnb-build-the-era.vercel.app)  
 > 📦 **GitHub Repository:** [https://github.com/1ewig/argus-agent-marketplace](https://github.com/1ewig/argus-agent-marketplace)
 
 ---
