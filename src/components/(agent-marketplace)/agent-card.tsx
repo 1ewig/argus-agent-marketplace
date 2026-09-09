@@ -19,7 +19,6 @@ import type { ScanAgentItem } from '@/lib/8004scan/types';
 export interface AgentCardProps {
   agent: ScanAgentItem;
   onSelect: (agent: ScanAgentItem) => void;
-  onHire?: (agent: ScanAgentItem) => void;
   isSpotlight?: boolean;
 }
 
@@ -39,7 +38,6 @@ function getAvatarGradient(seed: string): string {
 export const AgentCard = memo(function AgentCard({
   agent,
   onSelect,
-  onHire,
   isSpotlight,
 }: AgentCardProps) {
   const displayName = agent.name?.trim() || `Agent #${agent.token_id}`;
@@ -116,21 +114,6 @@ export const AgentCard = memo(function AgentCard({
             <span className="text-3xs font-extrabold px-1.5 py-0.5 rounded-full bg-theme-brand-binance/15 text-theme-brand-binance border border-theme-brand-binance/30 uppercase tracking-wider">
               {APP_CONTENT.marketplace.card.spotlightTag}
             </span>
-          )}
-
-          {onHire && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onHire(agent);
-              }}
-              title="Hire Agent"
-              className="h-7 px-2 rounded-lg bg-theme-bg-elevated/70 hover:bg-theme-brand-binance text-theme-text-muted hover:text-theme-bg-overlay border border-theme-border-subtle hover:border-theme-brand-binance text-3xs font-bold flex items-center gap-1 cursor-pointer transition-all duration-150"
-            >
-              <Zap className="size-2.5" />
-              <span className="hidden sm:inline">Hire</span>
-            </button>
           )}
 
           <div className="size-7 rounded-lg bg-theme-bg-elevated/70 group-hover:bg-theme-brand-binance group-hover:text-theme-bg-overlay flex items-center justify-center text-theme-text-muted transition-colors duration-150 shrink-0">
